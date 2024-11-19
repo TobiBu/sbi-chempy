@@ -155,12 +155,13 @@ In this work, we allow six \texttt{CHEMPY} parameters to vary freely (see also T
 
 Following \citet{Philcox_2019}, to avoid unrealistic star formation histories (that are very `bursty' for early stars), we additionally require that the SFR (parametrized by a $\Gamma$ distribution with shape parameter $a=2$) at the maximum possible stellar birth-time ($13.8$\,Gyr) should be at least 5\% of the mean SFR, ensuring that there is still a reasonable chance of forming a star at this time-step. This corresponds to the constraint $\log_{10}\left(\mathrm{SFR}_\mathrm{peak}\right)>0.294$. For this reason, a truncated Normal prior will be used for the SFR parameter. Furthermore, we constrain $T_i$ to the interval $[1,13.8]$\,Gyr (assuming an age of the Universe of 13.8\,Gyr), ignoring any stars formed before $1$\,Gyr, which is justified as these are expected to be rare.
 %
+
 \begin{tiny}
 \begin{table*}
 \begin{minipage}{\textwidth}
 \begin{center}
 \caption{Free \texttt{Chempy} parameters for each star, with their prior values and Gaussian widths. Stellar birth-times are set for each star individually from a Uniform prior, based on realistic age estimates.}
-\begin{tabularx}{\textwidth}{ >{\raggedleft}p{2.2cm}p{6.5cm}|c{1.9cm}c{2.cm} }
+\begin{tabularx}{\textwidth}{ >{\raggedleft}p{2.2cm}p{6.5cm}|c c }
 Parameter & Description & $\overline{\theta}_\mathrm{prior}\pm\sigma_\mathrm{prior}$ & Prior from: \\
 
  \hline
@@ -192,6 +193,7 @@ $T_i$ & Time of stellar birth in Gyr & [$1$,$13.8$] & Observations
 \end{minipage}
 \end{table*}
 \end{tiny}
+
 %
 We adopt the same nucleosynthetic yield tables as in \citep{Philcox_2019}, see their Sec.~2.2 for more details.
 %To ensure maximal compatibility with TNG, we adopt their nucleosynthetic yield tables in \texttt{Chempy}, for enrichment by SN\,Ia, SN\,II and AGB stars. The utilized yields are summarized in Tab.\,\ref{tab:chempy_TNG_yields}, matching \citet[Tab.\,2]{2018MNRAS.473.4077P}, and we note that the SN\,II yields are renormalized such that the IMF-weighted yield ratios at each metallicity are equal to those from the \citet{2006ApJ...653.1145K} mass range models alone. \texttt{Chempy} uses only net yields, such that they provide only newly synthesized material, with the remainder coming from the initial SSP composition. These tables may not well-represent true stellar chemistry, and the effects of this are examined in Sec.\,\ref{subsec: mocks_wrong_yield} by performing inference using an alternative set of yields. For the analysis of observational data, we would want to use the most up-to-date yields, such as \citet{2016ApJ...825...26K} AGB yields, and carefully chose elements which are known to be well reproduced by our current models (e.g. shown by \citet{2019ApJ...874..102W,2019arXiv190806113G}), though this is not appropriate in our context. To facilitate best comparison with TNG, we further set the maximum SN\,II mass as $100\,\mathrm{M}_\odot$ (matching the IMF upper mass limit), adopt stellar lifetimes from \citet{1998A&A...334..505P} and do not allow for any `hypernovae' (in contrary to \citetalias{2018ApJ...861...40P}).
