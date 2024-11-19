@@ -91,211 +91,207 @@
 %-------------------------------------------------------------------
 \section{Introduction}
 
-\section{Motivation}
+% Currently all cosmological simulations of galaxy formation \citep[e.g.][]{Sawala2016,Hopkins2018,Pillepich2018,Buck2020,Buck2020c,Font2020,Agertz2021} rely on a small set of galactic parameters to describe fundamental effects of stellar evolution, including the birth and death rates for various types of stars. Two crucial unknowns are the shape of the initial mass function (IMF), setting the mass distribution of stars born from the interstellar medium (ISM), and the rate of Type Ia supernovae (SN\,Ia) explosions.
+% %
+% The exact values of parameters sensitively affect chemical evolution tracks \citep{2005A&A...430..491R,2015MNRAS.449.1327V,2015MNRAS.451.3693M}, yet their observational constraints remain weak.
+% %
+% For example, a range of high-mass IMF slopes have been suggested \citep[Tab.\,7]{2016ApJ...824...82C}, with a steeper-than-canonical slope being suggested by a range of studies \citep[e.g.][]{2015ApJ...806..198W,2015MNRAS.447.3880R,2014ApJ...796...75C}. In addition, the IMF slope may itself be not a constant but rather a function of metallicity, introducing further complexity \citep[e.g.][]{2019MNRAS.482..118G,2019A&A...626A.124M}. Similarly, the choice of SN\,Ia delay-time-distribution and normalization plays a crucial role in the enrichment of the ISM \citep[e.g.][]{Buck2021} and is heavily debated \citep{2010ApJ...722.1879M,2012MNRAS.426.3282M,2015ApJ...810..137J}. 
 
-Currently all cosmological simulations of galaxy formation \citep[e.g.][]{Sawala2016,Hopkins2018,Pillepich2018,Buck2020,Buck2020c,Font2020,Agertz2021} rely on a small set of galactic parameters to describe fundamental effects of stellar evolution, including the birth and death rates for various types of stars. Two crucial unknowns are the shape of the initial mass function (IMF), setting the mass distribution of stars born from the interstellar medium (ISM), and the rate of Type Ia supernovae (SN\,Ia) explosions.
-%
-The exact values of parameters sensitively affect chemical evolution tracks \citep{2005A&A...430..491R,2015MNRAS.449.1327V,2015MNRAS.451.3693M}, yet their observational constraints remain weak.
-%
-For example, a range of high-mass IMF slopes have been suggested \citep[Tab.\,7]{2016ApJ...824...82C}, with a steeper-than-canonical slope being suggested by a range of studies \citep[e.g.][]{2015ApJ...806..198W,2015MNRAS.447.3880R,2014ApJ...796...75C}. In addition, the IMF slope may itself be not a constant but rather a function of metallicity, introducing further complexity \citep[e.g.][]{2019MNRAS.482..118G,2019A&A...626A.124M}. Similarly, the choice of SN\,Ia delay-time-distribution and normalization plays a crucial role in the enrichment of the ISM \citep[e.g.][]{Buck2021} and is heavily debated \citep{2010ApJ...722.1879M,2012MNRAS.426.3282M,2015ApJ...810..137J}. 
+% The goal of this work is to demonstrate how we can use modern machine learning techniques in tandem with a simple galactic chemical evolution (GCE) model in a Bayesian framework to infer global galactic parameters from a set of stars. Our work focuses on two key parameters; the high-mass slope of the \citet[Tab.\,1]{2003PASP..115..763C} IMF and the rate of SN\,Ia explosions per unit mass. We assume that both are constant across the galaxy and time. 
+% %
+% Our method will make use of simulation-based inference \citep[SBI, e.g.][]{Cranmer2020}. For high-dimensional posterior functions, SBI gives tremendous computational improvements over more traditional methods such as Markov Chain Monte Carlo (MCMC) or even Hamilton Monte Carlo (HMC) methods. 
 
-The goal of this work is to demonstrate how we can use modern machine learning techniques in tandem with a simple galactic chemical evolution (GCE) model in a Bayesian framework to infer global galactic parameters from a set of stars. Our work focuses on two key parameters; the high-mass slope of the \citet[Tab.\,1]{2003PASP..115..763C} IMF and the rate of SN\,Ia explosions per unit mass. We assume that both are constant across the galaxy and time. 
-%
-Our method will make use of simulation-based inference \citep[SBI, e.g.][]{Cranmer2020}. For high-dimensional posterior functions, SBI gives tremendous computational improvements over more traditional methods such as Markov Chain Monte Carlo (MCMC) or even Hamilton Monte Carlo (HMC) methods. 
-
-% \begin{figure*}
-%    %\sidecaption
-%    \subfigure[]{
-%        \includegraphics[width=0.49\hsize, trim={0 0 0 0cm},clip]{figures/data/sample_galaxies_with_colorbar.pdf}
-%    }
-%    \subfigure[]{
-%       \includegraphics[width=0.51\hsize, trim={0 0 2.3cm 0},clip]{figures/data/galaxy_grid_with_colorbar.pdf}
-%    }
-%    \caption{Galaxy images (upper panels) and image cubes (lower panels) in our dataset after the preprocessing steps as explained in Section \ref{sec:dataset_generation}. Each row contains one sample galaxy in three stellar maps - metallicity, age and mass from left to right in a) 2D and b) 3D. The images are normalised in the range $[0,1]$ and bright pixels correspond to high values. Note that in the stellar age maps, dark pixels correspond to young stars. The three dimensional plots have been created using the \emph{plotly} python package.}
-%    \label{fig: sample_galaxies_after_prepocessing}
-% \end{figure*}
+% % \begin{figure*}
+% %    %\sidecaption
+% %    \subfigure[]{
+% %        \includegraphics[width=0.49\hsize, trim={0 0 0 0cm},clip]{figures/data/sample_galaxies_with_colorbar.pdf}
+% %    }
+% %    \subfigure[]{
+% %       \includegraphics[width=0.51\hsize, trim={0 0 2.3cm 0},clip]{figures/data/galaxy_grid_with_colorbar.pdf}
+% %    }
+% %    \caption{Galaxy images (upper panels) and image cubes (lower panels) in our dataset after the preprocessing steps as explained in Section \ref{sec:dataset_generation}. Each row contains one sample galaxy in three stellar maps - metallicity, age and mass from left to right in a) 2D and b) 3D. The images are normalised in the range $[0,1]$ and bright pixels correspond to high values. Note that in the stellar age maps, dark pixels correspond to young stars. The three dimensional plots have been created using the \emph{plotly} python package.}
+% %    \label{fig: sample_galaxies_after_prepocessing}
+% % \end{figure*}
 
 
-\textcolor{red}{To be changed...}
-This paper is structured as follows. In Section \ref{sec:methods} we detail our methods. Especially, Section \ref{sec:dataset_generation} discusses the methodology used for generating the dataset for our analysis by extracting galaxy data from simulations. Section \ref{sec: methods_PCA_on_images} outlines the application of PCA to the image data and the resulting lower-dimensional image space (Section \ref{sec: dimensionality reduction method using pca}). Our resulting model is presented in Section \ref{sec: Results} and its accuracy thoroughly tested in Section \ref{sec: model evaluation, reconstruction error}. In Section \ref{sec: application} we highlight potential applications of our PCA galaxy model and conclude in Section \ref{sec: conclusion} with a summary and outlook of our results.
+% \textcolor{red}{To be changed...}
+% This paper is structured as follows. In Section \ref{sec:methods} we detail our methods. Especially, Section \ref{sec:dataset_generation} discusses the methodology used for generating the dataset for our analysis by extracting galaxy data from simulations. Section \ref{sec: methods_PCA_on_images} outlines the application of PCA to the image data and the resulting lower-dimensional image space (Section \ref{sec: dimensionality reduction method using pca}). Our resulting model is presented in Section \ref{sec: Results} and its accuracy thoroughly tested in Section \ref{sec: model evaluation, reconstruction error}. In Section \ref{sec: application} we highlight potential applications of our PCA galaxy model and conclude in Section \ref{sec: conclusion} with a summary and outlook of our results.
 
-Finally, we publicly release all of our code to reproduce the results of this manuscript via GitHub\footnote{URL: {\url{https://github.com/ufuk-cakir/MEGS}}}and refer to Appendix \ref{sec:appendix_code_and_data} and Fig. \ref{fig: hdf5_file_struc} for an overview of our code and file structure. Our final dataset is publicly available on Zenodo.\footnote{URL: \url{https://zenodo.org/record/8375344}}
+% Finally, we publicly release all of our code to reproduce the results of this manuscript via GitHub\footnote{URL: {\url{https://github.com/ufuk-cakir/MEGS}}}and refer to Appendix \ref{sec:appendix_code_and_data} and Fig. \ref{fig: hdf5_file_struc} for an overview of our code and file structure. Our final dataset is publicly available on Zenodo.\footnote{URL: \url{https://zenodo.org/record/8375344}}
 
-%--------------------------------------------------------------------
-\section{Methods}
-\label{sec:methods}
+% %--------------------------------------------------------------------
+% \section{Methods}
+% \label{sec:methods}
 
-\paragraph{Simulation-based inference}
-In a nutshell, SBI \citep[e.g.][]{Cranmer2020,Papamakarios:2021,Gloeckler2024AllinoneSI} -- also called likelihood free inference within a  Bayesian inference framework --  works as follows: given an assumed generative model $\mathcal{M}$ of parameters $\theta$ (in our case a galactic chemical enrichment model) and a set of simulated observations of individual stellar abundances $\Vec{X}$ from that model, we train a mapping between the two to estimate the posterior distribution $p$($\theta|\Vec{X}$, $\mathcal{M}$) of the generative model parameters $\theta$ that reproduce the simulated observations $\Vec{X}$. Once this mapping is trained, we can apply it to real observations of stellar abundances $\Vec{X_R}$ to infer $p$($\theta|\Vec{X_R}$, $\mathcal{M}$)(see Fig. \ref{fig:flowchart}).
-For this we use a Neural Posterior Estimator (NPE) \cite{zeghal2022neuralposteriorestimationdifferentiable} which utilises the gradients of the generative model $\mathcal{M}$ with a Masked Autoregressive Flow model (MAF) \cite{papamakarios2018maskedautoregressiveflowdensity} containing 5 transformer blocks with 50 hidden features each.
+% \paragraph{Simulation-based inference}
+% In a nutshell, SBI \citep[e.g.][]{Cranmer2020,Papamakarios:2021,Gloeckler2024AllinoneSI} -- also called likelihood free inference within a  Bayesian inference framework --  works as follows: given an assumed generative model $\mathcal{M}$ of parameters $\theta$ (in our case a galactic chemical enrichment model) and a set of simulated observations of individual stellar abundances $\Vec{X}$ from that model, we train a mapping between the two to estimate the posterior distribution $p$($\theta|\Vec{X}$, $\mathcal{M}$) of the generative model parameters $\theta$ that reproduce the simulated observations $\Vec{X}$. Once this mapping is trained, we can apply it to real observations of stellar abundances $\Vec{X_R}$ to infer $p$($\theta|\Vec{X_R}$, $\mathcal{M}$)(see Fig. \ref{fig:flowchart}).
+% For this we use a Neural Posterior Estimator (NPE) \cite{zeghal2022neuralposteriorestimationdifferentiable} which utilises the gradients of the generative model $\mathcal{M}$ with a Masked Autoregressive Flow model (MAF) \cite{papamakarios2018maskedautoregressiveflowdensity} containing 5 transformer blocks with 50 hidden features each.
 
-% \begin{figure}[]
-%     \centering
-%     \vspace{-.25cm}
-%     \includegraphics[width=1\linewidth]{figures/sbi.png}
-%     \vspace{-.7cm}
-%     \caption{SBI flow chart. From a set of priors we simulate a sample of stellar abundances using \texttt{CHEMPY} which we use to train a Neural Density Estimator. With this we infer the posterior distribution of the model parameters from a single star. Repeating that for $N_{\rm stars}$ from the same galaxy gives an accurate fit of the IMF slope and Type Ia supernovae normalization.}
-%     \label{fig:flowchart}
-% \end{figure}
-
-
-\paragraph{Galactic chemical evolution models}
-Our simulator is based on the \texttt{CHEMPYScoring} module \citep{Philcox_2018} publicly available as the \texttt{CHEMPYMulti} \citep{Philcox_2019}\footnote{\href{https://github.com/oliverphilcox/ChempyMulti}{github.com/oliverphilcox/ChempyMulti}} package a further development of the original \texttt{CHEMPY} model \citep{Rybizki_2017}. \texttt{CHEMPY} is a simple Galactic Chemical Evolution (GCE) model that is able to predict stellar chemical abundances throughout cosmic time by using published nucleosynthetic yield tables for three key processes (SN\,Ia and SN\,II explosions and AGB stellar feedback) and a small number of parameters controlling simple stellar populations (SSPs) and ISM physics. We refer to the initial \texttt{CHEMPY} paper \citep{Rybizki_2017} for the details of the model.
-%
-In this work, we allow six \texttt{CHEMPY} parameters to vary freely (see also Tab.\,\ref{tab:priors}). These can be categorized into three groups:
-\vspace{-1em}
-%\setlist[1]{itemsep=-4pt}
-\begin{enumerate}
-    \item $\vec\Lambda$: \textbf{Global Galactic Parameters} describe SSP physics and comprise the high-mass \citet{2003PASP..115..763C} IMF slope, $\alpha_\mathrm{IMF}$, and (logarithmic) Type Ia SN normalization, $\log_{10}(N_\mathrm{Ia})$. We treat these as star-independent and assume them to be constant across galactic environments and cosmic time. \footnote{Whilst $\log_{10}(N_\mathrm{Ia})$ is constant with respect to time by definition, it being simply a normalization constant, there is some evidence for $\alpha_\mathrm{IMF}$ varying as a function of time or metallicity \citep{2014ApJ...796...75C,2016MNRAS.462.2832C,2019MNRAS.482..118G,2019A&A...626A.124M}.} We adopt the same broad priors as \citep{Philcox_2019} for these variables (see also Tab.\ref{tab:priors}).  
-    \item $\{\vec\Theta_i\}$: \textbf{Local Galactic Parameters} describe the local physics of the ISM and are hence specific to each stellar environment, indexed by $i$. As defined in \citep{Rybizki_2017}, these include the star-formation efficiency (SFE), $\log_{10}(\text{SFE})$, $\log_{10}(\mathrm{SFR}_\mathrm{peak})$, which controls the peak of the star formation rate (SFR), and the fraction of stellar outflow that is fed to the gas reservoir, $\mathrm{x}_\mathrm{out}$. We adopt broad priors for all parameters and, as in \citep{Philcox_2019}, fix the SN\,Ia delay-time distribution, $\log_{10}(\tau_{\rm Ia})$, to $\log_{10}(\tau_{\rm Ia})=-0.80$ \citep[see also][]{Philcox_2018}.
-    \item $\{T_i\}$: \textbf{Stellar Birth-Times}. Time in Gyr at which a given star is formed from the ISM. We assume that its proto-stellar abundances match the local ISM abundances at $T_i$.
-\end{enumerate}
-
-%The separability of local (ISM) parameters and global (SSP) parameters is motivated by recent observational evidence: \citet{2019arXiv190710606N} find that the elemental abundances of red clump stars belonging to the thin disk can be predicted almost perfectly from their age and [Fe/H] abundance. This implies that the key chemical evolution parameters affecting the elemental abundances (SSP parameters and yield tables) are held fixed, whilst ISM parameters vary smoothly over the thin disk (which offsets the metallicity for different galactocentric radii). Similarly \cite{2019ApJ...874..102W} find that ISM parameter variations are deprojected in the [X/Mg] vs [Mg/H] plane (their Fig.\,17) and that abundance tracks in that space are independent of the stellar sample's spatial position within the Galaxy (their Fig.\,3).
-
-Following \citet{Philcox_2019}, to avoid unrealistic star formation histories (that are very `bursty' for early stars), we additionally require that the SFR (parametrized by a $\Gamma$ distribution with shape parameter $a=2$) at the maximum possible stellar birth-time ($13.8$\,Gyr) should be at least 5\% of the mean SFR, ensuring that there is still a reasonable chance of forming a star at this time-step. This corresponds to the constraint $\log_{10}\left(\mathrm{SFR}_\mathrm{peak}\right)>0.294$. For this reason, a truncated Normal prior will be used for the SFR parameter. Furthermore, we constrain $T_i$ to the interval $[1,13.8]$\,Gyr (assuming an age of the Universe of 13.8\,Gyr), ignoring any stars formed before $1$\,Gyr, which is justified as these are expected to be rare.
-%
-
-\begin{tiny}
-\begin{table*}
-\begin{minipage}{\textwidth}
-\begin{center}
-\caption{Free \texttt{Chempy} parameters for each star, with their prior values and Gaussian widths. Stellar birth-times are set for each star individually from a Uniform prior, based on realistic age estimates.}
-\begin{tabularx}{\textwidth}{ >{\raggedleft}p{2.2cm}p{6.5cm}|c c }
-Parameter & Description & $\overline{\theta}_\mathrm{prior}\pm\sigma_\mathrm{prior}$ & Prior from: \\
-
- \hline
-  \multicolumn{4}{c}{$\vec{\Lambda}$: \textit{Global stellar (SSP) parameters}}\\
-\hline
-  $\alpha_\mathrm{IMF}$ & High-mass slope of the \citep{2003PASP..115..763C} IMF & $-2.3\pm0.3$ & \citep[Tab.\,1]{2003PASP..115..763C} \\
-  
-  $\log_{10}\left(N_\mathrm{Ia}\right)$ & Number of SN\,Ia per $\mathrm{M}_\odot$ over 15\,Gyr & $-2.75\pm0.3$ & \citep[Tab.1\,]{2012PASA...29..447M}\\
-  
-\hline
-  \multicolumn{4}{c}{$\vec{\Theta}_i$: \textit{Local ISM parameters}}\\
-  
-\hline
-  $\log_{10}\left(\mathrm{SFE}\right)$ & Star formation efficiency governing gas infall & $-0.3\pm0.3$ & \citep{2008AJ....136.2846B}\\
-  
-  $\log_{10}\left(\mathrm{SFR}_\mathrm{peak}\right)$ & SFR peak in Gyr (scale of $k=2$ $\Gamma$-distribution) & $0.55\pm0.1$ & \citep[fig.\,4b]{2013ApJ...771L..35V}\\
-  
-  x$_\mathrm{out}$ & Stellar feedback fraction & $\phantom{-}0.5\pm0.1$ & \citep[Tab.\,1]{Rybizki_2017}\\
-  
-\hline
- \multicolumn{4}{c}{$T_i$: \textit{Timescale}}\\
- 
-\hline
-$T_i$ & Time of stellar birth in Gyr & [$1$,$13.8$] & Observations
-
-\label{tab:priors}
-\end{tabularx}
-\end{center}
-\end{minipage}
-\end{table*}
-\end{tiny}
-
-%
-We adopt the same nucleosynthetic yield tables as in \citep{Philcox_2019}, see their Sec.~2.2 for more details.
-%To ensure maximal compatibility with TNG, we adopt their nucleosynthetic yield tables in \texttt{Chempy}, for enrichment by SN\,Ia, SN\,II and AGB stars. The utilized yields are summarized in Tab.\,\ref{tab:chempy_TNG_yields}, matching \citet[Tab.\,2]{2018MNRAS.473.4077P}, and we note that the SN\,II yields are renormalized such that the IMF-weighted yield ratios at each metallicity are equal to those from the \citet{2006ApJ...653.1145K} mass range models alone. \texttt{Chempy} uses only net yields, such that they provide only newly synthesized material, with the remainder coming from the initial SSP composition. These tables may not well-represent true stellar chemistry, and the effects of this are examined in Sec.\,\ref{subsec: mocks_wrong_yield} by performing inference using an alternative set of yields. For the analysis of observational data, we would want to use the most up-to-date yields, such as \citet{2016ApJ...825...26K} AGB yields, and carefully chose elements which are known to be well reproduced by our current models (e.g. shown by \citet{2019ApJ...874..102W,2019arXiv190806113G}), though this is not appropriate in our context. To facilitate best comparison with TNG, we further set the maximum SN\,II mass as $100\,\mathrm{M}_\odot$ (matching the IMF upper mass limit), adopt stellar lifetimes from \citet{1998A&A...334..505P} and do not allow for any `hypernovae' (in contrary to \citetalias{2018ApJ...861...40P}).
-%
-% \begin{table}[]
-% \caption{Nucleosynthetic yield tables used in this analysis, matching those of the TNG simulation \citep[Tab.\,2]{2018MNRAS.473.4077P}.}
-%     \centering
-%     \begin{tabular}{c|c}
-%       Type & Yield Table \\
-%        \hline
-%         SN\,Ia & \citet{1997NuPhA.621..467N}\\
-%         SN\,II & \citet{2006ApJ...653.1145K,portinari}\\
-%         AGB & \citet{2010MNRAS.403.1413K,2014MNRAS.437..195D};\\
-%         & \citet{2014ApJ...797...44F}
-%     \end{tabular}
-% \label{tab:chempy_TNG_yields}
-% \end{table}
-%
-%TNG only tracks nine elements in their analysis: C, Fe, H, He, Mg, N, Ne, O and Si, reporting the mass-fractions of each \citep{2018MNRAS.473.4077P}. 
-In our analysis we only track nine elements: C, Fe, H, He, Mg, N, Ne, O and Si and principally compare the logarithmic abundances [X/Fe] and [Fe/H] (defined by 
-%\begin{equation}
-    $[\mathrm{X}/\mathrm{Y}] = \log_{10}(N_\mathrm X/N_\mathrm Y)_\mathrm{star} - \log_{10}(N_\mathrm X/N_\mathrm Y)_\odot$
-%\end{equation}
-for number fraction $N_\mathrm X$ of element X), where $\odot$ denotes the solar number fractions of \citet{2009ARA&A..47..481A}. This uses H for normalization, thus we are left with $n_\mathrm{el}=8$ independent elements which must be tracked by \texttt{Chempy}.%\footnote{In observational contexts, it may be more appropriate to compute abundances relative to Mg rather than Fe (as in \citep{2019ApJ...874..102W}) since Mg is only significantly produced by SN\,II and hence a simpler tracer of chemical enrichment.} 
-%In this paper, \texttt{Chempy} will be used as the principal GCE model, which, with the modifications described above, allows for fast prediction of TNG-like chemical abundances for a given set of galactic parameters. It is important to note that the two GCE models have very different parametrizations of galactic physics, with TNG including vastly more effects, thus it is not certain \textit{a priori} how useful \texttt{Chempy} will be in emulating the TNG simulation, although its utility was partially demonstrated in \citet{2018ApJ...861...40P}. This is a necessary test to prepare for an inference on real data.
+% % \begin{figure}[]
+% %     \centering
+% %     \vspace{-.25cm}
+% %     \includegraphics[width=1\linewidth]{figures/sbi.png}
+% %     \vspace{-.7cm}
+% %     \caption{SBI flow chart. From a set of priors we simulate a sample of stellar abundances using \texttt{CHEMPY} which we use to train a Neural Density Estimator. With this we infer the posterior distribution of the model parameters from a single star. Repeating that for $N_{\rm stars}$ from the same galaxy gives an accurate fit of the IMF slope and Type Ia supernovae normalization.}
+% %     \label{fig:flowchart}
+% % \end{figure}
 
 
-\paragraph{Neural network emulator for \texttt{CHEMPY}:}
-Despite the simplifications made by the GCE model \texttt{CHEMPY}, we still have difficulties sampling the distribution of the global parameters $\vec\Lambda = \{\alpha_\mathrm{IMF},\log_{10}(N_\mathrm{Ia})\}$ due to the run-time of \texttt{CHEMPY} and the high-dimensionality of the parameter space. To alleviate this, we use a \textit{neural network} emulator of the \texttt{CHEMPY} simulations with a total of $n_\mathrm{neuron}=140$ fully-connected neurons in two hidden layers.
-%
-% In essence, instead of computing the full model for each input parameter set, we pass the parameters to the network which predicts the output abundances to high accuracy. This has two benefits;
+% \paragraph{Galactic chemical evolution models}
+% Our simulator is based on the \texttt{CHEMPYScoring} module \citep{Philcox_2018} publicly available as the \texttt{CHEMPYMulti} \citep{Philcox_2019}\footnote{\href{https://github.com/oliverphilcox/ChempyMulti}{github.com/oliverphilcox/ChempyMulti}} package a further development of the original \texttt{CHEMPY} model \citep{Rybizki_2017}. \texttt{CHEMPY} is a simple Galactic Chemical Evolution (GCE) model that is able to predict stellar chemical abundances throughout cosmic time by using published nucleosynthetic yield tables for three key processes (SN\,Ia and SN\,II explosions and AGB stellar feedback) and a small number of parameters controlling simple stellar populations (SSPs) and ISM physics. We refer to the initial \texttt{CHEMPY} paper \citep{Rybizki_2017} for the details of the model.
+% %
+% In this work, we allow six \texttt{CHEMPY} parameters to vary freely (see also Tab.\,\ref{tab:priors}). These can be categorized into three groups:
+% \vspace{-1em}
+% %\setlist[1]{itemsep=-4pt}
 % \begin{enumerate}
-%     \item \textbf{Speed:} The run-time of the \texttt{Chempy} function is $\sim1$\,s per input parameter set, which leads to very slow posterior sampling. With the neural network, this reduces to $\sim5\times10^{-5}$\,s, and is trivially parallelizable, unlike \texttt{Chempy}.
-%     \item \textbf{Differentiablility:} The neural network has a simple closed-form analytic structure (described in appendix \ref{appen: neural_network}), unlike the complex \texttt{Chempy} model. This allows it to be differentiated, so we can sample via advanced methods (cf.\,Sec.\,\ref{sec: sampling}).
+%     \item $\vec\Lambda$: \textbf{Global Galactic Parameters} describe SSP physics and comprise the high-mass \citet{2003PASP..115..763C} IMF slope, $\alpha_\mathrm{IMF}$, and (logarithmic) Type Ia SN normalization, $\log_{10}(N_\mathrm{Ia})$. We treat these as star-independent and assume them to be constant across galactic environments and cosmic time. \footnote{Whilst $\log_{10}(N_\mathrm{Ia})$ is constant with respect to time by definition, it being simply a normalization constant, there is some evidence for $\alpha_\mathrm{IMF}$ varying as a function of time or metallicity \citep{2014ApJ...796...75C,2016MNRAS.462.2832C,2019MNRAS.482..118G,2019A&A...626A.124M}.} We adopt the same broad priors as \citep{Philcox_2019} for these variables (see also Tab.\ref{tab:priors}).  
+%     \item $\{\vec\Theta_i\}$: \textbf{Local Galactic Parameters} describe the local physics of the ISM and are hence specific to each stellar environment, indexed by $i$. As defined in \citep{Rybizki_2017}, these include the star-formation efficiency (SFE), $\log_{10}(\text{SFE})$, $\log_{10}(\mathrm{SFR}_\mathrm{peak})$, which controls the peak of the star formation rate (SFR), and the fraction of stellar outflow that is fed to the gas reservoir, $\mathrm{x}_\mathrm{out}$. We adopt broad priors for all parameters and, as in \citep{Philcox_2019}, fix the SN\,Ia delay-time distribution, $\log_{10}(\tau_{\rm Ia})$, to $\log_{10}(\tau_{\rm Ia})=-0.80$ \citep[see also][]{Philcox_2018}.
+%     \item $\{T_i\}$: \textbf{Stellar Birth-Times}. Time in Gyr at which a given star is formed from the ISM. We assume that its proto-stellar abundances match the local ISM abundances at $T_i$.
 % \end{enumerate}
-%
-Despite the additional complexity introduced by using multiple stellar data-points, our network simply needs to predict the birth-time abundances for a single star (with index $i$) given a set of six parameters; $\{\vec\Lambda,\vec\Theta_i,T_i\}$. The same network can be used for all $n_\mathrm{stars}$ stars (and run in parallel), reducing a set of $n_\mathrm{stars}$ runs of \texttt{Chempy} to a single matrix computation. With the above choices, the network predicts abundances with an average error of $0.008_{-0.005}^{+0.007}$\,dex, which is far below typical observational errors and even smaller away from the extremes of parameter space.
-All our code to reproduce our results is publicly avaialble on \href{https://github.com/bGuenes/sbi_chemical_abundances}{github}.
+
+% %The separability of local (ISM) parameters and global (SSP) parameters is motivated by recent observational evidence: \citet{2019arXiv190710606N} find that the elemental abundances of red clump stars belonging to the thin disk can be predicted almost perfectly from their age and [Fe/H] abundance. This implies that the key chemical evolution parameters affecting the elemental abundances (SSP parameters and yield tables) are held fixed, whilst ISM parameters vary smoothly over the thin disk (which offsets the metallicity for different galactocentric radii). Similarly \cite{2019ApJ...874..102W} find that ISM parameter variations are deprojected in the [X/Mg] vs [Mg/H] plane (their Fig.\,17) and that abundance tracks in that space are independent of the stellar sample's spatial position within the Galaxy (their Fig.\,3).
+
+% Following \citet{Philcox_2019}, to avoid unrealistic star formation histories (that are very `bursty' for early stars), we additionally require that the SFR (parametrized by a $\Gamma$ distribution with shape parameter $a=2$) at the maximum possible stellar birth-time ($13.8$\,Gyr) should be at least 5\% of the mean SFR, ensuring that there is still a reasonable chance of forming a star at this time-step. This corresponds to the constraint $\log_{10}\left(\mathrm{SFR}_\mathrm{peak}\right)>0.294$. For this reason, a truncated Normal prior will be used for the SFR parameter. Furthermore, we constrain $T_i$ to the interval $[1,13.8]$\,Gyr (assuming an age of the Universe of 13.8\,Gyr), ignoring any stars formed before $1$\,Gyr, which is justified as these are expected to be rare.
+% %
+
+% \begin{tiny}
+% \begin{table*}
+% \begin{minipage}{\textwidth}
+% \begin{center}
+% \caption{Free \texttt{Chempy} parameters for each star, with their prior values and Gaussian widths. Stellar birth-times are set for each star individually from a Uniform prior, based on realistic age estimates.}
+% \begin{tabularx}{\textwidth}{ >{\raggedleft}p{2.2cm}p{6.5cm}|c c }
+% Parameter & Description & $\overline{\theta}_\mathrm{prior}\pm\sigma_\mathrm{prior}$ & Prior from: \\
+
+%  \hline
+%   \multicolumn{4}{c}{$\vec{\Lambda}$: \textit{Global stellar (SSP) parameters}}\\
+% \hline
+%   $\alpha_\mathrm{IMF}$ & High-mass slope of the \citep{2003PASP..115..763C} IMF & $-2.3\pm0.3$ & \citep[Tab.\,1]{2003PASP..115..763C} \\
+  
+%   $\log_{10}\left(N_\mathrm{Ia}\right)$ & Number of SN\,Ia per $\mathrm{M}_\odot$ over 15\,Gyr & $-2.75\pm0.3$ & \citep[Tab.1\,]{2012PASA...29..447M}\\
+  
+% \hline
+%   \multicolumn{4}{c}{$\vec{\Theta}_i$: \textit{Local ISM parameters}}\\
+  
+% \hline
+%   $\log_{10}\left(\mathrm{SFE}\right)$ & Star formation efficiency governing gas infall & $-0.3\pm0.3$ & \citep{2008AJ....136.2846B}\\
+  
+%   $\log_{10}\left(\mathrm{SFR}_\mathrm{peak}\right)$ & SFR peak in Gyr (scale of $k=2$ $\Gamma$-distribution) & $0.55\pm0.1$ & \citep[fig.\,4b]{2013ApJ...771L..35V}\\
+  
+%   x$_\mathrm{out}$ & Stellar feedback fraction & $\phantom{-}0.5\pm0.1$ & \citep[Tab.\,1]{Rybizki_2017}\\
+  
+% \hline
+%  \multicolumn{4}{c}{$T_i$: \textit{Timescale}}\\
+ 
+% \hline
+% $T_i$ & Time of stellar birth in Gyr & [$1$,$13.8$] & Observations
+
+% \label{tab:priors}
+% \end{tabularx}
+% \end{center}
+% \end{minipage}
+% \end{table*}
+% \end{tiny}
+
+% %
+% We adopt the same nucleosynthetic yield tables as in \citep{Philcox_2019}, see their Sec.~2.2 for more details.
+% %To ensure maximal compatibility with TNG, we adopt their nucleosynthetic yield tables in \texttt{Chempy}, for enrichment by SN\,Ia, SN\,II and AGB stars. The utilized yields are summarized in Tab.\,\ref{tab:chempy_TNG_yields}, matching \citet[Tab.\,2]{2018MNRAS.473.4077P}, and we note that the SN\,II yields are renormalized such that the IMF-weighted yield ratios at each metallicity are equal to those from the \citet{2006ApJ...653.1145K} mass range models alone. \texttt{Chempy} uses only net yields, such that they provide only newly synthesized material, with the remainder coming from the initial SSP composition. These tables may not well-represent true stellar chemistry, and the effects of this are examined in Sec.\,\ref{subsec: mocks_wrong_yield} by performing inference using an alternative set of yields. For the analysis of observational data, we would want to use the most up-to-date yields, such as \citet{2016ApJ...825...26K} AGB yields, and carefully chose elements which are known to be well reproduced by our current models (e.g. shown by \citet{2019ApJ...874..102W,2019arXiv190806113G}), though this is not appropriate in our context. To facilitate best comparison with TNG, we further set the maximum SN\,II mass as $100\,\mathrm{M}_\odot$ (matching the IMF upper mass limit), adopt stellar lifetimes from \citet{1998A&A...334..505P} and do not allow for any `hypernovae' (in contrary to \citetalias{2018ApJ...861...40P}).
+% %
+% % \begin{table}[]
+% % \caption{Nucleosynthetic yield tables used in this analysis, matching those of the TNG simulation \citep[Tab.\,2]{2018MNRAS.473.4077P}.}
+% %     \centering
+% %     \begin{tabular}{c|c}
+% %       Type & Yield Table \\
+% %        \hline
+% %         SN\,Ia & \citet{1997NuPhA.621..467N}\\
+% %         SN\,II & \citet{2006ApJ...653.1145K,portinari}\\
+% %         AGB & \citet{2010MNRAS.403.1413K,2014MNRAS.437..195D};\\
+% %         & \citet{2014ApJ...797...44F}
+% %     \end{tabular}
+% % \label{tab:chempy_TNG_yields}
+% % \end{table}
+% %
+% %TNG only tracks nine elements in their analysis: C, Fe, H, He, Mg, N, Ne, O and Si, reporting the mass-fractions of each \citep{2018MNRAS.473.4077P}. 
+% In our analysis we only track nine elements: C, Fe, H, He, Mg, N, Ne, O and Si and principally compare the logarithmic abundances [X/Fe] and [Fe/H] (defined by 
+% %\begin{equation}
+%     $[\mathrm{X}/\mathrm{Y}] = \log_{10}(N_\mathrm X/N_\mathrm Y)_\mathrm{star} - \log_{10}(N_\mathrm X/N_\mathrm Y)_\odot$
+% %\end{equation}
+% for number fraction $N_\mathrm X$ of element X), where $\odot$ denotes the solar number fractions of \citet{2009ARA&A..47..481A}. This uses H for normalization, thus we are left with $n_\mathrm{el}=8$ independent elements which must be tracked by \texttt{Chempy}.%\footnote{In observational contexts, it may be more appropriate to compute abundances relative to Mg rather than Fe (as in \citep{2019ApJ...874..102W}) since Mg is only significantly produced by SN\,II and hence a simpler tracer of chemical enrichment.} 
+% %In this paper, \texttt{Chempy} will be used as the principal GCE model, which, with the modifications described above, allows for fast prediction of TNG-like chemical abundances for a given set of galactic parameters. It is important to note that the two GCE models have very different parametrizations of galactic physics, with TNG including vastly more effects, thus it is not certain \textit{a priori} how useful \texttt{Chempy} will be in emulating the TNG simulation, although its utility was partially demonstrated in \citet{2018ApJ...861...40P}. This is a necessary test to prepare for an inference on real data.
+
+
+% \paragraph{Neural network emulator for \texttt{CHEMPY}:}
+% Despite the simplifications made by the GCE model \texttt{CHEMPY}, we still have difficulties sampling the distribution of the global parameters $\vec\Lambda = \{\alpha_\mathrm{IMF},\log_{10}(N_\mathrm{Ia})\}$ due to the run-time of \texttt{CHEMPY} and the high-dimensionality of the parameter space. To alleviate this, we use a \textit{neural network} emulator of the \texttt{CHEMPY} simulations with a total of $n_\mathrm{neuron}=140$ fully-connected neurons in two hidden layers.
+% %
+% % In essence, instead of computing the full model for each input parameter set, we pass the parameters to the network which predicts the output abundances to high accuracy. This has two benefits;
+% % \begin{enumerate}
+% %     \item \textbf{Speed:} The run-time of the \texttt{Chempy} function is $\sim1$\,s per input parameter set, which leads to very slow posterior sampling. With the neural network, this reduces to $\sim5\times10^{-5}$\,s, and is trivially parallelizable, unlike \texttt{Chempy}.
+% %     \item \textbf{Differentiablility:} The neural network has a simple closed-form analytic structure (described in appendix \ref{appen: neural_network}), unlike the complex \texttt{Chempy} model. This allows it to be differentiated, so we can sample via advanced methods (cf.\,Sec.\,\ref{sec: sampling}).
+% % \end{enumerate}
+% %
+% Despite the additional complexity introduced by using multiple stellar data-points, our network simply needs to predict the birth-time abundances for a single star (with index $i$) given a set of six parameters; $\{\vec\Lambda,\vec\Theta_i,T_i\}$. The same network can be used for all $n_\mathrm{stars}$ stars (and run in parallel), reducing a set of $n_\mathrm{stars}$ runs of \texttt{Chempy} to a single matrix computation. With the above choices, the network predicts abundances with an average error of $0.008_{-0.005}^{+0.007}$\,dex, which is far below typical observational errors and even smaller away from the extremes of parameter space.
+% All our code to reproduce our results is publicly avaialble on \href{https://github.com/bGuenes/sbi_chemical_abundances}{github}.
 
 
 
 
-%The larger volume of data should be able to give tighter statistical constraints on those parameters that are held fixed across the galaxy, but complexity is added since we must allow each star to carry its own set of local ISM parameters.
+% %The larger volume of data should be able to give tighter statistical constraints on those parameters that are held fixed across the galaxy, but complexity is added since we must allow each star to carry its own set of local ISM parameters.
 
 
-% Let's see how far we get with our work before the deadline...
+% % Let's see how far we get with our work before the deadline...
 
-%We will test our analysis using mock observations drawn firstly from \texttt{Chempy} then from large-scale hydrodynamical simulations to ensure that we recover the correct parameters even for models with a completely different treatment of ISM physics. The methods presented here can naturally be extended to any fast and flexible GCE model, not just \texttt{Chempy}. 
-
-
-
-
-
-\section{Results}
-\label{sec: Results}
-
-% \begin{figure}
-%     \centering
-%     \includegraphics[width=0.9\linewidth]{figures/sbi_Nstar_comp.png}
-%     \vspace{-.25cm}
-%     \caption{Accuracy of inferred global galactic parameters $\alpha_{IMF}$ and $\log_{10}(N_{Ia})$ as a function of number of observed stars, comparing SBI (blue) to the inferred values using HMC (red) \cite{Philcox_2019} .}
-%     \label{fig:N_star_analysis}
-% \end{figure}
-
-We train the NPE with a set of $n_{\rm stars}=10^6$ abundances for $n_{\rm elemets}=8$ with an assumed observational error of $0.05$ dex, generated with the \textit{neural network} emulator, with inputs sampled from the priors shown in Tab. \ref{tab:priors}. The sole purpose of the emulator is to highly reduce the computational time compared to full \texttt{CHEMPY} simulations. Training the NPE takes $~3$h on a single H100 GPU.
-
-\paragraph{Mock Observational Data}
-Our analysis uses mock observations drawn from the \textit{neural network} emulator with fixed values of the global galactic parameters $\alpha_{\rm IMF}=-2.3$ and $\log_{10}(N_{\rm Ia})=-2.89$ and the local parameters $\vec{\Theta}_i$ from Tab. \ref{tab:priors}, additionally drawing $T_i$ uniformly in the range $[2,12.8]$ Gyr, to minimize overlap with the neural network training birth-time limits when observational uncertainties are included. 
-Each set of parameters is passed to the NN, producing eight true chemical abundances, to which we add a Gaussian error of $0.05$ dex.
-The outcome of this mock data creation is a set of 1000 stars, emulating a real dataset.
-
-\paragraph{Inference}
-
-% \begin{figure}
-% \vspace{-1.3cm}
-%     \centering
-%     \includegraphics[width=0.49\textwidth]{figures/posterior_2.png}
-%     \vspace{-.25cm}
-%     \caption{Sampled posteriors for global galactic parameters $\alpha_{\rm IMF}$ and $\log_{10}(\rm N_{Ia})$ of $1000$ stars.}
-%     \label{fig:sbi}   
-% \end{figure}
-
-
-For each set of mock abundances we infer the posterior distribution for all six parameters $\{\vec\Lambda,\vec\Theta_i,T_i\}$ with the NPE by sampling 1000 times and fitting the posterior for each parameter. This takes around $0.3s$ for each star, making it extremely fast to infer the parameters of a large amount of stars. 
-Our method takes around $5$ minutes to build a posterior for all six parameters for a dataset size of 1000 stars on a Macbook Air M2 chip, making it around $2400$x faster than current HMC methods \citep[cf.][who needs $40$h for 200 stars with HMC]{Philcox_2019}. Hence, shorter computing times make it feasible to use orders of magnitudes more observations.
-%
-Taking the means of multiple observed stars gives us higher accuracy and precision of the global galactic parameters $\vec\Lambda$ (Fig. \ref{fig:N_star_analysis}). However, we also see that in the limit of very few stars (less than $\sim10$) SBI shows a larger bias than HMC results. But in the limit of large numbers of stars (few hundred) the accuracy and precision is superior compared to HMC.
-%
-To infer the global galactic parameters $\vec\Lambda$ of the stars as accurate as possible we take the mean of all inferred posteriors from $n_{\rm stars}=1000$ (Fig. \ref{fig:sbi}) resulting in $\alpha_{\rm IMF}=-2.292\pm0.003$ and $\log_{10}(\rm N_{Ia})=-2.883\pm0.005$ which deviates less than $0.4\%$ from the correct value.
-
-    % \textcolor{blue}{Number of stars is not limited. I used $1000$ stars with an inference time of around $5$ minutes, but accuracy doesn't improve much after $\sim200$ stars [see \ref{fig:N_star_analysis}]. Philcox inferred $200$ stars in $\sim40$h}
-    % \textcolor{red}{awesome! that gives us a nice metric to quote speedup. can we specify the architecture we used? I.e. which GPU on the clyster did you use?}
-    % \textcolor{blue}{For training the sbi net i used compgpu11 and it took around 3h. The inference of the stars i did on my laptop (macbook air with a M2 chip) in 5 minutes}
+% %We will test our analysis using mock observations drawn firstly from \texttt{Chempy} then from large-scale hydrodynamical simulations to ensure that we recover the correct parameters even for models with a completely different treatment of ISM physics. The methods presented here can naturally be extended to any fast and flexible GCE model, not just \texttt{Chempy}. 
 
 
 
-\section{Summary and conclusions}
-\label{sec: conclusion}
 
-\section{Conclusion}
-\vspace{-1em}
-Here we have explored innovative SBI methods to constrain important galactic parameters from the multi-dimensional observation of chemical abundances of stars. Our results show that SBI provides a super fast method, that beats previous inference algorithms by orders of magnitude, and delivers accurate and precise results. Hence, SBI enables faster and more accurate evaluation of observational data after a small initial computational investment of training a NPE ($\sim3$ h). Since evaluation of the NPE is only weakly dependent on the dimensionality of the input observations we expect almost perfect scaling to larger chemical abundances observations and even further improvements in the inference results with future high quality data from massive spectroscopic surveys. 
+
+% \section{Results}
+% \label{sec: Results}
+
+% % \begin{figure}
+% %     \centering
+% %     \includegraphics[width=0.9\linewidth]{figures/sbi_Nstar_comp.png}
+% %     \vspace{-.25cm}
+% %     \caption{Accuracy of inferred global galactic parameters $\alpha_{IMF}$ and $\log_{10}(N_{Ia})$ as a function of number of observed stars, comparing SBI (blue) to the inferred values using HMC (red) \cite{Philcox_2019} .}
+% %     \label{fig:N_star_analysis}
+% % \end{figure}
+
+% We train the NPE with a set of $n_{\rm stars}=10^6$ abundances for $n_{\rm elemets}=8$ with an assumed observational error of $0.05$ dex, generated with the \textit{neural network} emulator, with inputs sampled from the priors shown in Tab. \ref{tab:priors}. The sole purpose of the emulator is to highly reduce the computational time compared to full \texttt{CHEMPY} simulations. Training the NPE takes $~3$h on a single H100 GPU.
+
+% \paragraph{Mock Observational Data}
+% Our analysis uses mock observations drawn from the \textit{neural network} emulator with fixed values of the global galactic parameters $\alpha_{\rm IMF}=-2.3$ and $\log_{10}(N_{\rm Ia})=-2.89$ and the local parameters $\vec{\Theta}_i$ from Tab. \ref{tab:priors}, additionally drawing $T_i$ uniformly in the range $[2,12.8]$ Gyr, to minimize overlap with the neural network training birth-time limits when observational uncertainties are included. 
+% Each set of parameters is passed to the NN, producing eight true chemical abundances, to which we add a Gaussian error of $0.05$ dex.
+% The outcome of this mock data creation is a set of 1000 stars, emulating a real dataset.
+
+% \paragraph{Inference}
+
+% % \begin{figure}
+% % \vspace{-1.3cm}
+% %     \centering
+% %     \includegraphics[width=0.49\textwidth]{figures/posterior_2.png}
+% %     \vspace{-.25cm}
+% %     \caption{Sampled posteriors for global galactic parameters $\alpha_{\rm IMF}$ and $\log_{10}(\rm N_{Ia})$ of $1000$ stars.}
+% %     \label{fig:sbi}   
+% % \end{figure}
+
+
+% For each set of mock abundances we infer the posterior distribution for all six parameters $\{\vec\Lambda,\vec\Theta_i,T_i\}$ with the NPE by sampling 1000 times and fitting the posterior for each parameter. This takes around $0.3s$ for each star, making it extremely fast to infer the parameters of a large amount of stars. 
+% Our method takes around $5$ minutes to build a posterior for all six parameters for a dataset size of 1000 stars on a Macbook Air M2 chip, making it around $2400$x faster than current HMC methods \citep[cf.][who needs $40$h for 200 stars with HMC]{Philcox_2019}. Hence, shorter computing times make it feasible to use orders of magnitudes more observations.
+% %
+% Taking the means of multiple observed stars gives us higher accuracy and precision of the global galactic parameters $\vec\Lambda$ (Fig. \ref{fig:N_star_analysis}). However, we also see that in the limit of very few stars (less than $\sim10$) SBI shows a larger bias than HMC results. But in the limit of large numbers of stars (few hundred) the accuracy and precision is superior compared to HMC.
+% %
+% To infer the global galactic parameters $\vec\Lambda$ of the stars as accurate as possible we take the mean of all inferred posteriors from $n_{\rm stars}=1000$ (Fig. \ref{fig:sbi}) resulting in $\alpha_{\rm IMF}=-2.292\pm0.003$ and $\log_{10}(\rm N_{Ia})=-2.883\pm0.005$ which deviates less than $0.4\%$ from the correct value.
+
+%     % \textcolor{blue}{Number of stars is not limited. I used $1000$ stars with an inference time of around $5$ minutes, but accuracy doesn't improve much after $\sim200$ stars [see \ref{fig:N_star_analysis}]. Philcox inferred $200$ stars in $\sim40$h}
+%     % \textcolor{red}{awesome! that gives us a nice metric to quote speedup. can we specify the architecture we used? I.e. which GPU on the clyster did you use?}
+%     % \textcolor{blue}{For training the sbi net i used compgpu11 and it took around 3h. The inference of the stars i did on my laptop (macbook air with a M2 chip) in 5 minutes}
+
+
+
+% \section{Summary and conclusions}
+% \label{sec: conclusion}
+
+% Here we have explored innovative SBI methods to constrain important galactic parameters from the multi-dimensional observation of chemical abundances of stars. Our results show that SBI provides a super fast method, that beats previous inference algorithms by orders of magnitude, and delivers accurate and precise results. Hence, SBI enables faster and more accurate evaluation of observational data after a small initial computational investment of training a NPE ($\sim3$ h). Since evaluation of the NPE is only weakly dependent on the dimensionality of the input observations we expect almost perfect scaling to larger chemical abundances observations and even further improvements in the inference results with future high quality data from massive spectroscopic surveys. 
 
 
    \begin{enumerate}
