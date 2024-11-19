@@ -18,8 +18,18 @@
 \usepackage{graphicx}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \usepackage{txfonts}
+\usepackage[utf8]{inputenc} % allow utf-8 input
+\usepackage[T1]{fontenc}    % use 8-bit T1 fonts
 \usepackage{siunitx}
 \usepackage{hyperref}
+\usepackage{url}
+\usepackage{amsfonts}       % blackboard math symbols
+\usepackage{nicefrac}       % compact symbols for 1/2, etc.
+\usepackage{microtype}      % microtypography
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{booktabs}       % professional-quality tables
+\usepackage{tabularx}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %\usepackage[options]{hyperref}
 % To add links in your PDF file, use the package "hyperref"
@@ -254,14 +264,14 @@ Each set of parameters is passed to the NN, producing eight true chemical abunda
 The outcome of this mock data creation is a set of 1000 stars, emulating a real dataset.
 
 \paragraph{Inference}
-\begin{wrapfigure}[17]{r}{0.5\textwidth}
+\begin{figure}
 \vspace{-1.3cm}
     \centering
     \includegraphics[width=0.49\textwidth]{figures/posterior_2.png}
     \vspace{-.25cm}
     \caption{Sampled posteriors for global galactic parameters $\alpha_{\rm IMF}$ and $\log_{10}(\rm N_{Ia})$ of $1000$ stars.}
     \label{fig:sbi}   
-\end{wrapfigure}
+\end{figure}
 \enlargethispage{0\baselineskip}
 For each set of mock abundances we infer the posterior distribution for all six parameters $\{\vec\Lambda,\vec\Theta_i,T_i\}$ with the NPE by sampling 1000 times and fitting the posterior for each parameter. This takes around $0.3s$ for each star, making it extremely fast to infer the parameters of a large amount of stars. 
 Our method takes around $5$ minutes to build a posterior for all six parameters for a dataset size of 1000 stars on a Macbook Air M2 chip, making it around $2400$x faster than current HMC methods \citep[cf.][who needs $40$h for 200 stars with HMC]{Philcox_2019}. Hence, shorter computing times make it feasible to use orders of magnitudes more observations.
