@@ -129,14 +129,14 @@ Finally, we publicly release all of our code to reproduce the results of this ma
 In a nutshell, SBI \citep[e.g.][]{Cranmer2020,Papamakarios:2021,Gloeckler2024AllinoneSI} -- also called likelihood free inference within a  Bayesian inference framework --  works as follows: given an assumed generative model $\mathcal{M}$ of parameters $\theta$ (in our case a galactic chemical enrichment model) and a set of simulated observations of individual stellar abundances $\Vec{X}$ from that model, we train a mapping between the two to estimate the posterior distribution $p$($\theta|\Vec{X}$, $\mathcal{M}$) of the generative model parameters $\theta$ that reproduce the simulated observations $\Vec{X}$. Once this mapping is trained, we can apply it to real observations of stellar abundances $\Vec{X_R}$ to infer $p$($\theta|\Vec{X_R}$, $\mathcal{M}$)(see Fig. \ref{fig:flowchart}).
 For this we use a Neural Posterior Estimator (NPE) \cite{zeghal2022neuralposteriorestimationdifferentiable} which utilises the gradients of the generative model $\mathcal{M}$ with a Masked Autoregressive Flow model (MAF) \cite{papamakarios2018maskedautoregressiveflowdensity} containing 5 transformer blocks with 50 hidden features each.
 
-\begin{figure}[]
-    \centering
-    \vspace{-.25cm}
-    %\includegraphics[width=1\linewidth]{figures/sbi.png}
-    \vspace{-.7cm}
-    \caption{SBI flow chart. From a set of priors we simulate a sample of stellar abundances using \texttt{CHEMPY} which we use to train a Neural Density Estimator. With this we infer the posterior distribution of the model parameters from a single star. Repeating that for $N_{\rm stars}$ from the same galaxy gives an accurate fit of the IMF slope and Type Ia supernovae normalization.}
-    \label{fig:flowchart}
-\end{figure}
+% \begin{figure}[]
+%     \centering
+%     \vspace{-.25cm}
+%     \includegraphics[width=1\linewidth]{figures/sbi.png}
+%     \vspace{-.7cm}
+%     \caption{SBI flow chart. From a set of priors we simulate a sample of stellar abundances using \texttt{CHEMPY} which we use to train a Neural Density Estimator. With this we infer the posterior distribution of the model parameters from a single star. Repeating that for $N_{\rm stars}$ from the same galaxy gives an accurate fit of the IMF slope and Type Ia supernovae normalization.}
+%     \label{fig:flowchart}
+% \end{figure}
 
 
 \paragraph{Galactic chemical evolution models}
@@ -248,13 +248,13 @@ All our code to reproduce our results is publicly avaialble on \href{https://git
 \section{Results}
 \label{sec: Results}
 
-\begin{figure}[ht]
-    \centering
-    %\includegraphics[width=0.9\linewidth]{figures/sbi_Nstar_comp.png}
-    \vspace{-.25cm}
-    \caption{Accuracy of inferred global galactic parameters $\alpha_{IMF}$ and $\log_{10}(N_{Ia})$ as a function of number of observed stars, comparing SBI (blue) to the inferred values using HMC (red) \cite{Philcox_2019} .}
-    \label{fig:N_star_analysis}
-\end{figure}
+% \begin{figure}
+%     \centering
+%     \includegraphics[width=0.9\linewidth]{figures/sbi_Nstar_comp.png}
+%     \vspace{-.25cm}
+%     \caption{Accuracy of inferred global galactic parameters $\alpha_{IMF}$ and $\log_{10}(N_{Ia})$ as a function of number of observed stars, comparing SBI (blue) to the inferred values using HMC (red) \cite{Philcox_2019} .}
+%     \label{fig:N_star_analysis}
+% \end{figure}
 
 We train the NPE with a set of $n_{\rm stars}=10^6$ abundances for $n_{\rm elemets}=8$ with an assumed observational error of $0.05$ dex, generated with the \textit{neural network} emulator, with inputs sampled from the priors shown in Tab. \ref{tab:priors}. The sole purpose of the emulator is to highly reduce the computational time compared to full \texttt{CHEMPY} simulations. Training the NPE takes $~3$h on a single H100 GPU.
 
@@ -264,15 +264,17 @@ Each set of parameters is passed to the NN, producing eight true chemical abunda
 The outcome of this mock data creation is a set of 1000 stars, emulating a real dataset.
 
 \paragraph{Inference}
-\begin{figure}
-\vspace{-1.3cm}
-    \centering
-    %\includegraphics[width=0.49\textwidth]{figures/posterior_2.png}
-    \vspace{-.25cm}
-    \caption{Sampled posteriors for global galactic parameters $\alpha_{\rm IMF}$ and $\log_{10}(\rm N_{Ia})$ of $1000$ stars.}
-    \label{fig:sbi}   
-\end{figure}
-\enlargethispage{0\baselineskip}
+
+% \begin{figure}
+% \vspace{-1.3cm}
+%     \centering
+%     \includegraphics[width=0.49\textwidth]{figures/posterior_2.png}
+%     \vspace{-.25cm}
+%     \caption{Sampled posteriors for global galactic parameters $\alpha_{\rm IMF}$ and $\log_{10}(\rm N_{Ia})$ of $1000$ stars.}
+%     \label{fig:sbi}   
+% \end{figure}
+
+
 For each set of mock abundances we infer the posterior distribution for all six parameters $\{\vec\Lambda,\vec\Theta_i,T_i\}$ with the NPE by sampling 1000 times and fitting the posterior for each parameter. This takes around $0.3s$ for each star, making it extremely fast to infer the parameters of a large amount of stars. 
 Our method takes around $5$ minutes to build a posterior for all six parameters for a dataset size of 1000 stars on a Macbook Air M2 chip, making it around $2400$x faster than current HMC methods \citep[cf.][who needs $40$h for 200 stars with HMC]{Philcox_2019}. Hence, shorter computing times make it feasible to use orders of magnitudes more observations.
 %
