@@ -64,7 +64,7 @@
  Im Neuenheimer Feld 205, D-69120 Heidelberg
  \and
  Universität Heidelberg, Zentrum für Astronomie, Institut für Theoretische Astrophysik, Albert-Ueberle-Straße 2, D-69120 Heidelberg, Germany\\
- \email{tobias.buck@iwr.uni-heidelberg.de},  \email{b.guenes@stud.uni-heidelberg.de}
+ \email{tobias.buck@iwr.uni-heidelberg.de}
              }
 
    \date{Received Month, XXXX; accepted Month Day, XXXX}
@@ -95,33 +95,21 @@
 %-------------------------------------------------------------------
 \section{Introduction}
 
- Currently all cosmological simulations of galaxy formation \citep[e.g.][]{Sawala2016,Hopkins2018,Pillepich2018,Buck2020,Buck2020c,Font2020,Agertz2021} rely on a small set of galactic parameters to describe fundamental effects of stellar evolution, including the birth and death rates for various types of stars. Two crucial unknowns are the shape of the initial mass function (IMF), setting the mass distribution of stars born from the interstellar medium (ISM), and the rate of Type Ia supernovae (SN\,Ia) explosions.
-% %
-% The exact values of parameters sensitively affect chemical evolution tracks \citep{2005A&A...430..491R,2015MNRAS.449.1327V,2015MNRAS.451.3693M}, yet their observational constraints remain weak.
-% %
-% For example, a range of high-mass IMF slopes have been suggested \citep[Tab.\,7]{2016ApJ...824...82C}, with a steeper-than-canonical slope being suggested by a range of studies \citep[e.g.][]{2015ApJ...806..198W,2015MNRAS.447.3880R,2014ApJ...796...75C}. In addition, the IMF slope may itself be not a constant but rather a function of metallicity, introducing further complexity \citep[e.g.][]{2019MNRAS.482..118G,2019A&A...626A.124M}. Similarly, the choice of SN\,Ia delay-time-distribution and normalization plays a crucial role in the enrichment of the ISM \citep[e.g.][]{Buck2021} and is heavily debated \citep{2010ApJ...722.1879M,2012MNRAS.426.3282M,2015ApJ...810..137J}. 
+Currently all cosmological simulations of galaxy formation \citep[e.g.][]{Sawala2016,Hopkins2018,Pillepich2018,Buck2020,Buck2020c,Font2020,Agertz2021} rely on a small set of galactic parameters to describe fundamental effects of stellar evolution, including the birth and death rates for various types of stars or the production of heavy elements inside stars \citep[e.g.][]{Buck2021}. Two crucial unknowns are the shape of the initial mass function (IMF), setting the mass distribution of stars born from the interstellar medium (ISM), and the rate of Type Ia supernovae (SN\,Ia) explosions.
 
-% The goal of this work is to demonstrate how we can use modern machine learning techniques in tandem with a simple galactic chemical evolution (GCE) model in a Bayesian framework to infer global galactic parameters from a set of stars. Our work focuses on two key parameters; the high-mass slope of the \citet[Tab.\,1]{2003PASP..115..763C} IMF and the rate of SN\,Ia explosions per unit mass. We assume that both are constant across the galaxy and time. 
-% %
-% Our method will make use of simulation-based inference \citep[SBI, e.g.][]{Cranmer2020}. For high-dimensional posterior functions, SBI gives tremendous computational improvements over more traditional methods such as Markov Chain Monte Carlo (MCMC) or even Hamilton Monte Carlo (HMC) methods. 
+The exact values of parameters sensitively affect chemical evolution tracks \citep{2005A&A...430..491R,2015MNRAS.449.1327V,2015MNRAS.451.3693M}, yet their observational constraints remain weak.
+%
+For example, a range of high-mass IMF slopes have been suggested \citep[Tab.\,7]{2016ApJ...824...82C}, with a steeper-than-canonical slope being suggested by a range of studies \citep[e.g.][]{2015ApJ...806..198W,2015MNRAS.447.3880R,2014ApJ...796...75C}. In addition, the IMF slope may itself be not a constant but rather a function of metallicity, introducing further complexity \citep[e.g.][]{2019MNRAS.482..118G,2019A&A...626A.124M}. Similarly, the choice of SN\,Ia delay-time-distribution and normalization plays a crucial role in the enrichment of the ISM \citep[e.g.][]{Buck2021} and is heavily debated \citep{2010ApJ...722.1879M,2012MNRAS.426.3282M,2015ApJ...810..137J}. 
 
-% % \begin{figure*}
-% %    %\sidecaption
-% %    \subfigure[]{
-% %        \includegraphics[width=0.49\hsize, trim={0 0 0 0cm},clip]{figures/data/sample_galaxies_with_colorbar.pdf}
-% %    }
-% %    \subfigure[]{
-% %       \includegraphics[width=0.51\hsize, trim={0 0 2.3cm 0},clip]{figures/data/galaxy_grid_with_colorbar.pdf}
-% %    }
-% %    \caption{Galaxy images (upper panels) and image cubes (lower panels) in our dataset after the preprocessing steps as explained in Section \ref{sec:dataset_generation}. Each row contains one sample galaxy in three stellar maps - metallicity, age and mass from left to right in a) 2D and b) 3D. The images are normalised in the range $[0,1]$ and bright pixels correspond to high values. Note that in the stellar age maps, dark pixels correspond to young stars. The three dimensional plots have been created using the \emph{plotly} python package.}
-% %    \label{fig: sample_galaxies_after_prepocessing}
-% % \end{figure*}
+The goal of this work is to demonstrate how we can use modern machine learning techniques in tandem with a simple galactic chemical evolution (GCE) model in a Bayesian framework to infer global galactic parameters from a set of stars. Our work focuses on two key parameters; the high-mass slope of the \citet[Tab.\,1]{2003PASP..115..763C} IMF and the rate of SN\,Ia explosions per unit mass. We assume that both are constant across the galaxy and time. 
 
+Our method will make use of simulation-based inference \citep[SBI, e.g.][]{Cranmer2020}. For high-dimensional posterior functions, SBI gives tremendous computational improvements over more traditional methods such as Markov Chain Monte Carlo (MCMC) or even Hamilton Monte Carlo (HMC) methods. 
 
-% \textcolor{red}{To be changed...}
-% This paper is structured as follows. In Section \ref{sec:methods} we detail our methods. Especially, Section \ref{sec:dataset_generation} discusses the methodology used for generating the dataset for our analysis by extracting galaxy data from simulations. Section \ref{sec: methods_PCA_on_images} outlines the application of PCA to the image data and the resulting lower-dimensional image space (Section \ref{sec: dimensionality reduction method using pca}). Our resulting model is presented in Section \ref{sec: Results} and its accuracy thoroughly tested in Section \ref{sec: model evaluation, reconstruction error}. In Section \ref{sec: application} we highlight potential applications of our PCA galaxy model and conclude in Section \ref{sec: conclusion} with a summary and outlook of our results.
+\textcolor{red}{to be adapted...\\
+This paper is structured as follows. In Section \ref{sec:methods} we detail our methods. Especially, Section \ref{sec:dataset_generation} discusses the methodology used for generating the dataset for our analysis by extracting galaxy data from simulations. Section \ref{sec: methods_PCA_on_images} outlines the application of PCA to the image data and the resulting lower-dimensional image space (Section \ref{sec: dimensionality reduction method using pca}). Our resulting model is presented in Section \ref{sec: Results} and its accuracy thoroughly tested in Section \ref{sec: model evaluation, reconstruction error}. In Section \ref{sec: application} we highlight potential applications of our PCA galaxy model and conclude in Section \ref{sec: conclusion} with a summary and outlook of our results.}
 
-% Finally, we publicly release all of our code to reproduce the results of this manuscript via GitHub\footnote{URL: {\url{https://github.com/ufuk-cakir/MEGS}}}and refer to Appendix \ref{sec:appendix_code_and_data} and Fig. \ref{fig: hdf5_file_struc} for an overview of our code and file structure. Our final dataset is publicly available on Zenodo.\footnote{URL: \url{https://zenodo.org/record/8375344}}
+\textcolor{red}{to be adapted...\\
+Finally, we publicly release all of our code to reproduce the results of this manuscript via GitHub\footnote{URL: {\url{https://github.com/ufuk-cakir/MEGS}}}and refer to Appendix \ref{sec:appendix_code_and_data} and Fig. \ref{fig: hdf5_file_struc} for an overview of our code and file structure. Our final dataset is publicly available on Zenodo.\footnote{URL: \url{https://zenodo.org/record/8375344}}}
 
 % %--------------------------------------------------------------------
 % \section{Methods}
