@@ -112,34 +112,34 @@ This paper is structured as follows. In Section \ref{sec:methods} we detail our 
 Finally, we publicly release all of our code to reproduce the results of this manuscript via GitHub\footnote{URL: {\url{https://github.com/ufuk-cakir/MEGS}}}and refer to Appendix \ref{sec:appendix_code_and_data} and Fig. \ref{fig: hdf5_file_struc} for an overview of our code and file structure. Our final dataset is publicly available on Zenodo.\footnote{URL: \url{https://zenodo.org/record/8375344}}}
 
 % %--------------------------------------------------------------------
-% \section{Methods}
-% \label{sec:methods}
+\section{Methods}
+\label{sec:methods}
 
-% \paragraph{Simulation-based inference}
-% In a nutshell, SBI \citep[e.g.][]{Cranmer2020,Papamakarios:2021,Gloeckler2024AllinoneSI} -- also called likelihood free inference within a  Bayesian inference framework --  works as follows: given an assumed generative model $\mathcal{M}$ of parameters $\theta$ (in our case a galactic chemical enrichment model) and a set of simulated observations of individual stellar abundances $\Vec{X}$ from that model, we train a mapping between the two to estimate the posterior distribution $p$($\theta|\Vec{X}$, $\mathcal{M}$) of the generative model parameters $\theta$ that reproduce the simulated observations $\Vec{X}$. Once this mapping is trained, we can apply it to real observations of stellar abundances $\Vec{X_R}$ to infer $p$($\theta|\Vec{X_R}$, $\mathcal{M}$)(see Fig. \ref{fig:flowchart}).
-% For this we use a Neural Posterior Estimator (NPE) \cite{zeghal2022neuralposteriorestimationdifferentiable} which utilises the gradients of the generative model $\mathcal{M}$ with a Masked Autoregressive Flow model (MAF) \cite{papamakarios2018maskedautoregressiveflowdensity} containing 5 transformer blocks with 50 hidden features each.
+\paragraph{Simulation-based inference}
+In a nutshell, SBI \citep[e.g.][]{Cranmer2020,Papamakarios:2021,Gloeckler2024AllinoneSI} -- also called likelihood free inference within a  Bayesian inference framework --  works as follows: given an assumed generative model $\mathcal{M}$ of parameters $\theta$ (in our case a galactic chemical enrichment model) and a set of simulated observations of individual stellar abundances $\Vec{X}$ from that model, we train a mapping between the two to estimate the posterior distribution $p$($\theta|\Vec{X}$, $\mathcal{M}$) of the generative model parameters $\theta$ that reproduce the simulated observations $\Vec{X}$. Once this mapping is trained, we can apply it to real observations of stellar abundances $\Vec{X_R}$ to infer $p$($\theta|\Vec{X_R}$, $\mathcal{M}$)(see Fig. \ref{fig:flowchart}).
+For this we use a Neural Posterior Estimator (NPE) \cite{zeghal2022neuralposteriorestimationdifferentiable} which utilises the gradients of the generative model $\mathcal{M}$ with a Masked Autoregressive Flow model (MAF) \cite{papamakarios2018maskedautoregressiveflowdensity} containing 5 transformer blocks with 50 hidden features each.
 
-% % \begin{figure}[]
-% %     \centering
-% %     \vspace{-.25cm}
-% %     \includegraphics[width=1\linewidth]{figures/sbi.png}
-% %     \vspace{-.7cm}
-% %     \caption{SBI flow chart. From a set of priors we simulate a sample of stellar abundances using \texttt{CHEMPY} which we use to train a Neural Density Estimator. With this we infer the posterior distribution of the model parameters from a single star. Repeating that for $N_{\rm stars}$ from the same galaxy gives an accurate fit of the IMF slope and Type Ia supernovae normalization.}
-% %     \label{fig:flowchart}
-% % \end{figure}
+\begin{figure}[]
+     \centering
+     \vspace{-.25cm}
+     \includegraphics[width=1\linewidth]{figures/sbi_overview.png}
+     \vspace{-.7cm}
+     \caption{SBI flow chart. From a set of priors we simulate a sample of stellar abundances using \texttt{CHEMPY} which we use to train a Neural Density Estimator. With this we infer the posterior distribution of the model parameters from a single star. Repeating that for $N_{\rm stars}$ from the same galaxy gives an accurate fit of the IMF slope and Type Ia supernovae normalization.}
+     \label{fig:flowchart}
+\end{figure}
 
 
-% \paragraph{Galactic chemical evolution models}
-% Our simulator is based on the \texttt{CHEMPYScoring} module \citep{Philcox_2018} publicly available as the \texttt{CHEMPYMulti} \citep{Philcox_2019}\footnote{\href{https://github.com/oliverphilcox/ChempyMulti}{github.com/oliverphilcox/ChempyMulti}} package a further development of the original \texttt{CHEMPY} model \citep{Rybizki_2017}. \texttt{CHEMPY} is a simple Galactic Chemical Evolution (GCE) model that is able to predict stellar chemical abundances throughout cosmic time by using published nucleosynthetic yield tables for three key processes (SN\,Ia and SN\,II explosions and AGB stellar feedback) and a small number of parameters controlling simple stellar populations (SSPs) and ISM physics. We refer to the initial \texttt{CHEMPY} paper \citep{Rybizki_2017} for the details of the model.
+\paragraph{Galactic chemical evolution models}
+Our simulator is based on the \texttt{CHEMPYScoring} module \citep{Philcox_2018} publicly available as the \texttt{CHEMPYMulti} \citep{Philcox_2019}\footnote{\href{https://github.com/oliverphilcox/ChempyMulti}{github.com/oliverphilcox/ChempyMulti}} package a further development of the original \texttt{CHEMPY} model \citep{Rybizki_2017}. \texttt{CHEMPY} is a simple Galactic Chemical Evolution (GCE) model that is able to predict stellar chemical abundances throughout cosmic time by using published nucleosynthetic yield tables for three key processes (SN\,Ia and SN\,II explosions and AGB stellar feedback) and a small number of parameters controlling simple stellar populations (SSPs) and ISM physics. We refer to the initial \texttt{CHEMPY} paper \citep{Rybizki_2017} for the details of the model.
 % %
-% In this work, we allow six \texttt{CHEMPY} parameters to vary freely (see also Tab.\,\ref{tab:priors}). These can be categorized into three groups:
-% \vspace{-1em}
+In this work, we allow six \texttt{CHEMPY} parameters to vary freely (see also Tab.\,\ref{tab:priors}). These can be categorized into three groups:
+\vspace{-1em}
 % %\setlist[1]{itemsep=-4pt}
-% \begin{enumerate}
-%     \item $\vec\Lambda$: \textbf{Global Galactic Parameters} describe SSP physics and comprise the high-mass \citet{2003PASP..115..763C} IMF slope, $\alpha_\mathrm{IMF}$, and (logarithmic) Type Ia SN normalization, $\log_{10}(N_\mathrm{Ia})$. We treat these as star-independent and assume them to be constant across galactic environments and cosmic time. \footnote{Whilst $\log_{10}(N_\mathrm{Ia})$ is constant with respect to time by definition, it being simply a normalization constant, there is some evidence for $\alpha_\mathrm{IMF}$ varying as a function of time or metallicity \citep{2014ApJ...796...75C,2016MNRAS.462.2832C,2019MNRAS.482..118G,2019A&A...626A.124M}.} We adopt the same broad priors as \citep{Philcox_2019} for these variables (see also Tab.\ref{tab:priors}).  
-%     \item $\{\vec\Theta_i\}$: \textbf{Local Galactic Parameters} describe the local physics of the ISM and are hence specific to each stellar environment, indexed by $i$. As defined in \citep{Rybizki_2017}, these include the star-formation efficiency (SFE), $\log_{10}(\text{SFE})$, $\log_{10}(\mathrm{SFR}_\mathrm{peak})$, which controls the peak of the star formation rate (SFR), and the fraction of stellar outflow that is fed to the gas reservoir, $\mathrm{x}_\mathrm{out}$. We adopt broad priors for all parameters and, as in \citep{Philcox_2019}, fix the SN\,Ia delay-time distribution, $\log_{10}(\tau_{\rm Ia})$, to $\log_{10}(\tau_{\rm Ia})=-0.80$ \citep[see also][]{Philcox_2018}.
-%     \item $\{T_i\}$: \textbf{Stellar Birth-Times}. Time in Gyr at which a given star is formed from the ISM. We assume that its proto-stellar abundances match the local ISM abundances at $T_i$.
-% \end{enumerate}
+\begin{enumerate}
+     \item $\vec\Lambda$: \textbf{Global Galactic Parameters} describe SSP physics and comprise the high-mass \citet{2003PASP..115..763C} IMF slope, $\alpha_\mathrm{IMF}$, and (logarithmic) Type Ia SN normalization, $\log_{10}(N_\mathrm{Ia})$. We treat these as star-independent and assume them to be constant across galactic environments and cosmic time. \footnote{Whilst $\log_{10}(N_\mathrm{Ia})$ is constant with respect to time by definition, it being simply a normalization constant, there is some evidence for $\alpha_\mathrm{IMF}$ varying as a function of time or metallicity \citep{2014ApJ...796...75C,2016MNRAS.462.2832C,2019MNRAS.482..118G,2019A&A...626A.124M}.} We adopt the same broad priors as \citep{Philcox_2019} for these variables (see also Tab.\ref{tab:priors}).  
+     \item $\{\vec\Theta_i\}$: \textbf{Local Galactic Parameters} describe the local physics of the ISM and are hence specific to each stellar environment, indexed by $i$. As defined in \citep{Rybizki_2017}, these include the star-formation efficiency (SFE), $\log_{10}(\text{SFE})$, $\log_{10}(\mathrm{SFR}_\mathrm{peak})$, which controls the peak of the star formation rate (SFR), and the fraction of stellar outflow that is fed to the gas reservoir, $\mathrm{x}_\mathrm{out}$. We adopt broad priors for all parameters and, as in \citep{Philcox_2019}, fix the SN\,Ia delay-time distribution, $\log_{10}(\tau_{\rm Ia})$, to $\log_{10}(\tau_{\rm Ia})=-0.80$ \citep[see also][]{Philcox_2018}.
+     \item $\{T_i\}$: \textbf{Stellar Birth-Times}. Time in Gyr at which a given star is formed from the ISM. We assume that its proto-stellar abundances match the local ISM abundances at $T_i$.
+\end{enumerate}
 
 % %The separability of local (ISM) parameters and global (SSP) parameters is motivated by recent observational evidence: \citet{2019arXiv190710606N} find that the elemental abundances of red clump stars belonging to the thin disk can be predicted almost perfectly from their age and [Fe/H] abundance. This implies that the key chemical evolution parameters affecting the elemental abundances (SSP parameters and yield tables) are held fixed, whilst ISM parameters vary smoothly over the thin disk (which offsets the metallicity for different galactocentric radii). Similarly \cite{2019ApJ...874..102W} find that ISM parameter variations are deprojected in the [X/Mg] vs [Mg/H] plane (their Fig.\,17) and that abundance tracks in that space are independent of the stellar sample's spatial position within the Galaxy (their Fig.\,3).
 
