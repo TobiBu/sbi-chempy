@@ -5,3 +5,4 @@ dependencies:
   - conda-forge::scipy=1.14.1
   - pip:
       - matplotlib==3.9.2
+      - git+https://github.com/jan-rybizki/Chempy.git
