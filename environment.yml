@@ -3,4 +3,4 @@ dependencies:
   - conda-forge::pip=24.0
   - conda-forge::python=3.13.0
   - pip:
-      - matplotlib==3.7.1
+      - matplotlib==3.9.2
