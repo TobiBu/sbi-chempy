@@ -2,5 +2,6 @@ dependencies:
   - conda-forge::numpy=2.1.2
   - conda-forge::pip=24.0
   - conda-forge::python=3.13.0
+  - conda-forge::scipy=1.14.1
   - pip:
       - matplotlib==3.9.2
