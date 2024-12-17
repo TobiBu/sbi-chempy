@@ -25,14 +25,21 @@ dag:
 
 # Externally-hosted datasets, e.g. on Zenodo
 datasets:
-  # 10.5281/zenodo.6468327:
-  #   contents:
-  #     TOI640b.json: src/data/TOI640b.json
+  10.5281/zenodo.14507134:
+     contents:
+       pytorch_state_dict.pt:  src/data/pytorch_state_dict.pt
+       posterior_NPE_C.pickle: src/data/posterior_NPE_C.pickle
+  10.5281/zenodo.14507221:
+      contents:
+        chempy_TNG_train_data.npz: src/data/chempy_data/chempy_TNG_train_data.npz
+        chempy_TNG_val_data.npz:   src/data/chempy_data/chempy_TNG_val_data.npz
+        chempy_alternative_yields.npz: src/data/chempy_data/chempy_alternative_yields.npz
 
 # Custom file dependencies
 dependencies:
-  # src/scripts/my_script.py:
-  #   - src/data/dataset_for_my_script.dat
+  src/scripts/train_torch_chempy.py:
+     - src/data/chempy_data/chempy_TNG_train_data.npz
+     - src/data/chempy_data/chempy_TNG_val_data.npz
   # src/tex/ms.tex:
   #   - src/tex/stylesheet.tex
 
