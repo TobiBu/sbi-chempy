@@ -16,15 +16,6 @@ import os
 re_train = False
 
 # ----- Load the data ---------------------------------------------------------------------------------------------------------------------------------------------
-# --- Load in training data ---
-path_training = paths.data / 'chempy_data/chempy_TNG_train_data.npz'
-training_data = np.load(path_training, mmap_mode='r')
-
-elements = training_data['elements']
-train_x = training_data['params']
-train_y = training_data['abundances']
-
-
 # ---  Load in the validation data ---
 path_test = paths.data / 'chempy_data/chempy_TNG_val_data.npz'
 val_data = np.load(path_test, mmap_mode='r')
@@ -48,13 +39,9 @@ def clean_data(x, y):
 
     return x, y
 
-
-train_x, train_y = clean_data(train_x, train_y)
 val_x, val_y     = clean_data(val_x, val_y)
 
 # convert to torch tensors
-train_x = torch.tensor(train_x, dtype=torch.float32)
-train_y = torch.tensor(train_y, dtype=torch.float32)
 val_x = torch.tensor(val_x, dtype=torch.float32)
 val_y = torch.tensor(val_y, dtype=torch.float32)
 
@@ -88,14 +75,27 @@ model = Model_Torch()
 optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
 loss_fn = torch.nn.MSELoss()
 
-# shuffle the data
-index = np.arange(train_x.shape[0])
-np.random.shuffle(index)
-train_x = train_x[index]
-train_y = train_y[index]
-
 # --- Train the neural network ---
 if re_train:
+    # --- Load in training data ---
+    path_training = paths.data / 'chempy_data/chempy_TNG_train_data.npz'
+    training_data = np.load(path_training, mmap_mode='r')
+
+    elements = training_data['elements']
+    train_x = training_data['params']
+    train_y = training_data['abundances']
+
+    train_x, train_y = clean_data(train_x, train_y)
+
+    train_x = torch.tensor(train_x, dtype=torch.float32)
+    train_y = torch.tensor(train_y, dtype=torch.float32)
+
+    # shuffle the data
+    index = np.arange(train_x.shape[0])
+    np.random.shuffle(index)
+    train_x = train_x[index]
+    train_y = train_y[index]
+
     print("Training the model")
     epochs = 20
     batch_size = 64
@@ -187,3 +187,6 @@ else:
 
     plt.savefig(paths.figures / "ape_NN.png")
     plt.clf()
+
+    with open(paths.output / 'ape_NN.txt', 'w') as f:
+        f.write(f'${p2:.1f}^{{+{p3-p2:.1f}}}_{{-{p2-p1:.1f}}}\,\%$')

@@ -40,6 +40,8 @@ dependencies:
   src/scripts/train_torch_chempy.py:
      - src/data/chempy_data/chempy_TNG_train_data.npz
      - src/data/chempy_data/chempy_TNG_val_data.npz
+     - src/data/pytorch_state_dict.pt
+     
   # src/tex/ms.tex:
   #   - src/tex/stylesheet.tex
 
