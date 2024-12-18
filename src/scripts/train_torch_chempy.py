@@ -17,7 +17,7 @@ re_train = False
 
 # ----- Load the data ---------------------------------------------------------------------------------------------------------------------------------------------
 # --- Load in training data ---
-path_training = paths.data / '/chempy_data/chempy_TNG_train_data.npz'
+path_training = paths.data / 'chempy_data/chempy_TNG_train_data.npz'
 training_data = np.load(path_training, mmap_mode='r')
 
 elements = training_data['elements']
@@ -26,7 +26,7 @@ train_y = training_data['abundances']
 
 
 # ---  Load in the validation data ---
-path_test = paths.data / '/chempy_data/chempy_TNG_val_data.npz'
+path_test = paths.data / 'chempy_data/chempy_TNG_val_data.npz'
 val_data = np.load(path_test, mmap_mode='r')
 
 val_x = val_data['params']
