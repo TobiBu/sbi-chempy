@@ -3,7 +3,7 @@ dependencies:
   - conda-forge::pip=24.0
   - conda-forge::python=3.13.0
   - conda-forge::scipy=1.14.1
-  - conda pytorch::pytorch -c pytorch
+  - pytorch::pytorch -c pytorch
   - pip:
       - matplotlib==3.9.2
       - git+https://github.com/jan-rybizki/Chempy.git
