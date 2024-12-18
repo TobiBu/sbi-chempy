@@ -17,7 +17,7 @@ re_train = False
 
 # ----- Load the data ---------------------------------------------------------------------------------------------------------------------------------------------
 # --- Load in training data ---
-path_training = paths.data + '/chempy_data/chempy_TNG_train_data.npz'
+path_training = paths.data / '/chempy_data/chempy_TNG_train_data.npz'
 training_data = np.load(path_training, mmap_mode='r')
 
 elements = training_data['elements']
@@ -26,7 +26,7 @@ train_y = training_data['abundances']
 
 
 # ---  Load in the validation data ---
-path_test = paths.data + '/chempy_data/chempy_TNG_val_data.npz'
+path_test = paths.data / '/chempy_data/chempy_TNG_val_data.npz'
 val_data = np.load(path_test, mmap_mode='r')
 
 val_x = val_data['params']
@@ -136,7 +136,7 @@ if re_train:
     print(f'Training finished | Total time: {round(end_epoch - start, 1)}s')
 
     # ----- Save the model --------------------------------------------------------------------------------------------------------------------------------------------
-    torch.save(model.state_dict(), paths.data + 'pytorch_state_dict.pt')
+    torch.save(model.state_dict(), paths.data / 'pytorch_state_dict.pt')
     print("Model trained and saved")
 
 
@@ -150,11 +150,11 @@ if re_train:
     plt.title('Training and Validation Loss', fontsize=20)
     plt.legend()
     plt.tight_layout()
-    plt.savefig(paths.figures + "loss_NN_simulator.png")
+    plt.savefig(paths.figures / "loss_NN_simulator.png")
     plt.clf()
 
 else:
-    model.load_state_dict(torch.load(paths.data + 'pytorch_state_dict.pt'))
+    model.load_state_dict(torch.load(paths.data / 'pytorch_state_dict.pt'))
     print("Model loaded")
 
     # ----- Calculate the Absolute Percantage Error -----
@@ -185,5 +185,5 @@ else:
     plt.xlim(0, 30)
     fig.tight_layout()
 
-    plt.savefig(paths.figures + "ape_NN.png")
+    plt.savefig(paths.figures / "ape_NN.png")
     plt.clf()
