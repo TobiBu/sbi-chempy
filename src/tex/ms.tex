@@ -280,6 +280,7 @@ We train the NPE with a set of $n_{\rm stars}=10^6$ abundances for $n_{\rm eleme
 \paragraph{Mock Observational Data}
 Our analysis uses mock observations drawn from the \textit{neural network} emulator with fixed values of the global galactic parameters $\alpha_{\rm IMF}=-2.3$ and $\log_{10}(N_{\rm Ia})=-2.89$ and the local parameters $\vec{\Theta}_i$ from Tab. \ref{tab:priors}, additionally drawing $T_i$ uniformly in the range $[2,12.8]$ Gyr, to minimize overlap with the neural network training birth-time limits when observational uncertainties are included. 
 Each set of parameters is passed to the NN, producing eight true chemical abundances, to which we add a Gaussian error of $0.05$ dex.
+\textcolor{red}{here goes the assumption that stars are iid since each stars is produced by a single call to chempy. However, real physics might correlate stars abundacnes by star formation histories and cumulative enrichment...}
 The outcome of this mock data creation is a set of 1000 stars \textcolor{red}{we vary this number, right?}, emulating a real dataset.
 
 \paragraph{Inference}
