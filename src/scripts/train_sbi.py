@@ -48,7 +48,7 @@ class Model_Torch(torch.nn.Module):
         x = self.l3(x)
         return x
 
-model = Model_Torch()
+#model = Model_Torch()
 
 # --- Load the weights ---
 model.load_state_dict(torch.load(paths.data / 'pytorch_state_dict.pt'))
