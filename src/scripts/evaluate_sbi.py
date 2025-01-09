@@ -24,7 +24,7 @@ combined_priors = utils.MultipleIndependent(
     [Uniform(torch.tensor([2.0]), torch.tensor([12.8]))],
     validate_args=False)
 
-# ----- Save the posterior -------------------------------------------------------------------------------------------------------------------------------------------
+# ----- load the posterior -------------------------------------------------------------------------------------------------------------------------------------------
 with open(paths.data / f'posterior_{name}.pickle', 'rb') as f:
     posterior = pickle.load(f)
 

@@ -8,8 +8,16 @@ rule compute_APE:
 
 rule compute_posterior_APE:
     input:
-        "src/data/pytorch_state_dict.pt", "src/data/chempy_data/chempy_TNG_val_data.npz"
+        "src/data/pytorch_state_dict.pt", "src/data/chempy_data/chempy_TNG_val_data.npz", "src/data/posterior_NPE_C.pickle"
     output:
-        "src/tex/output/global_posterior_APE_NPE_C.txt", "src/tex/output/posterior_APE.txt", "src/data/posterior_NPE_C.pickle"
+        "src/tex/output/global_posterior_APE_NPE_C.txt", "src/tex/output/posterior_APE.txt"
+    script:
+        "src/scripts/evaluate_posterior.py"
+
+rule train_posterior:
+    input:
+        "src/data/pytorch_state_dict.pt"
+    output:
+        "src/data/posterior_NPE_C.pickle"
     script:
         "src/scripts/train_sbi.py"
