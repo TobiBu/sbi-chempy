@@ -18,8 +18,6 @@ import time as t
 import pickle
 from tqdm import tqdm
 
-from torch_chempy_model import model
-
 # ----- Config -------------------------------------------------------------------------------------------------------------------------------------------
 
 name = "NPE_C"
