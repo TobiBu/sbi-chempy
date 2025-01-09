@@ -329,6 +329,7 @@ def ape_plot(ape, labels_in, save_path):
 
     for i in range(ape.shape[1]):
         ax_hist.hist(ape[:,i], bins=25, density=True, range=(0, 100), label=labels_in[i], color=colors[i], alpha=0.5)
+        median = np.percentile(ape[:,i], 50)
         ax_hist.axvline(median, color=colors[i], linestyle='--')
             
     ax_hist.set_xlabel('Error (%)', fontsize=15)
