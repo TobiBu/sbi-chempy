@@ -11,8 +11,6 @@ from sbi.inference import simulate_for_sbi, NPE_C
 from sbi.neural_nets import posterior_nn
 
 import torch
-from torch.distributions.normal import Normal
-from torch.distributions.uniform import Uniform
 
 import time as t
 import pickle

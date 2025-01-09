@@ -136,7 +136,7 @@ if re_train:
     plt.title('Training and Validation Loss', fontsize=20)
     plt.legend()
     plt.tight_layout()
-    plt.savefig(paths.figures / "loss_NN_simulator.png")
+    plt.savefig(paths.figures / "loss_NN_simulator.pdf")
     plt.clf()
 
 else:
@@ -171,7 +171,7 @@ else:
     plt.xlim(0, 30)
     fig.tight_layout()
 
-    plt.savefig(paths.figures / "ape_NN.png")
+    plt.savefig(paths.figures / "ape_NN.pdf")
     plt.clf()
 
     with open(paths.output / 'ape_NN.txt', 'w') as f:

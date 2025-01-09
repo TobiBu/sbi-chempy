@@ -1,7 +1,12 @@
 import paths
+import pickle
+import torch 
+from torch.distributions.normal import Normal
+from torch.distributions.uniform import Uniform
+
+import sbi.utils as utils
 from sbi.analysis.plot import sbc_rank_plot
 from sbi.diagnostics import plot_tarp, check_tarp, run_sbc, run_tarp
-import pickle
 
 from Chempy.parameter import ModelParameters
 
