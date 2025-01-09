@@ -45,7 +45,10 @@ dependencies:
       - src/data/chempy_data/chempy_TNG_train_data.npz
       - src/data/chempy_data/chempy_TNG_val_data.npz
       - src/data/pytorch_state_dict.pt
-
+  src/scripts/evaluate_posterior.py:
+      - src/data/chempy_data/chempy_TNG_val_data.npz
+      - src/data/posterior_NPE_C.pickle
+      
   # src/tex/ms.tex:
   #   - src/tex/stylesheet.tex
 

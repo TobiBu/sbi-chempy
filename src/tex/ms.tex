@@ -258,6 +258,7 @@ We evaluate the accuracy of the NPE using $5\times10^4$ validation data points f
      \script{evaluate_posterior.py}
 \end{figure}
 
+
 For each individual observation consisting of the abundance measurements of a single star we sample the posterior estimate with 1000 data points (see Fig.~\ref{fig:posterior_samples} in the appendix). We then compare the posterior mean to the ground truth value. For a single star observation, our NPE has an APE of \variable{output/posterior_APE.txt} when looking at all 6 parameters of interest. If we restrict ourselves to only the global two parameters $\vec\Lambda = \{\alpha_\mathrm{IMF},\log_{10}(N_\mathrm{Ia})\}$ our NPE achieves an APE of \variable{output/global_posterior_APE_NPE_C.txt} as we show in Fig.~\ref{fig:posterior_APE}. Looking at Fig.~\ref{fig:posterior_APE} we find that for an individual star the accuracy of the NPE is not particularly high. However, for the global parameters $\vec\Lambda = \{\alpha_\mathrm{IMF},\log_{10}(N_\mathrm{Ia})\}$ we can boost the accuracy by combining the inference for many stars of the same galaxy.
 
 
