@@ -333,7 +333,7 @@ def ape_plot(ape, labels_in, save_path):
     print(f"Total : {median:.1f}% + {u_quantile-median:.1f} - {median-l_quantile:.1f}")
     print("")
 
-    with open(paths.output / f'global_posterior_APE_{name}.txt', 'w') as f:
+    with open(paths.output / f'global_posterior_APE.txt', 'w') as f:
         f.write(f"${median:.1f} + {u_quantile-median:.1f} - {median-l_quantile:.1f}\,\%$%")
 
     for i in range(ape.shape[1]):
