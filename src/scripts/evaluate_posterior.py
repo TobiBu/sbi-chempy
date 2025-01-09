@@ -54,6 +54,8 @@ val_x = torch.tensor(val_x, dtype=torch.float32)
 abundances =  torch.cat([val_x[:,:2], val_x[:,3:]], dim=1)
 
 # add noise to data to simulate observational errors
+pc_ab = 5 # percentage error in abundance
+
 x_err = np.ones_like(abundances)*float(pc_ab)/100.
 abundances = norm.rvs(loc=abundances,scale=x_err)
 abundances = torch.tensor(abundances).float()
