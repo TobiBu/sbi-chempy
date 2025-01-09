@@ -10,7 +10,6 @@ from torch.distributions.normal import Normal
 from torch.distributions.uniform import Uniform
 
 import time as t
-from torch_chempy_model import model
 
 # ---  You want to retrain? ---
 re_train = False
@@ -51,8 +50,26 @@ a = ModelParameters()
 labels = [a.to_optimize[i] for i in range(len(a.to_optimize))] + ['time']
 priors = torch.tensor([[a.priors[opt][0], a.priors[opt][1]] for opt in a.to_optimize])
 
-# ----- Train the model -------------------------------------------------------------------------------------------------------------------------------------------
 
+# ----- Define the model ------------------------------------------------------------------------------------------------------------------------------------------
+
+class Model_Torch(torch.nn.Module):
+    def __init__(self):
+        super(Model_Torch, self).__init__()
+        self.l1 = torch.nn.Linear(val_x.shape[1], 100)
+        self.l2 = torch.nn.Linear(100, 40)
+        self.l3 = torch.nn.Linear(40, val_y.shape[1])
+
+    def forward(self, x):
+        x = torch.tanh(self.l1(x))
+        x = torch.tanh(self.l2(x))
+        x = self.l3(x)
+        return x
+
+model = Model_Torch()
+
+
+# ----- Train the model -------------------------------------------------------------------------------------------------------------------------------------------
 
 optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
 loss_fn = torch.nn.MSELoss()

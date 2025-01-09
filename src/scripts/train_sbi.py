@@ -36,6 +36,21 @@ combined_priors = utils.MultipleIndependent(
     [Uniform(torch.tensor([2.0]), torch.tensor([12.8]))],
     validate_args=False)
 
+# --- Set up the model ---
+class Model_Torch(torch.nn.Module):
+    def __init__(self):
+        super(Model_Torch, self).__init__()
+        self.l1 = torch.nn.Linear(len(labels_in), 100)
+        self.l2 = torch.nn.Linear(100, 40)
+        self.l3 = torch.nn.Linear(40, len(labels_out))
+
+    def forward(self, x):
+        x = torch.tanh(self.l1(x))
+        x = torch.tanh(self.l2(x))
+        x = self.l3(x)
+        return x
+
+model = Model_Torch()
 
 # --- Load the weights ---
 model.load_state_dict(torch.load(paths.data / 'pytorch_state_dict.pt'))
