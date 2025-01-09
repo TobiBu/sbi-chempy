@@ -255,7 +255,7 @@ We evaluate the accuracy of the NPE using $5\times10^4$ validation data points f
      \vspace{-.5cm}
      \caption{Absolute percentage error of the neural posterior density estimate for a single star. Different coloured histograms show the full error distribution for all 6 parameters of interest with the median values highlighted by the vertical dashed lines. The box plots show again the first and third quartiles with the median represented by a vertical line and the whiskers extending from the box to the farthest data point lying within $1.5\times$ the inter-quartile range from the box. The global parameters of main interest for this work are shown by the light blue and red histogram.}
      \label{fig:ape_NN}
-     \script{train_sbi.py}
+     \script{evaluate_posterior.py}
 \end{figure}
 
 For each individual observation consisting of the abundance measurements of a single star we sample the posterior estimate with 1000 data points (see Fig.~\ref{fig:posterior_samples} in the appendix). We then compare the posterior mean to the ground truth value. For a single star observation, our NPE has an APE of \variable{output/posterior_APE.txt} when looking at all 6 parameters of interest. If we restrict ourselves to only the global two parameters $\vec\Lambda = \{\alpha_\mathrm{IMF},\log_{10}(N_\mathrm{Ia})\}$ our NPE achieves an APE of \variable{output/global_posterior_APE_NPE_C.txt} as we show in Fig.~\ref{fig:posterior_APE}. Looking at Fig.~\ref{fig:posterior_APE} we find that for an individual star the accuracy of the NPE is not particularly high. However, for the global parameters $\vec\Lambda = \{\alpha_\mathrm{IMF},\log_{10}(N_\mathrm{Ia})\}$ we can boost the accuracy by combining the inference for many stars of the same galaxy.
