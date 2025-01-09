@@ -50,6 +50,8 @@ class Model_Torch(torch.nn.Module):
 
 model = Model_Torch()
 
+print(model)
+
 # --- Load the weights ---
 model.load_state_dict(torch.load(paths.data / 'pytorch_state_dict.pt'))
 model.eval()
