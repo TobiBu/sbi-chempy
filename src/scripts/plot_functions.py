@@ -326,27 +326,10 @@ def n_stars_plot_comp(x1, x2, x_true, dat, no_stars= np.array([1, 10, 100, 500, 
 def ape_plot(ape, labels_in, save_path):
     fig, (ax_box, ax_hist) = plt.subplots(2, sharex=True, gridspec_kw={"height_ratios": (.20, .80)})
     colors = ["tomato", "skyblue", "olive", "gold", "teal", "orchid"]
-    
-    print("\nAPE of the Posterior:")
-    print("Median + upper quantile - lower quantile")
-    l_quantile, median, u_quantile = np.percentile(ape, [25, 50, 75])
-    print(f"Total : {median:.1f}% + {u_quantile-median:.1f} - {median-l_quantile:.1f}")
-    print("")
-
-    with open(paths.output / f'global_posterior_APE.txt', 'w') as f:
-        f.write(f"${median:.1f} + {u_quantile-median:.1f} - {median-l_quantile:.1f}\,\%$%")
 
     for i in range(ape.shape[1]):
-        l_quantile, median, u_quantile = np.percentile(ape[:,i], [25, 50, 75])
         ax_hist.hist(ape[:,i], bins=25, density=True, range=(0, 100), label=labels_in[i], color=colors[i], alpha=0.5)
-        median = np.percentile(ape[:,i], 50)
         ax_hist.axvline(median, color=colors[i], linestyle='--')
-        print(labels_in[i] + f" : {median:.1f}% + {u_quantile-median:.1f} - {median-l_quantile:.1f}")
-        if i in [0,1]:
-            with open(paths.output / f'posterior_APE.txt', 'a') as f:
-                f.write(f"${median:.1f} + {u_quantile-median:.1f} - {median-l_quantile:.1f}\,\%$%")
-
-    print()
             
     ax_hist.set_xlabel('Error (%)', fontsize=15)
     ax_hist.set_ylabel('Density', fontsize=15)

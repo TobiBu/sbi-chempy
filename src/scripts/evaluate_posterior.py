@@ -69,5 +69,19 @@ for index in tqdm(range(len(abundances))):
 ape = torch.abs((val_theta - theta_hat) / val_theta) * 100
 torch.save(ape, paths.data / f'ape_posterior_{name}.pt')
 
-save_path = paths.figures / f'ape_posterior_{name}.pdf'
-ape_plot(ape, labels_in, save_path)
+print("\nAPE of the Posterior:")
+print("Median + upper quantile - lower quantile")
+l_quantile, median, u_quantile = np.percentile(ape, [25, 50, 75])
+print(f"Total : {median:.1f}% + {u_quantile-median:.1f} - {median-l_quantile:.1f}")
+print("")
+
+with open(paths.output / f'global_posterior_APE.txt', 'w') as f:
+    f.write(f"${median:.1f} + {u_quantile-median:.1f} - {median-l_quantile:.1f}\,\%$%")
+
+for i in range(ape.shape[1]):
+    l_quantile, median, u_quantile = np.percentile(ape[:,i], [25, 50, 75])
+    median = np.percentile(ape[:,i], 50)
+    print(labels_in[i] + f" : {median:.1f}% + {u_quantile-median:.1f} - {median-l_quantile:.1f}")
+    if i in [0,1]:
+        with open(paths.output / f'posterior_APE.txt', 'a') as f:
+            f.write(f"${median:.1f} + {u_quantile-median:.1f} - {median-l_quantile:.1f}\,\%$%")
