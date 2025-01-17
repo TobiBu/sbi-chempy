@@ -75,7 +75,7 @@ f, ax = sbc_rank_plot(
 )
 
 
-f.suptitle("SBC rank plot", fontsize=17)
+f.suptitle("SBC rank plot", fontsize=13)
 plt.tight_layout()
 plt.savefig(paths.figures / f'sbc_rank_plot_{name}.pdf')
 plt.clf()

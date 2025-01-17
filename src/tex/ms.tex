@@ -401,13 +401,21 @@ v0.4.1 allows anyone to re-build the entire manuscript including rerunning all a
 
 \begin{figure*}[]
      \centering
-     \includegraphics[width=\columnwidth]{figures/sbc_rank_plot_NPE_C.pdf}
-     \includegraphics[width=\columnwidth]{figures/tarp_plot_NPE_C.pdf}
+     \includegraphics[width=\textwidth]{figures/sbc_rank_plot_NPE_C.pdf}
      %\vspace{-.5cm}
-     \caption{\emph{Left:} SBC ranks of ground truth parameters under the inferred posterior samples for each of the six parameters (red bars). The grey area shows the 99\% confidence interval of a uniform distribution given the number of samples provided. \emph{Right:} }
+     \caption{SBC ranks of ground truth parameters under the inferred posterior samples for each of the six parameters (red bars). The grey area shows the 99\% confidence interval of a uniform distribution given the number of samples provided.}
      \label{fig:sbc}
      \script{evaluate_sbi.py}
 \end{figure*}
+
+\begin{figure}[]
+     \centering
+     \includegraphics[width=\columnwidth]{figures/tarp_plot_NPE_C.pdf}
+     %\vspace{-.5cm}
+     \caption{TARP plot.}
+     \label{fig:sbc}
+     \script{evaluate_sbi.py}
+\end{figure}
 
 Since SBI relies in neural networks to approximate posterior densities one important point is to check that neural network hyperparameters are well chosen and that posterior estimates are trustable.
 
