@@ -70,7 +70,7 @@ f, ax = sbc_rank_plot(
     parameter_labels=labels_in,
     plot_type="hist",
     num_cols=3,
-    figsize=(8,5),
+    figsize=(10,6.67),
     num_bins=None,  # by passing None we use a heuristic for the number of bins.
 )
 
