@@ -97,7 +97,7 @@ print(atc, "Should be close to 0")
 print(ks_pval, "Should be larger than 0.05")
 
 # Or, we can perform a visual check.
-f, ax = plot_tarp(ecp, alpha, figsize=(10, 10))
+f, ax = plot_tarp(ecp, alpha)
 plt.tight_layout()
 plt.savefig(paths.figures / f'tarp_plot_{name}.pdf')
 plt.clf()
