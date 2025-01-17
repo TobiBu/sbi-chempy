@@ -70,11 +70,12 @@ f, ax = sbc_rank_plot(
     parameter_labels=labels_in,
     plot_type="hist",
     num_cols=3,
-    figsize=(15,10),
+    figsize=(5,3.3),
     num_bins=None,  # by passing None we use a heuristic for the number of bins.
 )
 
-f.suptitle("SBC rank plot", fontsize=36)
+
+f.suptitle("SBC rank plot", fontsize=17)
 plt.tight_layout()
 plt.savefig(paths.figures / f'sbc_rank_plot_{name}.pdf')
 plt.clf()
