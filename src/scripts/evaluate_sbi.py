@@ -70,7 +70,7 @@ f, ax = sbc_rank_plot(
     parameter_labels=labels_in,
     plot_type="hist",
     num_cols=3,
-    figsize=(5,3.3),
+    figsize=(8,5),
     num_bins=None,  # by passing None we use a heuristic for the number of bins.
 )
 
@@ -97,7 +97,7 @@ print(atc, "Should be close to 0")
 print(ks_pval, "Should be larger than 0.05")
 
 # Or, we can perform a visual check.
-f, ax = plot_tarp(ecp, alpha)
+f, ax = plot_tarp(ecp, alpha, figsize=(10, 10))
 plt.tight_layout()
 plt.savefig(paths.figures / f'tarp_plot_{name}.pdf')
 plt.clf()
