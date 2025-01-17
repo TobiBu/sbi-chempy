@@ -10,6 +10,7 @@ from sbi.diagnostics import plot_tarp, check_tarp, run_sbc, run_tarp
 
 from Chempy.parameter import ModelParameters
 
+from chempy_torch_model import Model_Torch
 from plot_functions import *
 
 # ----- Config -------------------------------------------------------------------------------------------------------------------------------------------
@@ -32,6 +33,13 @@ combined_priors = utils.MultipleIndependent(
 # ----- load the posterior -------------------------------------------------------------------------------------------------------------------------------------------
 with open(paths.data / f'posterior_{name}.pickle', 'rb') as f:
     posterior = pickle.load(f)
+
+# --- Set up the model ---
+model = Model_Torch(len(labels_in), len(labels_out))
+
+# --- Load the weights ---
+model.load_state_dict(torch.load(paths.data / 'pytorch_state_dict.pt'))
+model.eval()
 
 # --- Simulation based calibration plot ---
 def simulator(params):

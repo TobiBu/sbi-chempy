@@ -225,7 +225,7 @@ In essence, instead of computing the full model for each input parameter set, we
     \item \textbf{Differentiability:} The NN is written in pytorch which allows for automatic differentiation. Additionally the NN has a simple closed-form analytic structure \citep[described in the appendix of][]{Philcox_2019}, unlike the complex \texttt{Chempy} model. This allows it to be differentiated, so one can use it to sample via advanced methods such HMC as done in \citep{Philcox_2019}.
 \end{enumerate}
 
-Despite the additional complexity introduced by using multiple stellar data-points, our NN simply needs to predict the birth-time abundances for a single star (with index $i$) given a set of six parameters; $\{\vec\Lambda,\vec\Theta_i,T_i\}$. The same NN can be used for all $n_\mathrm{stars}$ stars (and run in parallel), reducing a set of $n_\mathrm{stars}$ runs of \texttt{Chempy} to a single matrix computation. With the above network parameter choices, the NN predicts abundances with an absolute percantage error of \variable{output/ape_NN.txt}, which is far below typical observational errors and even smaller away from the extremes of parameter space.
+Despite the additional complexity introduced by using multiple stellar data-points, our NN simply needs to predict the birth-time abundances for a single star (with index $i$) given a set of six parameters; $\{\vec\Lambda,\vec\Theta_i,T_i\}$. The same NN can be used for all $n_\mathrm{stars}$ stars (and run in parallel), reducing a set of $n_\mathrm{stars}$ runs of \texttt{Chempy} to a single matrix computation. With the above network parameter choices, the NN predicts abundances with an absolute percantage error of \variable{output/ape_NN.txt}, which is far below typical observational errors and even smaller away from the extremes of parameter space (see Fig.~\ref{fig:ape_NN}).
 Our NN emulator is publicly available on the github repository accompanying this manuscript \href{https://github.com/TobiBu/sbi-chempy/blob/main/src/scripts/train_torch_chempy.py}{https://github.com/TobiBu/sbi-chempy/blob/main/src/scripts/train\_torch\_chempy.py} with pre-trained NN weights available on zenodo \href{https://zenodo.org/records/14507134}{https://zenodo.org/records/14507134}.
 
 \begin{figure}[]
@@ -240,11 +240,50 @@ Our NN emulator is publicly available on the github repository accompanying this
 
 % %The larger volume of data should be able to give tighter statistical constraints on those parameters that are held fixed across the galaxy, but complexity is added since we must allow each star to carry its own set of local ISM parameters.
 
+\paragraph{Bayesian model}
+\texttt{CHEMPY} effectively is a Bayesian model for stellar abundances given a set of parameters $\{\Vec{\Lambda},\Vec{\Theta},T\}$ and \citet{Philcox_2019} extended the \texttt{CHEMPY} framework to be able to model multiple stellar data-points. Consider a given star with index $i$ that is born in some region of the ISM. This star will carry its own set of parameters $\{\Vec{\Lambda},\Vec{\Theta}_i,T_i\}$, where $\Vec{\Lambda}$ are star independent and hence taken to be global parameters while the ISM parameters $\Vec{\Theta}_i$ and the birth-time $T_i$ are star specific. Using \texttt{CHEMPY} (or the trained neural network emulator) we can easily model the set of $n_\mathrm{el}$ chemical abundances $\{X_i^j\}$ for the $i$-th star as: 
+\begin{equation}\label{eq:chempy_function}
+\{X_i^j\} = \texttt{CHEMPY}(\Vec{\Lambda},\Vec{\Theta}_i,T_i),
+\end{equation}
+where $j$ indexes the chemical element. 
+These model abundances can then be compared against observations, with measured abundances $d_i^j$ and corresponding Gaussian errors $\sigma_{i,\mathrm{obs}}^j$ jointly denoted as $D_i=\{d_i^j,\sigma_{i,\mathrm{obs}}^j\}$.
+
+As stated in \citet{Philcox_2019} the full posterior for this case is given by 
+\begin{eqnarray}\label{eq:posterior}
+    \mathbb{P}(\vec\Lambda,\{\vec\Theta_i\},\{T_i\}|\{D_i\}) &\propto&  \left[\prod_{i=1}^{n_\mathrm{star}}p_{\vec\Theta}(\vec\Theta_i)p_{T_i}(T_i)\right]
+    \times p_{\vec\Lambda}(\vec\Lambda)\\
+    \nonumber
+    &\times& \mathcal{L}(\{D_i\}|\vec\Lambda,\{\vec\Theta_i\},\{T_i\})
+\end{eqnarray}
+where $p_V(V_i)$ is the prior on variable $V_i$ (belonging to the set $V$).
+
+In order to determine the optimal values of the global galactic parameters ($\Vec{\Lambda}$) one has to sample the posterior of Eq.~\ref{eq:posterior}. This is in practices a fairly costly computation and even in the case of advanced techniques such as Hamilton Monte Carlo sampling the posterior can only be evaluated for a small set of stars ($\lesssim200$) using fairly long compute times \citep[$\sim40$ hours][]{Philcox_2019}.
+%
+However, recent advances in implicit-likelihood inference or simulation-based inference \citep{Cranmer2020} offer another very efficient approach to approximate the posterior (see next paragraph for more details). These methods train a neural conditional density estimator to represent the conditional posterior, $\mathbb{P}(\vec\Lambda|\{D_i\})$, which can be very efficiently evaluated given observational data $\{D_i\}$.
+
+In particular, if we marginalize over the star specific parameters and solely focus on the global parameters $\Vec{\Lambda}$ we can make the assumption that individual observations of stars are identically and independently distributed (i.i.d.) and factorize the joint posterior from above to simply express it as:  %
+\begin{eqnarray}\label{eq:posterior}
+\mathbb{P}(\vec\Lambda|\{D_i\}) &\propto& 
+\mathbb{P}(\vec\Lambda)\mathbb{P}(\{D_i\}|\Lambda)\quad\quad\quad\quad\quad\quad\,\, \text{(Bayes rule)}
+\\\nonumber
+&=&
+\mathbb{P}(\vec\Lambda)\mathbb{P}
+(D_1,...,D_{n_\mathrm{star}}|\vec\Lambda)
+\\\nonumber
+&=& \mathbb{P}(\vec\Lambda)\prod_{j=1}^{n_\mathrm{star}}\mathbb{P}(D_j|\vec\Lambda) 
+\\\nonumber
+&\propto& \mathbb{P}(\vec\Lambda) \prod_{j=1}^{n_\mathrm{star}}\frac{\mathbb{P}(\vec\Lambda|D_j)}{\mathbb{P}(\vec\Lambda)} \quad\quad\quad\quad\quad\text{(Bayes rule)}
+\\\nonumber
+&=& \mathbb{P}(\vec\Lambda)^{1-n_\mathrm{star}}\ \prod_{j=1}^{n_\mathrm{star}}\mathbb{P}(\vec\Lambda|D_j) 
+\end{eqnarray}
+
+This factorization of the joint posterior into single star posteriors $\mathbb{P}(\vec\Lambda|D_j)$ has the advantage that we do not need to specify the exact number of observational data points before. We can simply train our neural density estimator on single star observations and then at evaluation time, we simply combine as many posterior estimates as we have observational data.
+
 
 \paragraph{Simulation-based inference}
-In a nutshell, SBI \citep[e.g.][]{Cranmer2020,Papamakarios:2021,Gloeckler2024AllinoneSI} -- also called likelihood free inference within a Bayesian inference framework -- works as follows: given an assumed generative model $\mathcal{M}$ of parameters $\theta$ (in our case a galactic chemical evolution model) and a set of simulated observations of individual stellar abundances $\Vec{X}$ from that model, we train a mapping between the two to estimate the posterior distribution $p$($\theta|\Vec{X}$, $\mathcal{M}$) of the generative model parameters $\theta$ that reproduce the simulated observations $\Vec{X}$. Once this mapping is trained, we can apply it to observations of stellar abundances $\Vec{X_R}$ to infer $p$($\theta|\Vec{X_R}$, $\mathcal{M}$)(see Fig. \ref{fig:flowchart}).
+In a nutshell, SBI \citep[e.g.][]{Cranmer2020,Papamakarios:2021,Gloeckler2024AllinoneSI} -- also called likelihood free inference within a Bayesian inference framework -- works as follows: given an assumed generative model $\mathcal{M}$ of parameters $\Vec{\theta}$ (in our case a galactic chemical evolution model) and a set of simulated observations of individual stellar abundances $\Vec{X}$ from that model, we train a mapping between the two to estimate the posterior distribution $p$($\Vec{\theta}|\Vec{X}$, $\mathcal{M}$) of the generative model parameters $\Vec{\theta}$ that reproduce the simulated observations $\Vec{X}$. Once this mapping is trained, we can apply it to observations of stellar abundances $\Vec{X_R}$ to infer $p$($\Vec{\theta}|\Vec{X_R}$, $\mathcal{M}$) (see Fig. \ref{fig:flowchart} for a schematic visual representation of our method). Note, we do not need to know anything about $p$($\Vec{\theta}|\Vec{X_R}$, $\mathcal{M}$), we solely need to be able to sample from it.
 
-For this we use a Neural Posterior Estimator (NPE) \cite{zeghal2022neuralposteriorestimationdifferentiable} which utilises the gradients of the generative model $\mathcal{M}$ with a Masked Autoregressive Flow model (MAF) \cite{papamakarios2018maskedautoregressiveflowdensity} containing 10 hidden features and 1 transformation layer for the normalizing flow.
+We use a Neural Posterior Estimator (NPE) \cite{zeghal2022neuralposteriorestimationdifferentiable} which utilises the gradients of the generative model $\mathcal{M}$ with a Masked Autoregressive Flow model (MAF) \cite{papamakarios2018maskedautoregressiveflowdensity} containing 10 hidden features and 1 transformation layer for the normalizing flow.
 
 We train our NPE with $10^5$ data points simulated with the NN emulator described in the previous section until convergence. Training takes $\lesssim10$ minutes on an Intel(R) Xeon(R) Platinum 8468V with 192 CPUs.
 We evaluate the accuracy of the NPE using $5\times10^4$ validation data points from the original \texttt{CHEMPY} simulator. In order to mimick observational noise, we add 5\% observational uncertainties to the abundances simulated with \texttt{CHEMPY} before feeding them to our NPE. 
@@ -254,12 +293,13 @@ We evaluate the accuracy of the NPE using $5\times10^4$ validation data points f
      \includegraphics[width=\columnwidth]{figures/ape_posterior_NPE_C.pdf}
      \vspace{-.5cm}
      \caption{Absolute percentage error of the neural posterior density estimate for a single star. Different coloured histograms show the full error distribution for all 6 parameters of interest with the median values highlighted by the vertical dashed lines. The box plots show again the first and third quartiles with the median represented by a vertical line and the whiskers extending from the box to the farthest data point lying within $1.5\times$ the inter-quartile range from the box. The global parameters of main interest for this work are shown by the light blue and red histogram.}
-     \label{fig:ape_NN}
+     \label{fig:posterior_APE}
      \script{plot_posterior_APE.py}
 \end{figure}
 
 
-For each individual observation consisting of the abundance measurements of a single star we sample the posterior estimate with 1000 data points (see Fig.~\ref{fig:posterior_samples} in the appendix). We then compare the posterior mean to the ground truth value. For a single star observation, our NPE has an APE of \variable{output/posterior_APE.txt} when looking at all 6 parameters of interest. If we restrict ourselves to only the global two parameters $\vec\Lambda = \{\alpha_\mathrm{IMF},\log_{10}(N_\mathrm{Ia})\}$ our NPE achieves an APE of \variable{output/global_posterior_APE.txt} as we show in Fig.~\ref{fig:posterior_APE}. Looking at Fig.~\ref{fig:posterior_APE} we find that for an individual star the accuracy of the NPE is not particularly high. However, for the global parameters $\vec\Lambda = \{\alpha_\mathrm{IMF},\log_{10}(N_\mathrm{Ia})\}$ we can boost the accuracy by combining the inference for many stars of the same galaxy.
+For each individual observation consisting of the abundance measurements of a single star we sample the posterior estimate with 1000 points. %(see Fig.~\ref{fig:posterior_samples} in the appendix)
+We then compare the posterior mean to the ground truth value for each observation and calculate the absolute percentage error (APE, see Fig.~\ref{fig:posterior_APE}). For a single star observation, our NPE has an APE of \variable{output/global_posterior_APE.txt} when looking at all 6 parameters of interest. If we restrict ourselves to only the global two parameters $\vec\Lambda = \{\alpha_\mathrm{IMF},\log_{10}(N_\mathrm{Ia})\}$ our NPE achieves an APE of \variable{output/posterior_APE.txt} as we show in Fig.~\ref{fig:posterior_APE}. Looking at Fig.~\ref{fig:posterior_APE} we find that for an individual star the accuracy of the NPE is not particularly high. However, for the global parameters $\vec\Lambda = \{\alpha_\mathrm{IMF},\log_{10}(N_\mathrm{Ia})\}$ we can boost the accuracy by combining the inference for many stars of the same galaxy.
 
 
 
@@ -340,8 +380,6 @@ Here we have explored innovative SBI methods to constrain important galactic par
 
 \section{Code and Data Availability}
 \label{sec:appendix_code_and_data}
-%The source code for this manuscript is made available under an open source license and is publicly hosted on GitHub under this url: \GitHubURL.\\
-% The github repository accompanying this article includes comprehensive documentation %hosted on \emph{ReadTheDocs} that provides an overview of the project, installation instructions, and a guide on how to use the software. 
 
 To facilitate a wider community's usage and contributions, we make use of the reproducibility software
 \href{https://github.com/showyourwork/showyourwork}{\showyourwork}
@@ -358,8 +396,45 @@ v0.4.1 allows anyone to re-build the entire manuscript including rerunning all a
 
 % The ... repository, which contains code, additional documentation, and interactive dashboards, is available on GitHub.%\footnote{URL: \url{https://github.com/bGuenes/sbi_chemical_abundances}}
 
-% \textcolor{red}{To be finalized, do we want to upload data???}
-% The cleaned data set with outliers removed is publicly available on Zenodo.%\footnote{URL: \url{https://zenodo.org/record/8375344}}
+\section{Simulation-based calibration}
+\label{sec:sbc}
+
+\begin{figure*}[]
+     \centering
+     \includegraphics[width=\columnwidth]{figures/sbc_rank_plot_NPE_C.pdf}
+     \includegraphics[width=\columnwidth]{figures/tarp_plot_NPE_C.pdf}
+     \vspace{-.5cm}
+     \caption{\emph{Left:} SBC ranks of ground truth parameters under the inferred posterior samples for each of the six parameters (red bars). The grey area shows the 99\% confidence interval of a uniform distribution given the number of samples provided. \emph{Right:} }
+     \label{fig:sbc}
+     \script{evaluate_sbi.py}
+\end{figure*}
+
+Since SBI relies in neural networks to approximate posterior densities one important point is to check that neural network hyperparameters are well chosen and that posterior estimates are trustable.
+
+After a density estimator has been trained with simulated data to obtain a posterior, the estimator should be made subject to several diagnostic tests. This needs to be performed before being used for inference given the actual observed data. Posterior Predictive Checks provide one way to “critique” a trained estimator based on its predictive performance. Another important approach to such diagnostics is simulation-based calibration as developed by \citet{Cook2006} and \citet{Talts2018}. 
+
+\paragraph{Simulation-based calibration}
+Simulation-based calibration (SBC) provides a (qualitative) view and a quantitive measure to check, whether the variances of the posterior are balanced, i.e. it is neither over-confident nor under-confident. As such, SBC can be viewed as a necessary condition (but not sufficient) for a valid inference algorithm: If SBC checks fail, this tells you that your inference is invalid. If SBC checks pass, this is no guarantee that the posterior estimation is working.
+
+To perform SBC, we sample some $\theta_i^o$ values from the parameter prior of the problem at hand and simulate “observations” from these parameters: 
+\begin{equation}
+    x_i = \text{simulator}(\theta_i^o)
+\end{equation}
+Then we perform inference given each observation $x_i$ which produces a separate posterior $p_i(\theta|x_i)$ for each $x_i$. The key step for SBC is to generate a set of posterior samples $\{\theta\}_i$ from each posterior. We call this $\theta_i^s$, referring to $s$ samples from the posterior $p_i(\theta|x_i)$. Next, we rank the corresponding $\theta_i^o$ under this set of samples. A rank is computed by counting how many samples $\theta_i^s$ fall below their corresponding $\theta_i^o$ value \citep[see section 4.1 in][]{Talts2018}. These ranks are then used to perform the SBC check itself.
+
+The core idea behind SBC is two fold: (i) SBC ranks of ground truth parameters under the inferred posterior samples follow a uniform distribution (If the SBC ranks are not uniformly distributed, the posterior is not well calibrated); and (ii) samples from the data averaged posterior (ensemble of randomly chosen posterior samples given multiple distinct observations $x_o$) are distributed according to the prior.
+
+Hence, SBC can tell us whether the SBI method applied to the problem at hand produces posteriors that have well-calibrated uncertainties, and if the posteriors have uncalibrated uncertainties, SBC surfaces what kind of systematic bias is present: negative or positive bias (shift in the mean of the predictions) or over- or under-dispersion (too large or too small variance).
+
+In the left panel of Fig.~\ref{fig:sbc} we show the distribution of ranks (depicted in red) in each dimension. Highlighted in grey, you see the 99\% confidence interval of a uniform distribution given the number of samples provided. In plain english: for a uniform distribution, we would expect 1 out of 100 (red) bars to lie outside the grey area. This figure shows that overall our posteriors are decently calibrated. Only for the parameters $\log_{10}\left(\mathrm{SFR}_\mathrm{peak}\right)$ and stellar age $T_i$ see single bars outside the 99\% confidence interval. But most importantly for the parameters of interest here, $\log_{10}\left(N_\mathrm{Ia}\right)$ and $\alpha_\mathrm{IMF}$ we have a well calibrated posterior.
+
+\paragraph{Tests of Accuracy with Random Points (TARP)}
+
+TARP \citep{Lemos2023} is an alternative calibration check. Given a test set $(\theta^*,x^*)$ and a set of reference points $\theta_r$, TARP calculates statistics for posterior calibration by - drawing posterior samples $\theta$ given each observation $x^*$ and calculating the distance $r$ between $\theta^*$ and $\theta_r$ counting for how many of the posterior samples the distance to $\theta_r$ is smaller than $r$ \citep[see e.g. Fig.~2 in][for an illustration]{Lemos2023}.
+
+For each given coverage level $\alpha$, one can then calculate the corresponding average counts and check, whether they correspond to the given $\alpha$. The visualization and interpretation of TARP values is therefore similar to that of SBC. However, in contrast to SBC TARP provides a necessary and sufficient condition for posterior accuracy, i.e., it can also detect inaccurate posterior estimators.
+
+Note, however, that this property depends on the choice of reference point distribution: to obtain the full diagnostic power of TARP, one would need to sample reference points from a distribution that depends on $x$. Thus, in general, it is recommended using and interpreting TARP like SBC and complementing coverage checks with posterior predictive checks.
 
 \end{appendix}
 
