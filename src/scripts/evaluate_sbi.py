@@ -76,7 +76,7 @@ f, ax = sbc_rank_plot(
 
 f.suptitle("SBC rank plot", fontsize=36)
 plt.tight_layout()
-plt.savefig(paths.figures + f'sbc_rank_plot_{name}.pdf')
+plt.savefig(paths.figures / f'sbc_rank_plot_{name}.pdf')
 plt.clf()
 
 # --- TARP plot ---
@@ -98,5 +98,5 @@ print(ks_pval, "Should be larger than 0.05")
 # Or, we can perform a visual check.
 f, ax = plot_tarp(ecp, alpha)
 plt.tight_layout()
-plt.savefig(paths.figures + f'tarp_plot_{name}.pdf')
+plt.savefig(paths.figures / f'tarp_plot_{name}.pdf')
 plt.clf()
