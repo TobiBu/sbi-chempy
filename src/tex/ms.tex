@@ -411,12 +411,12 @@ v0.4.1 allows anyone to re-build the entire manuscript including rerunning all a
 
 Since SBI relies in neural networks to approximate posterior densities one important point is to check that neural network hyperparameters are well chosen and that posterior estimates are trustable.
 
-After a density estimator has been trained with simulated data to obtain a posterior, the estimator should be made subject to several diagnostic tests. This needs to be performed before being used for inference given the actual observed data. Posterior Predictive Checks provide one way to “critique” a trained estimator based on its predictive performance. Another important approach to such diagnostics is simulation-based calibration as developed by \citet{Cook2006} and \citet{Talts2018}. 
+After a density estimator has been trained with simulated data to obtain a posterior, the estimator should be made subject to several diagnostic tests. This needs to be performed before being used for inference given the actual observed data. Posterior Predictive Checks provide one way to "critique" a trained estimator based on its predictive performance. Another important approach to such diagnostics is simulation-based calibration as developed by \citet{Cook2006} and \citet{Talts2018}. 
 
 \paragraph{Simulation-based calibration}
 Simulation-based calibration (SBC) provides a (qualitative) view and a quantitive measure to check, whether the variances of the posterior are balanced, i.e. it is neither over-confident nor under-confident. As such, SBC can be viewed as a necessary condition (but not sufficient) for a valid inference algorithm: If SBC checks fail, this tells you that your inference is invalid. If SBC checks pass, this is no guarantee that the posterior estimation is working.
 
-To perform SBC, we sample some $\theta_i^o$ values from the parameter prior of the problem at hand and simulate “observations” from these parameters: 
+To perform SBC, we sample some $\theta_i^o$ values from the parameter prior of the problem at hand and simulate "observations" from these parameters: 
 \begin{equation}
     x_i = \text{simulator}(\theta_i^o)
 \end{equation}
