@@ -14,7 +14,6 @@
 %
 \documentclass{aa}  
 
-
 %
 \usepackage{showyourwork}
 
@@ -110,7 +109,6 @@ The goal of this work is to demonstrate how we can use modern machine learning (
 A methodologically very similar work was previously presented by \cite{Philcox_2019} using Hamilton Monte Carlo sampling for the inference. The result of this work was an impressive speed-up over classical Markov Chain Monte Carlo sampling with no loss of accuracy. Here we make use of simulation-based inference \citep[SBI, e.g.][]{Cranmer2020}. For high-dimensional posterior functions, SBI gives tremendous computational improvements over more traditional methods such as Markov Chain Monte Carlo (MCMC) or even the more efficient Hamilton Monte Carlo (HMC) methods. 
 
 This paper is structured as follows. In Section~\ref{sec:methods} we detail our methods. In particular, we discuss the GCE model and the methods behind SBI. Our results are presented in Section~\ref{sec: Results} where we test the performance of our approach on mock data and data taken from a hydrodynamical simulation. We conclude our study with Section~\ref{sec: conclusion} with a summary and outlook of our results.
-
 
 \textcolor{red}{to be adapted... especially the zenodo link\\
 Finally, we publicly release all of our code to reproduce the results of this manuscript via GitHub\footnote{URL: {\url{https://github.com/TobiBu/sbi-chempy}}}and refer to Appendix \ref{sec:appendix_code_and_data} for an overview of our code and structure. All our datasets and network weights are publicly available on Zenodo.\footnote{URL: \url{https://zenodo.org/record/8375344}}}
@@ -219,7 +217,7 @@ With these modifications, \texttt{Chempy} allows for fast prediction of TNG-like
 
 \subsection{Neural network emulator for \texttt{CHEMPY}:}
 Despite the simplifications made by the GCE model \texttt{CHEMPY}, the run-time of \texttt{CHEMPY} and the high-dimensionality of the parameter space incurs some difficulties when sampling the distribution of the global parameters $\vec\Lambda = \{\alpha_\mathrm{IMF},\log_{10}(N_\mathrm{Ia})\}$. 
-To alleviate this, we follow \cite{Philcox_2019} and implement a \textit{neural network} (NN) emulator of the \texttt{CHEMPY} simulator. We design the NN as a simple feed-forward neural network with 2 hidden layers and 100 neurons in the first and 40 neurons in the second layer.
+To alleviate this, we follow \cite{Philcox_2019} and implement a \textit{neural network} (NN) emulator of the \texttt{CHEMPY} simulator. We design the NN as a simple feed-forward neural network with 2 hidden layers and 100 neurons in the first and 40 neurons in the second layer. Training this tiny emulator takes about 50s on the CPU.
 
 In essence, instead of computing the full model for each input parameter set, we pass the parameters to the NN which predicts the output abundances to high accuracy. As already argued in \cite{Philcox_2019} this has two benefits;
 \begin{enumerate}
@@ -264,7 +262,7 @@ In order to determine the optimal values of the global galactic parameters ($\Ve
 However, recent advances in implicit-likelihood inference or simulation-based inference \citep{Cranmer2020} offer another very efficient approach to approximate the posterior (see next paragraph for more details). These methods train a neural conditional density estimator to represent the conditional posterior, $\mathbb{P}(\vec\Lambda|\{D_i\})$, which can be very efficiently evaluated given observational data $\{D_i\}$.
 
 In particular, if we marginalize over the star specific parameters and solely focus on the global parameters $\Vec{\Lambda}$ we can make the assumption that individual observations of stars are identically and independently distributed (i.i.d.) and factorize the joint posterior from above to simply express it as:  %
-\begin{eqnarray}\label{eq:posterior}
+\begin{eqnarray}
 \mathbb{P}(\vec\Lambda|\{D_i\}) &\propto& 
 \mathbb{P}(\vec\Lambda)\mathbb{P}(\{D_i\}|\Lambda)\quad\quad\quad\quad\quad\quad\,\, \text{(Bayes rule)}
 \\\nonumber
@@ -275,7 +273,8 @@ In particular, if we marginalize over the star specific parameters and solely fo
 &=& \mathbb{P}(\vec\Lambda)\prod_{j=1}^{n_\mathrm{star}}\mathbb{P}(D_j|\vec\Lambda) 
 \\\nonumber
 &\propto& \mathbb{P}(\vec\Lambda) \prod_{j=1}^{n_\mathrm{star}}\frac{\mathbb{P}(\vec\Lambda|D_j)}{\mathbb{P}(\vec\Lambda)} \quad\quad\quad\quad\quad\text{(Bayes rule)}
-\\\nonumber
+\\%\nonumber
+\label{eq:posterior}
 &=& \mathbb{P}(\vec\Lambda)^{1-n_\mathrm{star}}\ \prod_{j=1}^{n_\mathrm{star}}\mathbb{P}(\vec\Lambda|D_j) 
 \end{eqnarray}
 
@@ -287,8 +286,9 @@ In a nutshell, SBI \citep[e.g.][]{Cranmer2020,Papamakarios:2021,Gloeckler2024All
 
 We use a Neural Posterior Estimator (NPE) \cite{zeghal2022neuralposteriorestimationdifferentiable} which utilises the gradients of the generative model $\mathcal{M}$ with a Masked Autoregressive Flow model (MAF) \cite{papamakarios2018maskedautoregressiveflowdensity} containing 10 hidden features and 1 transformation layer for the normalizing flow.
 
-We train our NPE with $10^5$ data points simulated with the NN emulator described in the previous section until convergence. Training takes $\lesssim10$ minutes on an Intel(R) Xeon(R) Platinum 8468V with 192 CPUs.
-We evaluate the accuracy of the NPE using $5\times10^4$ validation data points from the original \texttt{CHEMPY} simulator. In order to mimick observational noise, we add 5\% observational uncertainties to the abundances simulated with \texttt{CHEMPY} before feeding them to our NPE. 
+We train our NPE with $10^5$ data points consisting of $n_{\rm elemets}=8$ simulated with the NN emulator described in the previous section with inputs sampled from the priors shown in Tab. \ref{tab:priors}. Training takes $\lesssim10$ minutes on an Intel(R) Xeon(R) Platinum 8468V with 192 CPUs. 
+We evaluate the accuracy of the NPE using $5\times10^4$ validation data points from the original \texttt{CHEMPY} simulator. In order to mimick observational noise, we add 5\% observational uncertainties to the abundances simulated with \texttt{CHEMPY} before feeding them to our NPE.
+We have made sure that our NPE is well calibrated and posterior distributions are trustable. For more details on simulation-based calibration see appendix \ref{sec:sbc}.
 
 \begin{figure}[]
      \centering
@@ -299,58 +299,75 @@ We evaluate the accuracy of the NPE using $5\times10^4$ validation data points f
      \script{plot_posterior_APE.py}
 \end{figure}
 
+\paragraph{Multi-star inference}
+Following equation~\ref{eq:posterior} we can calculate the joint posterior for a combined inference using abundance observations of multiple stars. For this, we will condition our NPE individually on single star observations and sample the posterior. Then, according to equation~\ref{eq:posterior} we simply have to multiply individual posteriors and account for the inverse weighting by some power of the prior which we take from table~\ref{tab:priors}. 
 
-For each individual observation consisting of the abundance measurements of a single star we sample the posterior estimate with 1000 points. %(see Fig.~\ref{fig:posterior_samples} in the appendix)
-We then compare the posterior mean to the ground truth value for each observation and calculate the absolute percentage error (APE, see Fig.~\ref{fig:posterior_APE}). For a single star observation, our NPE has an APE of \variable{output/global_posterior_APE.txt} when looking at all 6 parameters of interest. If we restrict ourselves to only the global two parameters $\vec\Lambda = \{\alpha_\mathrm{IMF},\log_{10}(N_\mathrm{Ia})\}$ our NPE achieves an APE of \variable{output/posterior_APE.txt} as we show in Fig.~\ref{fig:posterior_APE}. Looking at Fig.~\ref{fig:posterior_APE} we find that for an individual star the accuracy of the NPE is not particularly high. However, for the global parameters $\vec\Lambda = \{\alpha_\mathrm{IMF},\log_{10}(N_\mathrm{Ia})\}$ we can boost the accuracy by combining the inference for many stars of the same galaxy.
+Note however, there is one issue here. Since we only have access to samples from the posterior and not the posterior itself it is difficult to evaluate equation~\ref{eq:posterior}. We circumvent this by approximating each single star posterior by a Gaussian and fit for the parameters of mean and covariance. With this it is straight forward to evaluate equation~\ref{eq:posterior} analytically. In fact, under our assumption the combined posterior is a product of the prior and the product of multiple Gaussians for the individual star posteriors. The latter product is also a Gaussian with mean $\mathbf{\mu'}$ and variance $\mathbf{\sigma'}$:
+\begin{align}
+    \mathbf{\mu'} &= \frac{\sum_{i=1}^{N_{stars}} \frac{\mu_i}{\sigma_i^2}}{\sum_{i=1}^{N_{stars}} \frac1{\sigma_i^2}} \\
+\mathbf{\sigma'}^2 &= \frac1 {\sum_{i=1}^{N_{stars}} \frac1{\sigma_i^2}}
+\end{align}
 
+Further, in our case the prior for the galactic parameters $\Lambda$ is Gaussian as well. Therefore the resulting factorized posterior from eq.~\ref{eq:posterior} is again a Gaussian and can be expressed with mean $\mathbf{\mu}$ and variance $\mathbf{\sigma}$ as:
+\begin{align}
+\mathbf{\mu} &= \frac{\frac{\mu'}{\sigma'^2}-\frac{(1-N)\mu_ {prior}}{\sigma_ {prior}^2}}{\frac1{\sigma'^2}-\frac{(1-N)}{\sigma_ {prior}^2}} \\
+\mathbf{\sigma}^2 &= \frac1 {\frac1{\sigma'^2}-\frac{(1-N)}{\sigma_ {prior}^2}}
+\end{align}
+
+Note, given the tiny and simple neural network that represents our NPE the above assumption of Gaussian single star posteriors and the consecutive simplification is a decent one to make. We have further empirically verified that single star posteriors are indeed close to Gaussian.
+However, in future work we plan to alleviate this simplification and directly approximate the joint posterior of a multi-star inference.
 
 
 \section{Results}
 \label{sec: Results}
 
-We test our analysis using mock observations drawn firstly from \texttt{Chempy} then from large-scale hydrodynamical simulations taken from the IlustrisTNG suite to ensure that we recover the correct parameters even for models with a completely different treatment of ISM physics. The methods presented here can naturally be extended to any fast and flexible GCE model, not just \texttt{Chempy}.
+\textcolor{red}{see philcox results for boiler plate text...}
 
-% % \begin{figure}
-% %     \centering
-% %     \includegraphics[width=0.9\linewidth]{figures/sbi_Nstar_comp.png}
-% %     \vspace{-.25cm}
-% %     \caption{Accuracy of inferred global galactic parameters $\alpha_{IMF}$ and $\log_{10}(N_{Ia})$ as a function of number of observed stars, comparing SBI (blue) to the inferred values using HMC (red) \cite{Philcox_2019} .}
-% %     \label{fig:N_star_analysis}
-% % \end{figure}
+We test our analysis using mock observations drawn firstly from \texttt{CHEMPY} from the same yield set as the training data, secondly using a different yield set to test for potential biases through model missspecification in our SBI setup and then lastly from a large-scale hydrodynamical simulation taken from the IlustrisTNG suite \citep{Pillepich2018} but with the same yield set as our \texttt{CHEMPY} training data to ensure that we recover the correct parameters even for models with a completely different treatment of ISM physics. The methods presented here can naturally be extended to any fast and flexible GCE model, not just \texttt{Chempy}.
 
-We train the NPE with a set of $n_{\rm stars}=10^6$ abundances for $n_{\rm elemets}=8$ with an assumed observational error of $0.05$ dex, generated with the \textit{neural network} emulator, with inputs sampled from the priors shown in Tab. \ref{tab:priors}. The sole purpose of the emulator is to highly reduce the computational time compared to full \texttt{CHEMPY} simulations. Training the NPE takes $~3$h on a single H100 GPU.
-
-\paragraph{Mock Observational Data}
+\subsection{\texttt{CHEMPY} Mock Observational Data}
 Our analysis uses mock observations drawn from the \textit{neural network} emulator with fixed values of the global galactic parameters $\alpha_{\rm IMF}=-2.3$ and $\log_{10}(N_{\rm Ia})=-2.89$ and the local parameters $\vec{\Theta}_i$ from Tab. \ref{tab:priors}, additionally drawing $T_i$ uniformly in the range $[2,12.8]$ Gyr, to minimize overlap with the neural network training birth-time limits when observational uncertainties are included. 
 Each set of parameters is passed to the NN, producing eight true chemical abundances, to which we add a Gaussian error of $0.05$ dex.
-\textcolor{red}{here goes the assumption that stars are iid since each stars is produced by a single call to chempy. However, real physics might correlate stars abundacnes by star formation histories and cumulative enrichment...}
-The outcome of this mock data creation is a set of 1000 stars \textcolor{red}{we vary this number, right?}, emulating a real dataset.
 
-\paragraph{Inference}
+For each individual observation consisting of the abundance measurements of a single star we sample the posterior estimate for all six parameters $\{\vec\Lambda,\vec\Theta_i,T_i\}$ with 1000 points. This takes around $0.3s$ for each star, making it extremely fast to infer the parameters of a large amount of stars. Our method takes around $10$ seconds to build a posterior for all six parameters for a dataset size of 1000 stars (each time sampling the single star posterior with 1000 points and fitting for the Gaussian parameters). Our combined runtime for the NPE training plus sampling is hence 610 seconds for 1000 stars hence our methods making it more than $1.180$ times faster than current HMC methods \citep[cf.][who needs $40$h for only 200 stars]{Philcox_2019}. Hence, shorter computing times make it feasible to use orders of magnitudes more observations.
 
-% % \begin{figure}
-% % \vspace{-1.3cm}
-% %     \centering
-% %     \includegraphics[width=0.49\textwidth]{figures/posterior_2.png}
-% %     \vspace{-.25cm}
-% %     \caption{Sampled posteriors for global galactic parameters $\alpha_{\rm IMF}$ and $\log_{10}(\rm N_{Ia})$ of $1000$ stars.}
-% %     \label{fig:sbi}   
-% % \end{figure}
+\paragraph{Validation through absolute percentage error}
+To evaluate our method quantitatively, we compare the posterior mean to the ground truth value for each observation and calculate the absolute percentage error (APE, see Fig.~\ref{fig:posterior_APE}). For a single star observation, our NPE has an APE of \variable{output/global_posterior_APE.txt} when looking at all 6 parameters of interest. If we restrict ourselves to only the global two parameters $\vec\Lambda = \{\alpha_\mathrm{IMF},\log_{10}(N_\mathrm{Ia})\}$ our NPE achieves an APE of \variable{output/posterior_APE.txt} as we show in Fig.~\ref{fig:posterior_APE}. Looking at Fig.~\ref{fig:posterior_APE} we find that for an individual star the accuracy of the NPE is not particularly high. However, for the global parameters $\vec\Lambda = \{\alpha_\mathrm{IMF},\log_{10}(N_\mathrm{Ia})\}$ we can boost the accuracy by combining the inference for many stars of the same galaxy.
 
+\begin{figure}
+    \centering
+    \includegraphics[width=\columnwidth]{figures/CHEMPY_TNG_yields_Nstar_comp.pdf}
+    \vspace{-.25cm}
+    \caption{Accuracy of inferred global galactic parameters $\alpha_{IMF}$ and $\log_{10}(N_{Ia})$ as a function of number of observed stars, comparing SBI (blue) to the inferred values using HMC (red) as done by \cite{Philcox_2019}.}
+    \label{fig:CHEMPY_TNG_N_star_analysis}
+    \script{chempy_tng_inference.py}
+\end{figure}
 
-For each set of mock abundances we infer the posterior distribution for all six parameters $\{\vec\Lambda,\vec\Theta_i,T_i\}$ with the NPE by sampling 1000 times and fitting the posterior for each parameter. This takes around $0.3s$ for each star, making it extremely fast to infer the parameters of a large amount of stars. 
-Our method takes around $5$ minutes to build a posterior for all six parameters for a dataset size of 1000 stars on a Macbook Air M2 chip, making it around $2400$x faster than current HMC methods \citep[cf.][who needs $40$h for 200 stars with HMC]{Philcox_2019}. Hence, shorter computing times make it feasible to use orders of magnitudes more observations.
+\paragraph{Inference on the \texttt{CHEMPY} TNG yield set}
+
+\begin{figure}
+%\vspace{-1.3cm}
+    \centering
+    \includegraphics[width=\columnwidth]{figures/CHEMPY_TNG_yields.pdf}
+    \vspace{-.25cm}
+    \caption{Sampled posteriors for global galactic parameters $\alpha_{\rm IMF}$ and $\log_{10}(\rm N_{Ia})$ of $1000$ stars.}
+    \label{fig:CHEMPY_TNG_sbi} 
+    \script{chempy_tng_inference.py}
+\end{figure}
+
 %
 Taking the means of multiple observed stars gives us higher accuracy and precision of the global galactic parameters $\vec\Lambda$ (Fig. \ref{fig:N_star_analysis}). However, we also see that in the limit of very few stars (less than $\sim10$) SBI shows a larger bias than HMC results. But in the limit of large numbers of stars (few hundred) the accuracy and precision is superior compared to HMC.
 %
 To infer the global galactic parameters $\vec\Lambda$ of the stars as accurate as possible we take the mean of all inferred posteriors from $n_{\rm stars}=1000$ (Fig. \ref{fig:sbi}) resulting in $\alpha_{\rm IMF}=-2.292\pm0.003$ and $\log_{10}(\rm N_{Ia})=-2.883\pm0.005$ which deviates less than $0.4\%$ from the correct value.
 
-%     % \textcolor{blue}{Number of stars is not limited. I used $1000$ stars with an inference time of around $5$ minutes, but accuracy doesn't improve much after $\sim200$ stars [see \ref{fig:N_star_analysis}]. Philcox inferred $200$ stars in $\sim40$h}
-%     % \textcolor{red}{awesome! that gives us a nice metric to quote speedup. can we specify the architecture we used? I.e. which GPU on the clyster did you use?}
-%     % \textcolor{blue}{For training the sbi net i used compgpu11 and it took around 3h. The inference of the stars i did on my laptop (macbook air with a M2 chip) in 5 minutes}
 
 \subsection{Alternative yield set}
 \label{subsec: mocks_wrong_yield}
+
+\section{Discussion}
+\label{sec: conclusion}
+
+\textcolor{red}{here goes the assumption that stars are iid since each stars is produced by a single call to chempy. However, real physics might correlate stars abundacnes by star formation histories and cumulative enrichment...}
 
 \section{Summary and conclusions}
 \label{sec: conclusion}
@@ -414,8 +431,8 @@ v0.4.1 allows anyone to re-build the entire manuscript including rerunning all a
      \centering
      \includegraphics[width=\columnwidth]{figures/tarp_plot_NPE_C.pdf}
      %\vspace{-.5cm}
-     \caption{TARP plot.}
-     \label{fig:sbc}
+     \caption{TARP plot showing the expected coverage probability vs. the credibility level $\alpha$. The dashed black 1:1-line shows an ideal calibrated posterior and the blue solid line shows the TARP value for our NPE.}
+     \label{fig:tarp}
      \script{evaluate_sbi.py}
 \end{figure}
 
@@ -436,13 +453,13 @@ The core idea behind SBC is two fold: (i) SBC ranks of ground truth parameters u
 
 Hence, SBC can tell us whether the SBI method applied to the problem at hand produces posteriors that have well-calibrated uncertainties, and if the posteriors have uncalibrated uncertainties, SBC surfaces what kind of systematic bias is present: negative or positive bias (shift in the mean of the predictions) or over- or under-dispersion (too large or too small variance).
 
-In the left panel of Fig.~\ref{fig:sbc} we show the distribution of ranks (depicted in red) in each dimension. Highlighted in grey, you see the 99\% confidence interval of a uniform distribution given the number of samples provided. In plain english: for a uniform distribution, we would expect 1 out of 100 (red) bars to lie outside the grey area. This figure shows that overall our posteriors are decently calibrated. Only for the parameters $\log_{10}\left(\mathrm{SFR}_\mathrm{peak}\right)$ and stellar age $T_i$ see single bars outside the 99\% confidence interval. But most importantly for the parameters of interest here, $\log_{10}\left(N_\mathrm{Ia}\right)$ and $\alpha_\mathrm{IMF}$ we have a well calibrated posterior.
+In the left panel of Fig.~\ref{fig:sbc} we show the distribution of ranks (depicted in red) in each dimension. Highlighted in grey, you see the 99\% confidence interval of a uniform distribution given the number of samples provided. In plain english: for a uniform distribution, we would expect 1 out of 100 (red) bars to lie outside the grey area. This figure shows that overall our posteriors are decently calibrated. Only for the parameter $\log_{10}\left(\mathrm{SFE}\right)$ we see a single bar outside the 99\% confidence interval. But most importantly for the parameters of interest here, $\log_{10}\left(N_\mathrm{Ia}\right)$ and $\alpha_\mathrm{IMF}$ we have a well calibrated posterior.
 
 \paragraph{Tests of Accuracy with Random Points (TARP)}
 
 TARP \citep{Lemos2023} is an alternative calibration check. Given a test set $(\theta^*,x^*)$ and a set of reference points $\theta_r$, TARP calculates statistics for posterior calibration by - drawing posterior samples $\theta$ given each observation $x^*$ and calculating the distance $r$ between $\theta^*$ and $\theta_r$ counting for how many of the posterior samples the distance to $\theta_r$ is smaller than $r$ \citep[see e.g. Fig.~2 in][for an illustration]{Lemos2023}.
 
-For each given coverage level $\alpha$, one can then calculate the corresponding average counts and check, whether they correspond to the given $\alpha$. The visualization and interpretation of TARP values is therefore similar to that of SBC. However, in contrast to SBC TARP provides a necessary and sufficient condition for posterior accuracy, i.e., it can also detect inaccurate posterior estimators.
+For each given coverage level $\alpha$, one can then calculate the corresponding average counts and check, whether they correspond to the given $\alpha$. The visualization and interpretation of TARP values is therefore similar to that of SBC. However, in contrast to SBC, TARP provides a necessary and sufficient condition for posterior accuracy, i.e., it can also detect inaccurate posterior estimators. In Fig.~\ref{fig:tarp} we show the result for our NPE in blue in comparison to the ideal line shown in black dashed style. This figure clearly shows that our NPE is well calibrated.
 
 Note, however, that this property depends on the choice of reference point distribution: to obtain the full diagnostic power of TARP, one would need to sample reference points from a distribution that depends on $x$. Thus, in general, it is recommended using and interpreting TARP like SBC and complementing coverage checks with posterior predictive checks.
 
