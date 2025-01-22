@@ -365,6 +365,7 @@ def n_stars_plot_comp2(x1, x2, x_true, philcox, save_name, no_stars = np.array([
         ax.tick_params(labelsize=30, size=10, width=3)
         ax.tick_params(which='minor', size=5, width=2)
 
+        print(philcox['med'][:,i])
         # Add Philcox
         ax.plot(philcox['n_stars'],philcox['med'][:,i],c='r', label="HMC")
         ax.fill_between(philcox['n_stars'],philcox['lo'][:,i],philcox['up'][:,i],alpha=0.2,color='r')
@@ -467,4 +468,3 @@ def gaussian_posterior_plot(alpha_IMF, log10_N_Ia, global_params, title):
 
     plt.tight_layout()
     plt.savefig(paths.figures / f'{title}.pdf')
-    plt.show()
