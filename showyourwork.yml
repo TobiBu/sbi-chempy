@@ -53,9 +53,13 @@ dependencies:
   src/scripts/evaluate_sbi.py:
       - src/data/posterior_NPE_C.pickle
       - src/data/pytorch_state_dict.pt
+  src/scripts/sample_posterior.py:
+      - "src/data/ape_posterior_NPE_C.pickle"
+      - "src/data/pytorch_state_dict.pt"
   src/scripts/chempy_tng_inference.py:
       - "src/data/alpha_IMF_obs_NPE_C.npy"
       - "src/data/log10_N_Ia_obs_NPE_C.npy"
+
 
   # src/tex/ms.tex:
   #   - src/tex/stylesheet.tex
