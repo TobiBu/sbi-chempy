@@ -43,10 +43,10 @@ gaussian_posterior_plot(alpha_IMF_obs, log10_N_Ia_obs, global_params, title="CHE
 
 # --- Compare to HMC ---
 philcox = {}
-philcox["n_stars"] = [1,10,100]
-philcox["med"] = [[-2.29,-2.87],[-2.31,-2.90],[-2.31,-2.90]]
-philcox["up"] = [[-2.21,-2.76],[-2.29,-2.87],[-2.30,-2.89]]
-philcox["lo"] = [[-2.37,-2.98],[-2.33,-2.93],[-2.32,-2.91]]
+philcox["n_stars"] = np.array([1,10,100])
+philcox["med"] = np.array([[-2.29,-2.87],[-2.31,-2.90],[-2.31,-2.90]])
+philcox["up"] = np.array([[-2.21,-2.76],[-2.29,-2.87],[-2.30,-2.89]])
+philcox["lo"] = np.array([[-2.37,-2.98],[-2.33,-2.93],[-2.32,-2.91]])
 
 stars = np.arange(1,1000)
 n_stars_plot_comp2(alpha_IMF_obs, log10_N_Ia_obs, global_params, philcox, "CHEMPY_TNG_yields_N_star_comp")
