@@ -57,8 +57,8 @@ dependencies:
 
 
 figure_dependencies:
-  ../scripts/chempy_tng_inference.py:
-  - ../scripts/sample_posterior.py:
+  chempy_tng_inference.py:
+  - sample_posterior.py:
       generate:
           shell: python ../scripts/sample_posterior.py
           dependencies:
