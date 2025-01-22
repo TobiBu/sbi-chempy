@@ -51,14 +51,23 @@ dependencies:
   src/scripts/plot_posterior.py:
       - src/data/ape_posterior_NPE_C.pt
   src/scripts/evaluate_sbi.py:
+      - src/scripts/plot_functions.py
       - src/data/posterior_NPE_C.pickle
       - src/data/pytorch_state_dict.pt
+
+figure_dependencies:
   src/scripts/chempy_tng_inference.py:
+  - src/scripts/plot_functions.py
   - src/scripts/sample_posterior.py:
       generate:
           shell: python src/scripts/sample_posterior.py
           dependencies:
               - "src/scripts/sample_posterior.py"
+          title: Posterior sampling for TNG yields
+          description: >-
+              This is the result of the posterior sampling for the CHEMPY run with TNG yields.
+          creators:
+              - Buck, Tobias and Günes, Bercay
 
 
   # src/tex/ms.tex:
