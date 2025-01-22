@@ -331,12 +331,13 @@ def n_stars_plot_comp(x1, x2, x_true, dat, no_stars= np.array([1, 10, 100, 500, 
 ##########################################################################################################
 # --- N-Star comparison plot 2 ---
 
-def n_stars_plot_comp2(x1, x2, x_true, philcox, no_stars= np.array([1, 10, 100, 500, 1000]), simulations=1000):
+def n_stars_plot_comp2(x1, x2, x_true, philcox, no_stars = np.array([1, 10, 100, 500, 1000]), simulations=1000):
     fit = []
     err = []
 
     # --- Fit a 2D Gaussian to the data ---
     for n in no_stars:
+        print(n.dtype)
         mu_alpha, sigma_alpha = mean_std(x1[:n], x_true[0,0], x_true[1,0])
         mu_logNIa, sigma_logNIa = mean_std(x2[:n], x_true[0,1], x_true[1,1])
 
