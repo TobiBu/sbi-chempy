@@ -57,7 +57,6 @@ dependencies:
 
 figure_dependencies:
   src/scripts/chempy_tng_inference.py:
-  - src/scripts/plot_functions.py
   - src/scripts/sample_posterior.py:
       generate:
           shell: python src/scripts/sample_posterior.py
@@ -68,6 +67,8 @@ figure_dependencies:
               This is the result of the posterior sampling for the CHEMPY run with TNG yields.
           creators:
               - Buck, Tobias and Günes, Bercay
+
+
 
 
   # src/tex/ms.tex:
