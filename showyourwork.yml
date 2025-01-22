@@ -54,8 +54,6 @@ dependencies:
       - src/scripts/plot_functions.py
       - src/data/posterior_NPE_C.pickle
       - src/data/pytorch_state_dict.pt
-
-figure_dependencies:
   src/scripts/chempy_tng_inference.py:
   - src/scripts/sample_posterior.py:
       generate:
