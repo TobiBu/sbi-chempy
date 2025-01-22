@@ -441,7 +441,7 @@ def gaussian_posterior_plot(alpha_IMF, log10_N_Ia, global_params, title):
     legend_fit = plt.scatter(mu_alpha, mu_log10N_Ia, color='k', label=label_fit, s=100)
     
     legend_fit = plt.legend(handles=[legend_fit], fontsize=30, shadow=True, fancybox=True, loc=2, bbox_to_anchor=(0, 0.2))
-    legend_true = plt.legend(handles=[legend_true], fontsize=30, shadow=True, fancybox=True, loc=2, bbox_to_anchor=(0, 0.4))
+    legend_true = plt.legend(handles=[legend_true], fontsize=30, shadow=True, fancybox=True, loc=2, bbox_to_anchor=(0, 0.35))
     
 
     # Sigma levels
