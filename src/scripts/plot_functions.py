@@ -467,3 +467,4 @@ def gaussian_posterior_plot(alpha_IMF, log10_N_Ia, global_params, title):
 
     plt.tight_layout()
     plt.savefig(paths.figures / f'{title}.png')
+    plt.clf()
