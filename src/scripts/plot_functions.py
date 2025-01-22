@@ -251,13 +251,12 @@ def n_stars_plot(x1, x2, x_true, no_stars= np.array([1, 10, 100, 500, 1000]), si
         ax.tick_params(which='minor', size=5, width=2)
 
     for i, name in enumerate([r'$\alpha_{\rm IMF}$', r'$\log_{10} N_{\rm Ia}$']):
-        plot(fit[:,i], err[:,i], x_true[i], ax[i], name)
+        plot(fit[:,i], err[:,i], x_true[0,i], ax[i], name)
 
     ax[0].legend(fontsize=15, fancybox=True, shadow=True)
     
     plt.tight_layout()
     plt.savefig(paths.figures / f'{save_name}.pdf')
-    plt.show()
 
 ##########################################################################################################
 # --- N-Star comparison plot ---
@@ -297,7 +296,7 @@ def n_stars_plot_comp(x1, x2, x_true, dat, save_name, no_stars = np.array([1, 10
     err = np.array(err)
 
     # --- Plot the data ---
-    fig,ax=plt.subplots(nrows=1,ncols=2,figsize=(26,6))
+    fig, ax = plt.subplots(nrows=1,ncols=2,figsize=(26,6))
 
     def plot(fit, err, x_true, ax, name):
         ax.plot(no_stars, fit, color="b", label="Fit")
@@ -319,13 +318,13 @@ def n_stars_plot_comp(x1, x2, x_true, dat, save_name, no_stars = np.array([1, 10
         ax.fill_between(n_stars,lo2[:,i],up2[:,i],alpha=0.1,color='r')
 
     for i, name in enumerate([r'$\alpha_{\rm IMF}$', r'$\log_{10} N_{\rm Ia}$']):
-        plot(fit[:,i], err[:,i], x_true[i], ax[i], name)
+        plot(fit[:,i], err[:,i], x_true[0,i], ax[i], name)
 
     ax[0].legend(fontsize=20, fancybox=True, shadow=True)
     
     plt.tight_layout()
     plt.savefig(paths.figures / f'{save_name}.pdf')
-    plt.show()
+    plt.clf()
 
 
 ##########################################################################################################
@@ -349,12 +348,12 @@ def n_stars_plot_comp2(x1, x2, x_true, philcox, save_name, no_stars = np.array([
     err = np.array(err)
 
     # --- Plot the data ---
-    fig,ax=plt.subplots(nrows=1,ncols=2,figsize=(26,6))
+    fig , ax = plt.subplots(nrows=1, ncols=2, figsize=(26,6))
 
     def plot(fit, err, x_true, ax, name):
         ax.plot(no_stars, fit, color="b", label="Fit")
-        ax.fill_between(no_stars, fit-err, fit+err, alpha=0.1,color="b", label=r"1 & 2 $\sigma$")
-        ax.fill_between(no_stars, fit-2*err, fit+2*err, alpha=0.1,color="b")
+        ax.fill_between(no_stars, fit-err, fit+err, alpha=0.1, color="b", label=r"1 & 2 $\sigma$")
+        ax.fill_between(no_stars, fit-2*err, fit+2*err, alpha=0.1, color="b")
 
         ax.axhline(x_true, color='k', linestyle=':', linewidth=2, label='Ground Truth')
 
@@ -371,13 +370,13 @@ def n_stars_plot_comp2(x1, x2, x_true, philcox, save_name, no_stars = np.array([
         ax.fill_between(philcox['n_stars'],philcox['lo'][:,i],philcox['up'][:,i],alpha=0.2,color='r')
 
     for i, name in enumerate([r'$\alpha_{\rm IMF}$', r'$\log_{10} N_{\rm Ia}$']):
-        plot(fit[:,i], err[:,i], x_true[i], ax[i], name)
+        plot(fit[:,i], err[:,i], x_true[0,i], ax[i], name)
 
     ax[0].legend(fontsize=20, fancybox=True, shadow=True)
     
     plt.tight_layout()
     plt.savefig(paths.figures / f'{save_name}.pdf')
-    plt.show()
+    plt.clf()
 
 ##########################################################################################################
 # --- Absolute percentage error plot ---
