@@ -26,6 +26,6 @@ rule sample_posterior:
     input:
         "src/data/pytorch_state_dict.pt", "src/data/posterior_NPE_C.pickle"
     output:
-        "src/data/alpha_IMF_obs_NPE_C.npy', 'src/data/log10_N_Ia_obs_NPE_C.npy"
+        "src/data/alpha_IMF_obs_NPE_C.npy", "src/data/log10_N_Ia_obs_NPE_C.npy"
     script:
         "src/scripts/sample_posterior.py"
