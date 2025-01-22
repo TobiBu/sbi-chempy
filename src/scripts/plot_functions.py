@@ -463,7 +463,7 @@ def gaussian_posterior_plot(alpha_IMF, log10_N_Ia, global_params, title):
     plt.gca().add_artist(legend_fit)
     plt.gca().add_artist(legend_true)
     
-    plt.title(title, fontsize=60)
+    plt.title(title, fontsize=40)
 
     plt.tight_layout()
-    plt.savefig(paths.figures / f'{title}.pdf')
+    plt.savefig(paths.figures / f'{title}.png')

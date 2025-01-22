@@ -58,22 +58,6 @@ dependencies:
       - src/data/alpha_IMF_obs_NPE_C.npy
       - src/data/log10_N_Ia_obs_NPE_C.npy
 
-figure_dependencies:
-  chempy_tng_inference.py:
-  - sample_posterior.py:
-      generate:
-          shell: python sample_posterior.py
-          dependencies:
-              - sample_posterior.py
-              - pytorch_state_dict.pt 
-              - posterior_NPE_C.pickle
-          title: Posterior sampling for TNG yields
-          description: >-
-              This is the result of the posterior sampling for the CHEMPY run with TNG yields.
-          creators:
-              - Buck, Tobias and Günes, Bercay
-
-
 
 
   # src/tex/ms.tex:
