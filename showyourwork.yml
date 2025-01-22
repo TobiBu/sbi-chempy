@@ -60,11 +60,11 @@ figure_dependencies:
   chempy_tng_inference.py:
   - sample_posterior.py:
       generate:
-          shell: python ../scripts/sample_posterior.py
+          shell: python sample_posterior.py
           dependencies:
-              - ../scripts/sample_posterior.py
-              - ../data/pytorch_state_dict.pt 
-              - ../data/posterior_NPE_C.pickle
+              - sample_posterior.py
+              - pytorch_state_dict.pt 
+              - posterior_NPE_C.pickle
           title: Posterior sampling for TNG yields
           description: >-
               This is the result of the posterior sampling for the CHEMPY run with TNG yields.
