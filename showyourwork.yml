@@ -61,7 +61,7 @@ figure_dependencies:
       generate:
           shell: python src/scripts/sample_posterior.py
           dependencies:
-              - "src/scripts/sample_posterior.py"
+              - src/scripts/sample_posterior.py
           title: Posterior sampling for TNG yields
           description: >-
               This is the result of the posterior sampling for the CHEMPY run with TNG yields.
