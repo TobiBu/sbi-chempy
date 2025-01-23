@@ -29,6 +29,9 @@ sigma_alpha_combined = 1/np.sqrt(np.sum(1/sigma_alpha**2))
 mu_N_Ia_combined = np.sum(mu_N_Ia/sigma_N_Ia**2)/np.sum(1/sigma_N_Ia**2)
 sigma_N_Ia_combined = 1/np.sqrt(np.sum(1/sigma_N_Ia**2))
 
+with open(paths.output / f'CHEMPY_TNG_sbi.txt', 'w') as f:
+    f.write(f"$\alpha_{\rm IMF}={mu_alpha_combined:.3f}\pm{sigma_alpha_combined:.3f}$ and $\log_{10}(\rm N_{Ia})={mu_N_Ia_combined:.3f} \pm {sigma_N_Ia_combined:.3f}$%")
+
 print(f"alpha_IMF = {mu_alpha_combined:.3f} +/- {sigma_alpha_combined:.3f}")
 print(f"log10_N_Ia = {mu_N_Ia_combined:.3f} +/- {sigma_N_Ia_combined:.3f}")
 

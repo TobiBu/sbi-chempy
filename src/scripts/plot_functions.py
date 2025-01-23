@@ -437,7 +437,7 @@ def gaussian_posterior_plot(alpha_IMF, log10_N_Ia, global_params, title):
     label_gt = r'Ground Truth' + f"\n" + r"$\alpha_{\rm IMF} = $" + f'${global_params[0,0]:.2f}$' + f"\n" + r"$\log_{10} N_{\rm Ia} = $" + f'${global_params[0,1]:.2f}$'
     label_fit = r'Fit' + f"\n" + r"$\alpha_{\rm IMF} = $" + f'${mu_alpha:.3f} \\pm {sigma_alpha:.3f}$' + f"\n" + r"$\log_{10} N_{\rm Ia} = $" + f'${mu_log10N_Ia:.3f} \\pm {sigma_log10N_Ia:.3f}$'
     
-    legend_true = plt.scatter(global_params[0,0], global_params[0,1], color='red', label=label_gt, s=100)
+    legend_true = plt.scatter(global_params[0,0], global_params[0,1], marker='*', color='red', label=label_gt, s=100)
     legend_fit = plt.scatter(mu_alpha, mu_log10N_Ia, color='k', label=label_fit, s=100)
     
     legend_fit = plt.legend(handles=[legend_fit], fontsize=30, shadow=True, fancybox=True, loc=2, bbox_to_anchor=(0, 0.2))
@@ -446,11 +446,12 @@ def gaussian_posterior_plot(alpha_IMF, log10_N_Ia, global_params, title):
 
     # Sigma levels
     levels = []
+    colors = ['w', 'w', 'k']
     sigma = np.array([3,2,1], dtype=float)
     for n in sigma:
         levels.append(posterior.pdf([mu_alpha+n*sigma_alpha, mu_log10N_Ia+n*sigma_log10N_Ia]))
-    CS = plt.contour(x, y, posterior.pdf(pos), levels=levels, colors='k', linestyles='dashed')
-    text = plt.clabel(CS, inline=True, fontsize=15)
+    CS = plt.contour(x, y, posterior.pdf(pos), levels=levels, colors='w', linestyles='dashed')
+    text = plt.clabel(CS, inline=True, fontsize=25)
     for t in text:
         i = np.abs(np.array(levels) - float(t._text)).argmin()
         s = int(sigma[i])
