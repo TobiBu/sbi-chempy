@@ -34,6 +34,6 @@ rule tng_inference:
     input:
         "src/data/alpha_IMF_obs_NPE_C.npy", "src/data/log10_N_Ia_obs_NPE_C.npy"
     output:
-        "src/tex/output/tng_inference.txt"
+        "src/tex/output/CHEMPY_TNG_sbi.txt"
     script:
         "src/scripts/chempy_tng_inference.py"
