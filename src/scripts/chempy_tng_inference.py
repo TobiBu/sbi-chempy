@@ -30,7 +30,7 @@ mu_N_Ia_combined = np.sum(mu_N_Ia/sigma_N_Ia**2)/np.sum(1/sigma_N_Ia**2)
 sigma_N_Ia_combined = 1/np.sqrt(np.sum(1/sigma_N_Ia**2))
 
 with open(paths.output / f'CHEMPY_TNG_sbi.txt', 'w') as f:
-    f.write(f"$\alpha_{{\rm IMF}}={mu_alpha_combined:.3f}\pm{sigma_alpha_combined:.3f}$ and $\log_{10}(\rm N_{Ia})={mu_N_Ia_combined:.3f} \pm {sigma_N_Ia_combined:.3f}$%")
+    f.write(f"$\alpha_{{\rm IMF}}={mu_alpha_combined:.3f}\pm{sigma_alpha_combined:.3f}$ and $\log_{{10}}(\rm N_{{Ia}})={mu_N_Ia_combined:.3f} \pm {sigma_N_Ia_combined:.3f}$%")
 
 print(f"alpha_IMF = {mu_alpha_combined:.3f} +/- {sigma_alpha_combined:.3f}")
 print(f"log10_N_Ia = {mu_N_Ia_combined:.3f} +/- {sigma_N_Ia_combined:.3f}")
@@ -45,6 +45,7 @@ gaussian_posterior_plot(alpha_IMF_obs, log10_N_Ia_obs, global_params, title="CHE
 
 
 # --- Compare to HMC ---
+# Philcox&Rybizki 2019 Table 3
 philcox = {}
 philcox["n_stars"] = np.array([1,10,100])
 philcox["med"] = np.array([[-2.29,-2.87],[-2.31,-2.90],[-2.31,-2.90]])
