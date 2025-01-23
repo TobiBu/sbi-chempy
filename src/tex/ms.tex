@@ -381,6 +381,25 @@ In summary, our SBI pipeline is quite capable of correctly and precisely inferri
 \subsection{Alternative yield set}
 \label{subsec: mocks_wrong_yield}
 
+\begin{figure*}
+    \centering
+    \includegraphics[width=\textwidth]{figures/CHEMPY_alternative_yields_Nstar_comp.pdf}
+    \vspace{-.5cm}
+    \caption{Accuracy of inferred global galactic parameters $\alpha_{IMF}$ and $\log_{10}(N_{Ia})$ as a function of number of observed stars, comparing SBI (blue line) to the inferred values using HMC (red line) as done by \cite{Philcox_2019} and the ground truth values (black dashed line). For the SBI analysis we show $1\sigma$ and $2\sigma$ contours while HMC results only show $1\sigma$ statistical uncertainities as reported in Tab.~3 of \citet{Philcox_2019} (blue/red shaded regions).}
+    \label{fig:CHEMPY_TNG_N_star_analysis}
+    \script{chempy_alt_yield_inference.py}
+\end{figure*}
+
+\begin{figure}
+%\vspace{-1.3cm}
+    \centering
+    \includegraphics[width=\columnwidth]{figures/CHEMPY_alternative_yields.png}
+    \vspace{-.25cm}
+    \caption{Joint posterior for global galactic parameters $\alpha_{\rm IMF}$ and $\log_{10}(\rm N_{Ia})$ of $1000$ stars. The ground truth value is shown by the black dot, the posterior mean of the SBI inference is shown with the red star and white and black ellipses show the $1-3\sigma$ contours of our inference.}
+    \label{fig:CHEMPY_TNG_sbi} 
+    \script{chempy_alt_yield_inference.py}
+\end{figure}
+
 \section{Discussion}
 \label{sec: conclusion}
 
