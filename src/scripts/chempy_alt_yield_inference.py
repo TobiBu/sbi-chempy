@@ -57,7 +57,7 @@ alt_y = np.delete(alt_y, 2, 1)
 alt_y_obs = add_noise(alt_y)
 
 # ----- Load posterior -----
-with open(f'data/posterior_{name}.pickle', 'rb') as f:
+with open(paths.data / f'posterior_{name}.pickle', 'rb') as f:
     posterior = pickle.load(f)
 
 # ----- Evaluate the posterior -------------------------------------------------------------------------------------------------------------------------------------------
