@@ -42,7 +42,7 @@ def add_noise(true_abundances):
 
 # ----- Load the data -------------------------------------------------------------------------------------------------------------------------------------------
 # TNG simulation data
-data_tng = np.load(paths.data / "Mock_Data_TNG.npz", mmap_mode='r')
+data_tng = np.load(paths.static / "Mock_Data_TNG.npz", mmap_mode='r')
 
 tng_y = data_tng['true_abuns']
 
@@ -78,7 +78,7 @@ philcox = {}
 philcox["n_stars"] = np.array([1,10,100])
 philcox["med"] = np.array([[-2.27,-2.86],[-2.27,-2.87],[-2.28,-2.89]])
 philcox["up"] = np.array([[-2.19,-2.75],[-2.24,-2.84],[-2.27,-2.88]])
-philcox["lo"] = np.array([[-2.35,-3.97],[-2.3,-2.91],[-2.29,-2.90]])
+philcox["lo"] = np.array([[-2.35,-2.97],[-2.3,-2.91],[-2.29,-2.90]])
 
 stars = np.arange(1,len(tng_y_obs))
 n_stars_plot_comp2(alpha_IMF_tng_obs, log10_N_Ia_tng_obs, global_params, philcox, "TNG_sim_Nstar_comp", stars)
