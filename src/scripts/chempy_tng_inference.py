@@ -39,7 +39,6 @@ print(f"log10_N_Ia = {mu_N_Ia_combined:.3f} +/- {sigma_N_Ia_combined:.3f}")
 # --- Plot the data ---
 gaussian_posterior_plot(alpha_IMF_obs, log10_N_Ia_obs, global_params, title="CHEMPY_TNG_yields")
 
-
 #stars = np.arange(1,1000)
 #n_stars_plot(alpha_IMF_obs, log10_N_Ia_obs, global_params, "CHEMPY_TNG_yields_N_star", stars)
 
