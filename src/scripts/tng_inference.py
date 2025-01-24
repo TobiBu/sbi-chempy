@@ -42,7 +42,7 @@ def add_noise(true_abundances):
 
 # ----- Load the data -------------------------------------------------------------------------------------------------------------------------------------------
 # TNG simulation data
-data_tng = np.load("data/chempy_data_paper/Mock_Data_TNG.npz", mmap_mode='r')
+data_tng = np.load(paths.data / "Mock_Data_TNG.npz", mmap_mode='r')
 
 tng_y = data_tng['true_abuns']
 
