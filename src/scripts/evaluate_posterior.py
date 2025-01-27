@@ -84,3 +84,19 @@ for i in range(ape.shape[1]):
     if i in [0,1]:
         with open(paths.output / f'posterior_APE.txt', 'a') as f:
             f.write(f"${median:.1f} + {u_quantile-median:.1f} - {median-l_quantile:.1f}\,\%$%")
+
+# --- Plot calbration using ltu-ili ---
+from ili.validation.metrics import PosteriorCoverage
+
+plot_hist = ["coverage", "histogram", "predictions", "tarp"]
+metric = PosteriorCoverage(
+    num_samples=1000, sample_method='direct',
+    labels=[rf'$\log_{{10}}(M_{{s}}) [M_{{\odot}}]$', rf'$\log_{{10}}(\tau) [Gyr]$'], plot_list = plot_hist
+)
+
+fig = metric(
+    posterior=posterior,
+    x=xs, theta=thetas)
+
+for plot in plot_hist:
+    plt.savefig(paths.figures / f'ili_{plot}.pdf')
