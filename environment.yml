@@ -6,6 +6,7 @@ dependencies:
   - pytorch::pytorch=2.5.1
   - pip:
       - matplotlib==3.9.2
-      - sbi==0.23.2
+      - sbi==0.22.0
       - git+https://github.com/bGuenes/ChempyMulti.git
+      - git+https://github.com/maho3/ltu-ili.git
       
