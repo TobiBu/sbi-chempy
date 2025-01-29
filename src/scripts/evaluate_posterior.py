@@ -7,6 +7,7 @@ from Chempy.parameter import ModelParameters
 
 from scipy.stats import norm
 from plot_functions import ape_plot
+import matplotlib.pyplot as plt
 
 # ----- Evaluate the posterior -------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -86,17 +87,18 @@ for i in range(ape.shape[1]):
             f.write(f"${median:.1f} + {u_quantile-median:.1f} - {median-l_quantile:.1f}\,\%$%")
 
 # --- Plot calbration using ltu-ili ---
-from ili.validation.metrics import PosteriorCoverage
+from metrics import PosteriorCoverage
 
 plot_hist = ["coverage", "histogram", "predictions", "tarp"]
 metric = PosteriorCoverage(
     num_samples=1000, sample_method='direct',
-    labels=[rf'$\log_{{10}}(M_{{s}}) [M_{{\odot}}]$', rf'$\log_{{10}}(\tau) [Gyr]$'], plot_list = plot_hist
+    labels=labels_in,
+    plot_list = plot_hist
 )
 
 fig = metric(
     posterior=posterior,
-    x=xs, theta=thetas)
+    x=abundances, theta=val_theta)
 
-for plot in plot_hist:
-    plt.savefig(paths.figures / f'ili_{plot}.pdf')
+for i, plot in enumerate(fig):
+    fig[i].savefig(paths.figures / f'ili_{plot_hist[i]}.pdf')

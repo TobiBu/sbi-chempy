@@ -6,7 +6,20 @@ dependencies:
   - pytorch::pytorch=2.5.1
   - pip:
       - matplotlib==3.9.2
-      - sbi==0.22.0
+      - sbi==0.23.1
       - git+https://github.com/bGuenes/ChempyMulti.git
-      - git+https://github.com/maho3/ltu-ili.git
-      
+      - seaborn
+      - tqdm
+      - git+https://github.com/maho3/tarp.git
+
+# dependencies:
+#   - conda-forge::numpy=2.1.2
+#   - conda-forge::pip=24.0
+#   - conda-forge::python=3.12
+#   - conda-forge::scipy=1.14.1
+#   - pytorch::pytorch=2.5.1
+#   - pip:
+#       - matplotlib==3.9.2
+#       - sbi==0.22.0
+#       - git+https://github.com/bGuenes/ChempyMulti.git
+#       - git+https://github.com/maho3/ltu-ili.git

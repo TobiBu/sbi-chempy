@@ -18,7 +18,7 @@ re_train = False
 # ----- Load the data ---------------------------------------------------------------------------------------------------------------------------------------------
 # ---  Load in the validation data ---
 path_test = paths.data / 'chempy_data/chempy_TNG_val_data.npz'
-val_data = np.load(path_test, mmap_mode='r')
+val_data = np.load(path_test, mmap_mode='r', allow_pickle=True)
 
 val_x = val_data['params']
 val_y = val_data['abundances']
