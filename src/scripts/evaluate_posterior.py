@@ -87,7 +87,7 @@ for i in range(ape.shape[1]):
             f.write(f"${median:.1f}^{+u_quantile-median:.1f}_{-median-l_quantile:.1f}\,\%$%")
 
 # --- Plot calbration using ltu-ili ---
-from .metrics import PosteriorCoverage
+from metrics import PosteriorCoverage
 
 plot_hist = ["coverage", "histogram", "predictions", "tarp"]
 metric = PosteriorCoverage(
