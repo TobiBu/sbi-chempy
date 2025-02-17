@@ -11,4 +11,4 @@ dependencies:
       - seaborn
       - tqdm
       - git+https://github.com/maho3/tarp.git
-      - shedulefree
+      - schedulefree
