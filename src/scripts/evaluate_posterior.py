@@ -77,17 +77,17 @@ print(f"Total : {median:.1f}% + {u_quantile-median:.1f} - {median-l_quantile:.1f
 print("")
 
 with open(paths.output / f'global_posterior_APE.txt', 'w') as f:
-    f.write(f"${median:.1f} + {u_quantile-median:.1f} - {median-l_quantile:.1f}\,\%$%")
+    f.write(f"${median:.1f}^{+{u_quantile-median:.1f}}_{-{median-l_quantile:.1f}}\,\%$%")
 
 for i in range(ape.shape[1]):
     l_quantile, median, u_quantile = np.percentile(ape[:,i], [25, 50, 75])
     print(labels_in[i] + f" : {median:.1f}% + {u_quantile-median:.1f} - {median-l_quantile:.1f}")
     if i in [0,1]:
         with open(paths.output / f'posterior_APE.txt', 'a') as f:
-            f.write(f"${median:.1f} + {u_quantile-median:.1f} - {median-l_quantile:.1f}\,\%$%")
+            f.write(f"${median:.1f}^{+{u_quantile-median:.1f}}_{-{median-l_quantile:.1f}}\,\%$%")
 
 # --- Plot calbration using ltu-ili ---
-from metrics import PosteriorCoverage
+from .metrics import PosteriorCoverage
 
 plot_hist = ["coverage", "histogram", "predictions", "tarp"]
 metric = PosteriorCoverage(

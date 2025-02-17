@@ -16,7 +16,6 @@ from torch.distributions.uniform import Uniform
 
 import time as t
 import pickle
-from tqdm import tqdm
 
 from chempy_torch_model import Model_Torch
 
@@ -32,8 +31,8 @@ labels_in = [a.to_optimize[i] for i in range(len(a.to_optimize))] + ['time']
 priors = torch.tensor([[a.priors[opt][0], a.priors[opt][1]] for opt in a.to_optimize])
 
 combined_priors = utils.MultipleIndependent(
-    [Normal(p[0]*torch.ones(1), p[1]*torch.ones(1)) for p in priors] +
-    [Uniform(torch.tensor([2.0]), torch.tensor([12.8]))],
+    [Uniform(p[0]*torch.ones(1)-5*p[1], p[0]*torch.ones(1)+5*p[1]) for p in priors] +
+    [Uniform(torch.tensor([1.0]), torch.tensor([13.8]))],
     validate_args=False)
 
 # --- Set up the model ---
@@ -61,7 +60,7 @@ check_sbi_inputs(simulator, prior)
 
 
 # ----- Train the SBI -------------------------------------------------------------------------------------------------------------------------------------------
-density_estimator_build_fun = posterior_nn(model="maf", hidden_features=10, num_transforms=1, blocks=1)
+density_estimator_build_fun = posterior_nn(model="nsf", hidden_features=20, num_transforms=10, blocks=1)
 inference = NPE_C(prior=prior, density_estimator=density_estimator_build_fun, show_progress_bars=True)
 
 start = t.time()
