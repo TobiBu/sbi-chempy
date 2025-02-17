@@ -62,6 +62,10 @@
           \and
           Berkay Günes\inst{1,2}
           \and
+          Giuseppe Viterbo\inst{1,2}
+          \and
+          William H. Oliver\inst{1,2}
+          \and
           et al.
           }
 
@@ -295,7 +299,7 @@ This factorization of the joint posterior into single star posteriors $\mathbb{P
 In a nutshell, SBI \citep[e.g.][]{Cranmer2020,Papamakarios:2021,Gloeckler2024AllinoneSI} -- also called likelihood free inference within a Bayesian inference framework -- works as follows: given an assumed generative model $\mathcal{M}$ of parameters $\Vec{\theta}$ (in our case a GCE model) and a set of simulated observations of individual stellar abundances $\Vec{X}$ from that model, we train a mapping between the two to estimate the posterior distribution $p$($\Vec{\theta}|\Vec{X}$, $\mathcal{M}$) of the generative model parameters $\Vec{\theta}$ that reproduce the simulated observations $\Vec{X}$. Once this mapping is trained, we can apply it to observations of stellar abundances $\Vec{X_R}$ to infer $p$($\Vec{\theta}|\Vec{X_R}$, $\mathcal{M}$) (see Fig. \ref{fig:flowchart} for a schematic visual representation of our method). Note, we do not need to know anything about $p$($\Vec{\theta}|\Vec{X_R}$, $\mathcal{M}$), we solely need to be able to sample from it.
 
 We use a NPE \cite{zeghal2022neuralposteriorestimationdifferentiable} which utilises the gradients of the generative model $\mathcal{M}$ with a Neural Spline Flow (NSF) \citet{durkan2019neuralsplineflows} containing 20 hidden features and 10 transformation layers for the normalizing flow. The NSF uses as invertible transformation smooth and flexible spline functions to allow efficient sampling. The expressivity of the spline allows the NDE to be capture complex distributions, while also maintaining computational tractability. The final model was selected after extensive hyperparameter tuning, varying: the architecture between NSF, Masked Autoregressive Flow (MAF) \cite{papamakarios2018maskedautoregressiveflowdensity}, and Mask Autoregressive 
-Flow with rational-quadratic spline (MAF-RQS), the number of neurons between {10, 20, 50, 100}, and the number of transformations between {1, 5, 10, 30}, optimizing over the test set for both the highest mean log posterior probability and the best calibration as measured by the TARP value \citep{Lemos2023}. For more details on TARP see \ref{sec:sbc} in the appendix.
+Flow with rational-quadratic spline (MAF-RQS), the number of neurons between {10, 20, 50, 100}, and the number of transformations between {1, 5, 10, 30}, optimizing over the test set for both the highest mean log posterior probability and the best calibration as measured by the TARP value \citep{Lemos2023}. For more details on the TARP value see section \ref{sec:sbc} in the appendix.
 
 We train our NPE with $10^5$ data points consisting of $n_{\rm elements}=8$ simulated with the NN emulator described in the previous section with inputs sampled from a uniform prior over the original $5\sigma$-range of the Gaussian priors shown in Tab. \ref{tab:priors} to provide better coverage of the parameter space. Training takes $\sim70$ minutes on an Intel(R) Xeon(R) Platinum 8468V with 192 CPU cores. 
 We evaluate the accuracy of the NPE using $5\times10^4$ validation data points from the original \texttt{CHEMPY} simulator. In order to mimic observational noise, we add 5\% observational uncertainties to the abundances simulated with \texttt{CHEMPY} before feeding them to our NPE.
