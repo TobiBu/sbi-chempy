@@ -394,7 +394,7 @@ def ape_plot(ape, labels_in, save_path):
     ax_hist.set_ylabel('CDF', fontsize=15)
     ax_hist.spines['top'].set_visible(False)
     ax_hist.spines['right'].set_visible(False)
-    ax_hist.legend()
+    ax_hist.legend(loc='lower right', fontsize=15)
 
     bplot = ax_box.boxplot(ape, vert=False, autorange=False, widths=0.5, patch_artist=True, showfliers=False, boxprops=dict(facecolor='tomato'), medianprops=dict(color='black'))
     for patch, color in zip(bplot['boxes'], colors):
