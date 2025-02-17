@@ -11,6 +11,8 @@ from torch.distributions.uniform import Uniform
 from chempy_torch_model import Model_Torch
 
 import time as t
+import os
+import schedulefree
 
 # ---  You want to retrain? ---
 re_train = False
@@ -58,13 +60,15 @@ model = Model_Torch(val_x.shape[1], val_y.shape[1])
 
 # ----- Train the model -------------------------------------------------------------------------------------------------------------------------------------------
 
-optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
+#optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
+optimizer = schedulefree.AdamWScheduleFree(model.parameters(), lr=1e-3)
 loss_fn = torch.nn.MSELoss()
+
 
 # --- Train the neural network ---
 if re_train:
     # --- Load in training data ---
-    path_training = paths.data / 'chempy_data/chempy_TNG_train_data.npz'
+    path_training = paths.data / 'chempy_data/chempy_train_uniform_prior_5sigma.npz' #chempy_TNG_train_data.npz'
     training_data = np.load(path_training, mmap_mode='r')
 
     elements = training_data['elements']
@@ -149,9 +153,10 @@ else:
 
     fig, (ax_box, ax_hist) = plt.subplots(2, sharex=True, gridspec_kw={"height_ratios": (.20, .80)})
 
+    ax_hist.hist(ape.flatten(), bins=100, density=True, cumulative=True, range=(0, 30), color='tomato')
     ax_hist.hist(ape.flatten(), bins=100, density=True, range=(0, 30), color='tomato')
     ax_hist.set_xlabel('Error (%)', fontsize=15)
-    ax_hist.set_ylabel('Density', fontsize=15)
+    ax_hist.set_ylabel('CDF', fontsize=15)
     ax_hist.spines['top'].set_visible(False)
     ax_hist.spines['right'].set_visible(False)
     # percentiles
@@ -167,7 +172,7 @@ else:
     ax_box.spines['right'].set_visible(False)
     ax_box.spines['top'].set_visible(False)
 
-    fig.suptitle('APE of the Neural Network', fontsize=20)
+    #fig.suptitle('APE of the Neural Network', fontsize=20)
     plt.xlim(0, 30)
     fig.tight_layout()
 
