@@ -388,13 +388,13 @@ def ape_plot(ape, labels_in, save_path):
     for i in range(ape.shape[1]):
         ax_hist.hist(ape[:,i], bins=25, density=True, cumulative=True, histtype='step', lw=2, range=(0, 100), label=labels_in[i], color=colors[i])#, alpha=0.5)
         median = np.percentile(ape[:,i], 50)
-        ax_hist.axvline(median, color=colors[i], linestyle='--')
+        #ax_hist.axvline(median, color=colors[i], linestyle='--')
             
     ax_hist.set_xlabel('Error (%)', fontsize=15)
     ax_hist.set_ylabel('CDF', fontsize=15)
     ax_hist.spines['top'].set_visible(False)
     ax_hist.spines['right'].set_visible(False)
-    ax_hist.legend(loc='lower right', fontsize=15)
+    ax_hist.legend(loc='lower right', fontsize=12)
 
     bplot = ax_box.boxplot(ape, vert=False, autorange=False, widths=0.5, patch_artist=True, showfliers=False, boxprops=dict(facecolor='tomato'), medianprops=dict(color='black'))
     for patch, color in zip(bplot['boxes'], colors):
