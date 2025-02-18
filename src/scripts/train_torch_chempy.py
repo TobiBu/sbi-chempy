@@ -11,11 +11,10 @@ from torch.distributions.uniform import Uniform
 from chempy_torch_model import Model_Torch
 
 import time as t
-import os
 import schedulefree
 
 # ---  You want to retrain? ---
-re_train = False
+re_train = True #False
 
 # ----- Load the data ---------------------------------------------------------------------------------------------------------------------------------------------
 # ---  Load in the validation data ---
@@ -68,7 +67,7 @@ loss_fn = torch.nn.MSELoss()
 # --- Train the neural network ---
 if re_train:
     # --- Load in training data ---
-    path_training = paths.data / 'chempy_data/chempy_train_uniform_prior_5sigma.npz' #chempy_TNG_train_data.npz'
+    path_training = paths.data / 'chempy_data/chempy_TNG_train_data.npz' #chempy_train_uniform_prior_5sigma.npz'
     training_data = np.load(path_training, mmap_mode='r')
 
     elements = training_data['elements']
