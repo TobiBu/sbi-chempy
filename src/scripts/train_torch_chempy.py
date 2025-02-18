@@ -95,6 +95,7 @@ if re_train:
         train_loss = []
         for i in range(0, train_x.shape[0], batch_size):
             optimizer.zero_grad()
+            optimizer.train()
         
             # Get the batch
             x_batch = train_x[i:i+batch_size].requires_grad_(True)
@@ -112,6 +113,7 @@ if re_train:
             optimizer.step()
         
         # Validation loss
+        optimizer.eval()
         y_pred = model(val_x)
         val_loss = loss_fn(y_pred, val_y)
     
