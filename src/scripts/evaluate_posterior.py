@@ -49,6 +49,9 @@ def clean_data(x, y):
 
 val_theta, val_x = clean_data(val_theta, val_x)
 
+val_theta = val_theta[:10000]
+val_x = val_x[:10000]
+
 # convert to torch tensors
 val_theta = torch.tensor(val_theta, dtype=torch.float32)
 val_x = torch.tensor(val_x, dtype=torch.float32)
