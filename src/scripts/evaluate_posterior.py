@@ -6,8 +6,6 @@ from tqdm import tqdm
 from Chempy.parameter import ModelParameters
 
 from scipy.stats import norm
-from plot_functions import ape_plot
-import matplotlib.pyplot as plt
 
 # ----- Evaluate the posterior -------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -49,8 +47,8 @@ def clean_data(x, y):
 
 val_theta, val_x = clean_data(val_theta, val_x)
 
-val_theta = val_theta[:10000]
-val_x = val_x[:10000]
+val_theta = val_theta[:5000]
+val_x = val_x[:5000]
 
 # convert to torch tensors
 val_theta = torch.tensor(val_theta, dtype=torch.float32)
@@ -88,20 +86,3 @@ for i in range(ape.shape[1]):
     if i in [0,1]:
         with open(paths.output / f'posterior_APE.txt', 'a') as f:
             f.write(f"${median:.1f}^{{+{u_quantile-median:.1f}}}_{{-{median-l_quantile:.1f}}}\,\%$%")
-
-# --- Plot calbration using ltu-ili ---
-from metrics import PosteriorCoverage
-
-plot_hist = ["coverage", "histogram", "predictions", "tarp"]
-metric = PosteriorCoverage(
-    num_samples=1000, sample_method='direct',
-    labels=labels_in,
-    plot_list = plot_hist
-)
-
-fig = metric(
-    posterior=posterior,
-    x=abundances, theta=val_theta)
-
-for i, plot in enumerate(fig):
-    fig[i].savefig(paths.figures / f'ili_{plot_hist[i]}.pdf')

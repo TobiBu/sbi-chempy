@@ -54,6 +54,9 @@ dependencies:
       - src/scripts/plot_functions.py
       - src/data/posterior_NPE_C.pickle
       - src/data/pytorch_state_dict.pt
+  src/scripts/plot_sbc.py:
+      - src/data/ape_posterior_NPE_C.pt
+      - src/data/chempy_data/chempy_TNG_val_data.npz
   src/scripts/chempy_tng_inference.py:
       - src/scripts/plot_functions.py
       - src/data/alpha_IMF_obs_NPE_C.npy
@@ -66,6 +69,11 @@ dependencies:
       - src/scripts/plot_functions.py
       - src/data/alpha_IMF_obs_NPE_C.npy
       - src/data/log10_N_Ia_obs_NPE_C.npy
+  src/scripts/additional_inference.py:
+      - src/scripts/plot_functions.py
+      - src/data/pytorch_state_dict.pt
+      - src/data/posterior_NPE_C.pickle
+  
 
 
 
