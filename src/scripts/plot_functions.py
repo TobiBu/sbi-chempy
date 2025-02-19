@@ -216,7 +216,7 @@ def plot_2d_hist_sides(x1, x2, x_true, N_stars):
 
 ##########################################################################################################
 # --- N-Star parameter plot ---
-def n_stars_plot(x1, x2, x_true, no_stars= np.array([1, 10, 100, 500, 1000]), simulations=1000):
+def n_stars_plot(x1, x2, x_true, save_name, no_stars= np.array([1, 10, 100, 500, 1000]), simulations=1000):
     fit = []
     err = []
 
