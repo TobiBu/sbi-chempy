@@ -30,17 +30,18 @@ labels_out = a.elements_to_trace
 labels_in = [a.to_optimize[i] for i in range(len(a.to_optimize))] + ['time']
 priors = torch.tensor([[a.priors[opt][0], a.priors[opt][1]] for opt in a.to_optimize])
 
+"""
 combined_priors = utils.MultipleIndependent(
     [Normal(p[0]*torch.ones(1), p[1]*torch.ones(1)) for p in priors] +
     [Uniform(torch.tensor([2.0]), torch.tensor([12.8]))],
     validate_args=False)
-
 """
+
 combined_priors = utils.MultipleIndependent(
-    [Uniform(p[0]*torch.ones(1)-3*p[1], p[0]*torch.ones(1)+3*p[1]) for p in priors] +
+    [Uniform(p[0]*torch.ones(1)-5*p[1], p[0]*torch.ones(1)+5*p[1]) for p in priors] +
     [Uniform(torch.tensor([2.0]), torch.tensor([12.8]))],
     validate_args=False)
-"""
+
 
 
 # --- Set up the model ---
@@ -68,7 +69,7 @@ check_sbi_inputs(simulator, prior)
 
 
 # ----- Train the SBI -------------------------------------------------------------------------------------------------------------------------------------------
-density_estimator_build_fun = posterior_nn(model="nsf", hidden_features=20, num_transforms=10, blocks=1)
+density_estimator_build_fun = posterior_nn(model="nsf", hidden_features=10, num_transforms=5)#, blocks=1)
 inference = NPE_C(prior=prior, density_estimator=density_estimator_build_fun, show_progress_bars=True)
 
 start = t.time()

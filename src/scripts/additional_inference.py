@@ -26,7 +26,7 @@ priors = torch.tensor([[a.priors[opt][0], a.priors[opt][1]] for opt in a.to_opti
 elements = a.elements_to_trace
 
 # ----- Load posterior -----
-with open(f'data/posterior_{name}.pickle', 'rb') as f:
+with open(paths.data / f'posterior_{name}.pickle', 'rb') as f:
     posterior = pickle.load(f)
 
 
