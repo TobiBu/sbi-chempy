@@ -40,6 +40,9 @@ dependencies:
   src/scripts/train_torch_chempy.py:
      - src/data/chempy_data/chempy_TNG_train_data.npz
      - src/data/chempy_data/chempy_TNG_val_data.npz
+  src/scripts/evaluate_emulator.py:
+     - src/data/chempy_data/chempy_TNG_val_data.npz
+     - src/data/pytorch_state_dict.pt
   src/scripts/train_sbi.py:
       - src/data/chempy_data/chempy_TNG_train_data.npz
       - src/data/chempy_data/chempy_TNG_val_data.npz
