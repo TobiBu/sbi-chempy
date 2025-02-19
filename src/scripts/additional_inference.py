@@ -53,7 +53,7 @@ simulations = 1000
 
 stars = local_GP.sample((N_stars,))
 
-global_params_plot = torch.tensor([[-2.1, -3.0], [0.3, 0.3]])
+global_params_plot = np.array([[-2.1, -3.0], [0.3, 0.3]])
 global_params = torch.tensor([[-2.1, -3.0]])
 
 
@@ -94,7 +94,7 @@ alpha_IMF_obs = np.array(alpha_IMF_obs)
 log10_N_Ia_obs = np.array(log10_N_Ia_obs)
 
 # --- plot the data ---
-gaussian_posterior_plot(alpha_IMF_obs, log10_N_Ia_obs, global_params_plot.numpy(), title="different_prior")
+gaussian_posterior_plot(alpha_IMF_obs, log10_N_Ia_obs, global_params_plot, title="different_prior")
 
 stars = np.arange(1,1000)
-n_stars_plot(alpha_IMF_obs, log10_N_Ia_obs, global_params_plot.numpy(), "Nstar_comp_different_prior", stars)
+n_stars_plot(alpha_IMF_obs, log10_N_Ia_obs, global_params_plot, "Nstar_comp_different_prior", stars)
