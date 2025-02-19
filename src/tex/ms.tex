@@ -93,7 +93,7 @@
   % methods heading (mandatory)
    {We combined a Galactic Chemical Evolution (GCE) model, \texttt{CHEMPY}, with a neural network emulator and a Neural Posterior Estimator (NPE) to train an SBI pipeline. Mock datasets were generated using \texttt{CHEMPY}, including scenarios with mismatched nucleosynthetic yields, and additional tests were conducted on data from a Milky Way-like galaxy taken from a hydrodynamical simulation. SBI results were benchmarked against HMC-based inference, focusing on computational performance, accuracy, and resilience to systematic discrepancies.}
   % results heading (mandatory)
-   {Our SBI approach achieves a $\sim1,000\times$ ($\sim72,000\times$) speed-up compared to HMC, reducing inference runtime from $\sim40$ hours for 200 stars to mere minutes for thousands of stars. Inference on $1,000$ stars yielded precise estimates for the IMF slope ($\alpha_{\rm IMF} = -2.296 \pm 0.009$) and SN\,Ia normalization ($\log_{10}(N_{\rm Ia}) = -2.889 \pm 0.010$), deviating by less than 0.04\% from the ground truth. SBI also demonstrated greater robustness to model misspecification than HMC, recovering accurate parameters even with alternate yield tables or data from a cosmological simulation.}
+   {Our SBI approach achieves a $\sim1,000\times$ ($\sim72,000\times$) speed-up compared to HMC, reducing inference runtime from $\sim40$ hours for 200 stars to mere minutes for thousands of stars. Inference on $1,000$ stars yielded precise estimates for the IMF slope ($\alpha_{\rm IMF} = -2.296 \pm 0.009$) and SN\,Ia normalization ($\log_{10}(N_{\rm Ia}) = -2.889 \pm 0.010$), deviating by less than 0.04\% from the ground truth. \textcolor{blue}{SBI also demonstrated greater robustness to model misspecification than HMC, recovering accurate parameters even with alternate yield tables or data from a cosmological simulation (not with the new model :( )}.}
   % conclusions heading (optional), leave it empty if necessary 
    {SBI represents a paradigm shift in galactic chemical enrichment studies, enabling efficient and precise analysis of massive stellar datasets. By outperforming HMC in speed, scalability, and robustness, SBI is poised to become a cornerstone methodology for future spectroscopic surveys, such as 4MOST and WEAVE, facilitating deeper insights into the chemical and dynamical evolution of galaxies.}
 
@@ -233,7 +233,7 @@ With these modifications, \texttt{CHEMPY} allows to predict TNG-like chemical ab
 
 \subsection{Neural network emulator for \texttt{CHEMPY}}
 Despite the simplifications made by the GCE model \texttt{CHEMPY}, the run-time of \texttt{CHEMPY} and the high-dimensionality of the parameter space incurs some difficulties when sampling the distribution of the global parameters $\vec\Lambda = \{\alpha_\mathrm{IMF},\log_{10}(N_\mathrm{Ia})\}$. 
-To alleviate this, we follow \cite{Philcox_2019} and implement a \textit{neural network} (NN) emulator of the \texttt{CHEMPY} simulator. We design the NN as a simple feed-forward neural network with 2 hidden layers and 100 neurons in the first and 40 neurons in the second layer. The NN is trained on $\sim100,000$ data points and validated on $\sim50,000$ additional data points created with \texttt{CHEMPY} using a uniform prior over the $5\sigma$-range of the original Gaussian prior stated in table~\ref{tab:priors}. The batch size is set to 64 and the learning rate is set to 0.001. We train for 20 epochs using a schedule free optimizer \citep{schedulefree}. 
+To alleviate this, we follow \cite{Philcox_2019} and implement a \textit{neural network} (NN) emulator of the \texttt{CHEMPY} simulator. We design the NN as a simple feed-forward neural network with 2 hidden layers and 100 neurons in the first and 40 neurons in the second layer. The NN is trained on $\sim700,000$ data points and validated on $\sim50,000$ additional data points created with \texttt{CHEMPY} using a uniform prior over the $5\sigma$-range of the original Gaussian prior stated in table~\ref{tab:priors}. The batch size is set to 64 and the learning rate is set to 0.001. We train for 20 epochs using a schedule free optimizer \citep{schedulefree}. 
 Training this tiny emulator takes about 200s on the CPU.
 
 In essence, instead of computing the full model for each input parameter set, we pass the parameters to the NN which predicts the output abundances to high accuracy. As already argued in \cite{Philcox_2019} this has two benefits;
@@ -305,7 +305,7 @@ In a nutshell, SBI \citep[e.g.][]{Cranmer2020,Papamakarios:2021,Gloeckler2024All
 We use a NPE \citep{zeghal2022neuralposteriorestimationdifferentiable} which utilises the gradients of the generative model $\mathcal{M}$ with a Neural Spline Flow \citep[NSF;][]{durkan2019neuralsplineflows} containing 20 hidden features and 10 transformation layers for the normalizing flow. The NSF uses as invertible transformation smooth and flexible spline functions to allow efficient sampling. The expressivity of the spline allows the NDE to be capture complex distributions, while also maintaining computational tractability. The final model was selected after extensive hyperparameter tuning, varying: the architecture between NSF, Masked Autoregressive Flow \citep[MAF;][]{papamakarios2018maskedautoregressiveflowdensity}, and Mask Autoregressive 
 Flow with rational-quadratic spline (MAF-RQS), the number of neurons between {10, 20, 50, 100}, and the number of transformations between {1, 5, 10, 30}, optimizing over the test set for both the highest mean log posterior probability and the best calibration as measured by the TARP value \citep{Lemos2023}. For more details on the TARP value see section \ref{sec:sbc} in the appendix.
 
-We train our NPE with $10^5$ data points consisting of $n_{\rm elements}=8$ simulated with the NN emulator described in the previous section. Inputs are sampled from a uniform prior over the original $5\sigma$-range of the Gaussian priors shown in Tab. \ref{tab:priors} to provide better coverage of the parameter space. Training takes $\sim70$ minutes on an Intel(R) Xeon(R) Platinum 8468V with 192 CPU cores. On an Apple M1 Max training only takes 36 minutes.
+We train our NPE with $10^5$ data points consisting of $n_{\rm elements}=8$ simulated with the NN emulator described in the previous section. Inputs are sampled from a uniform prior over the original $5\sigma$-range of the Gaussian priors shown in Tab. \ref{tab:priors} to provide better coverage of the parameter space. Training takes $\sim35$ minutes on an Apple M1 Max.
 We evaluate the accuracy of the NPE using $5\times10^4$ validation data points from the original \texttt{CHEMPY} simulator. In order to mimic observational noise, we add 5\% observational uncertainties to the abundances simulated with \texttt{CHEMPY} before feeding them to our NPE.
 We have made sure that our NPE is well calibrated and posterior distributions are trustable. For more details on simulation-based calibration see appendix \ref{sec:sbc}.
 
@@ -359,7 +359,7 @@ Each set of parameters is passed to our \texttt{CHEMPY} emulator, producing eigh
     \centering
     \includegraphics[width=\textwidth]{figures/CHEMPY_TNG_yields_Nstar_comp.pdf}
     \vspace{-.5cm}
-    \caption{Accuracy of inferred global galactic parameters $\alpha_{IMF}$ and $\log_{10}(N_{Ia})$ as a function of number of observed stars, comparing SBI (blue line) to the inferred values using HMC (red line) as done by \cite{Philcox_2019} and the ground truth values (black dashed line). For the SBI analysis we show $1\sigma$ and $2\sigma$ contours while HMC results only show $1\sigma$ statistical uncertainties as reported in Tab.~3 of \citet{Philcox_2019} (blue/red shaded regions). See Sec.~\ref{subsec:chempy_tng} for a full description.}
+    \caption{Accuracy of inferred global galactic parameters $\alpha_{IMF}$ and $\log_{10}(N_{Ia})$ as a function of number of observed stars. We compare our SBI results (blue line) to the inferred values using HMC (red line) as done by \cite{Philcox_2019} and the ground truth values (black dashed line) for various test cases as described in Sec. For the SBI analysis we show $1\sigma$ and $2\sigma$ contours while HMC results only show $1\sigma$ statistical uncertainties as reported in Tab.~3 of \citet{Philcox_2019} (blue/red shaded regions). See Sec.~\ref{subsec:chempy_tng} for a full description.}
     \label{fig:CHEMPY_TNG_N_star_analysis}
     \script{chempy_tng_inference.py}
 \end{figure*}
@@ -431,7 +431,7 @@ In summary, our SBI pipeline is quite capable of correctly and precisely inferri
     \script{chempy_alt_yield_inference.py}
 \end{figure}
 
-There is an extensive discussion in the literature about stellar nucleosynthesis with various different yield sets proposed \citep[see e.g. discussion in][]{Rybizki_2017}. In fact, any tabulated yield set will differ from reality and during an application of our inference pipeline it will not be clear which tabulated yield set most closely matches reality and hence which should be used.
+There is an extensive discussion in the literature about stellar nucleosynthesis with various different yield sets proposed \citep[see e.g. the discussion in][]{Rybizki_2017}. In fact, all tabulated yield sets currently differ from reality and during an application of our inference pipeline it will not be clear which tabulated yield set most closely matches reality and hence which should be used.
 In order to investigate how sensitive our method is to model misspecification by using an incorrect yield set, we create another set of mock data using \texttt{CHEMPY} with a different yield set (Tab. \ref{tab:chempy_ALT_yields}) than during training of our NPE. For better cross-comparison we decided to use the same alternative yield sets as presented in Tab.~5 of \citep{Philcox_2019}. 
 
 \begin{table}[]
@@ -447,7 +447,7 @@ In order to investigate how sensitive our method is to model misspecification by
 \label{tab:chempy_ALT_yields}
 \end{table}
 
-By choosing this set of yields we have made sure that contributions to all three processes differ by $\mathcal{O}(10\%)$ \citep[see Sec.~6.2 of][for more details]{Philcox_2019}.
+By choosing this set of yields we have made sure that contributions to all three processes differ by $\mathcal{O}(10\%)$. For more details see also Sec.~6.2 of \citet{Philcox_2019}.
 
 \begin{figure}
 %\vspace{-1.3cm}
@@ -467,16 +467,16 @@ In Fig.~\ref{fig:CHEMPY_alt_N_star_analysis} we show our inference results (blue
 }
 
 \textcolor{blue}{
-Nevertheless, the performance of our inference is still very good. We see that an increasing number of observations helps to decrease the models uncertainty just as before. However, we also note that our inference is now slightly biased as the observational data does not match the training data. Looking at Fig.~\ref{fig:CHEMPY_alt_sbi} we see that our inference is still consistent with the ground truth within the $3\sigma$ levels. Comparing this to the HMC results, we see that SBI is performing much better when the model is misspecified and leads to significantly less biased results. This is next to drastically reduced compute times -- another a key advantage of our SBI method compared to more standard approaches such as HMC.
+Nevertheless, the performance of our inference is still very good. We see that an increasing number of observations helps to decrease the models uncertainty just as before. However, we also note that our inference is now slightly biased as the observational data does not match the training data. Looking at Fig.~\ref{fig:CHEMPY_alt_sbi} we see that our inference is still consistent with the ground truth within the $3\sigma$ levels. Comparing this to the HMC results (red band in Fig.~\ref{fig:CHEMPY_alt_N_star_analysis}), we see that SBI is performing much better when the model is misspecified and leads to significantly less biased results. This is -- next to drastically reduced compute times -- another a key advantage of our SBI method compared to more standard approaches such as HMC.
 }
 
 In an accompanying paper we more closely investigate measures of model misspecification and inference of best fitting models next to just parameter inference.  
 
-\subsection{Inference on mock data from the IllustrisTNG simulation}
+\subsection{Inference on mock data from a IllustrisTNG simulated galaxy}
 \label{subsec:tng_sim}
 
 As a GCE code, \texttt{CHEMPY} is a one-zone model with simplified ISM physics that only approximately describes star formation and feedback as well as metal mixing in the ISM.
-In the parametrization of \texttt{CHEMPY} as used here, we can assign each star to its own ISM environment, but we cannot exchange gas between environments and do not model sudden star formation or infall events. Hence, this section is dedicated to investigate whether this significantly biases our inference of the SSP parameters (noting that results from \citet{2019ApJ...874..102W} justify the treatment of ISM parameters as latent variables).
+In the parametrization of \texttt{CHEMPY} as used here, we can assign each star to its own ISM environment, but we cannot exchange gas between environments and do not model sudden star formation or infall events. Hence, this section is dedicated to investigating whether this significantly biases our inference of the SSP parameters (noting that results from \citet{2019ApJ...874..102W} justify the treatment of ISM parameters as latent variables).
 
 In order to explore what effect this simplified treatment of ISM physics has on the inference we now turn to a more complex model of the formation and chemical enrichment of a Milky Way-type galaxy taken from the IllustrisTNG simulations. Note, that by now also the NIHAO simulations \citep{Wang2015, Buck2020,Buck2020c} have implemented \texttt{CHEMPY} supported yield tables including the TNG yield set \citep{Buck2021} and hence would make for a nice dataset for our analysis. However, we have decided to use the exact same galaxy as in \citet{Philcox_2019} for better comparison of our results.
 
@@ -487,7 +487,7 @@ We note that this TNG galaxy was deliberately chosen by \citet{Philcox_2019} to 
 We show our inference results for the TNG data set in Fig.~\ref{fig:TNG_N_star_analysis} and Fig.~\ref{fig:CHEMPY_TNG_sim_sbi}, respectively.
 Again, we find that inference becomes better with increasing number of stars. Despite the drastic difference in chemical enrichment model between training and testing data, our SBI pipeline is impressively capable of inferring the correct posterior values. SBI results for $\alpha_{\rm IMF}$ are almost perfect while $\log_{10}(N_{\rm Ia})$ is slightly biased low. This is exactly opposite to the results of HMC where inference for $\alpha_{\rm IMF}$ is biased and results for $\log_{10}(N_{\rm Ia})$ are more in agreement. Hence, our SBI inference is on par with the HMC results and given their extreme computational advantage they actually supersede HMC.
 
-Looking at the joint posterior in Fig.~\ref{fig:CHEMPY_TNG_sbi} we see that also in this case SBI recovers the true parameters with less than $3\sigma$ bias.
+Looking at the joint posteriors in Figs.~\ref{fig:CHEMPY_TNG_sbi}, \ref{fig:CHEMPY_alt_sbi} and \ref{fig:CHEMPY_TNG_sim_sbi} we see that also in this case SBI recovers the true parameters with less than $3\sigma$ bias.
 
 
 
@@ -504,7 +504,7 @@ An exciting avenue for future research involves expanding SBI to directly infer 
 
 Compared to previous HMC-based studies \citep[e.g.][]{Philcox_2019}, our results highlight SBI's resilience to certain types of model misspecification, such as mismatched yield tables. The robustness of SBI in these cases stems from its ability to approximate complex posterior distributions efficiently. Notably, SBI retained high accuracy in scenarios where HMC struggled, particularly for the high-mass slope of the IMF ($\alpha_{\rm ISM}$). This suggests SBI's potential for real-world applications, where the underlying models may deviate from observational data.
 
-The applicability of our method extends to future spectroscopic surveys, such as those planned by the 4MOST or WEAVE consortia, which will provide orders of magnitude more data than current datasets. Our findings indicate that SBI can seamlessly scale to such large datasets, offering significant advantages in terms of speed and computational cost.
+The applicability of our method extends to surveys with more observed elements especially neutron capture elements such as GALAH DR4 \citep{Buder2024} and future spectroscopic surveys, such as those planned by the 4MOST \citep{4most} or WEAVE \citep{weave} consortia, which will provide orders of magnitude more data than current datasets. Our findings indicate that SBI can seamlessly scale to such large datasets, offering significant advantages in terms of speed and computational cost.
 
 Nevertheless, limitations remain. The simplified physics of the \texttt{CHEMPY} model, while advantageous for computational efficiency, omits the complexities of dynamical gas flows, feedback, and metal mixing present in cosmological simulations. While our tests on IllustrisTNG data affirm the robustness of SBI, integrating more sophisticated models into the inference pipeline represents an exciting avenue for future work. On this line of reasoning we refer also to the discussion in \citet{Philcox_2019}.
 
