@@ -7,16 +7,6 @@ rule train_emulator:
     script:
         "src/scripts/train_torch_chempy.py"
 
-rule compute_APE:
-    input:
-        "src/data/pytorch_state_dict.pt",
-        "src/data/chempy_data/chempy_TNG_val_data.npz"
-    output:
-        "src/tex/output/ape_NN.txt",
-        "src/text/figures/ape_NN.pdf"
-    script:
-        "src/scripts/evaluate_emulator.py"
-
 rule compute_posterior_APE:
     input:
         "src/data/pytorch_state_dict.pt",
@@ -28,6 +18,18 @@ rule compute_posterior_APE:
         "src/data/ape_posterior_NPE_C.pt"
     script:
         "src/scripts/evaluate_posterior.py"
+        
+rule compute_APE:
+    input:
+        "src/data/pytorch_state_dict.pt",
+        "src/data/chempy_data/chempy_TNG_val_data.npz"
+    output:
+        "src/tex/output/ape_NN.txt",
+        "src/text/figures/ape_NN.pdf"
+    script:
+        "src/scripts/evaluate_emulator.py"
+
+
 
 rule train_posterior:
     input:
