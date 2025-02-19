@@ -12,6 +12,7 @@ rule compute_APE:
         "src/data/chempy_data/chempy_TNG_val_data.npz"
     output:
         "src/tex/output/ape_NN.txt",
+        "src/tex/output/ape_NN_log.txt",
         "src/tex/figures/ape_NN.pdf"
     script:
         "src/scripts/evaluate_emulator.py"

@@ -75,3 +75,6 @@ plt.clf()
 
 with open(paths.output / 'ape_NN.txt', 'w') as f:
     f.write(f'${p2:.1f}^{{+{p3-p2:.1f}}}_{{-{p2-p1:.1f}}}\,\%$%')
+
+with open(paths.output / 'ape_NN_log.txt', 'w') as f:
+    f.write(f'${np.log10(1+p2):.1f}\,\%$%')
