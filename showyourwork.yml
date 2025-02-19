@@ -25,8 +25,8 @@ dag:
 
 # Externally-hosted datasets, e.g. on Zenodo
 datasets:
-  10.5281/zenodo.14883024:
-     contents:
+  #10.5281/zenodo.14883024:
+  #   contents:
        #pytorch_state_dict.pt:  src/data/pytorch_state_dict.pt
        #posterior_NPE_C.pickle: src/data/posterior_NPE_C.pickle
   10.5281/zenodo.14507221:
