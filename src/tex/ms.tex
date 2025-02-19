@@ -242,7 +242,8 @@ In essence, instead of computing the full model for each input parameter set, we
     \item \textbf{Differentiability:} The NN is written in pytorch and has additionally a simple closed-form analytic structure \citep[described in the appendix of][]{Philcox_2019}, unlike the complex \texttt{CHEMPY} model. Both aspects allow it to be differentiated either via auto-diff or analytically, so one can use it to sample via advanced methods such HMC as done in \citep{Philcox_2019}.
 \end{enumerate}
 
-Despite the additional complexity introduced by using multiple stellar data-points, our NN simply needs to predict the birth-time abundances for a single star (with index $i$) from a given set of six parameters; $\{\vec\Lambda,\vec\Theta_i,T_i\}$. The same NN can be used for all $n_\mathrm{stars}$ stars (and run in parallel), reducing a set of $n_\mathrm{stars}$ runs of \texttt{CHEMPY} to a single matrix computation. With the above network parameter choices, the NN predicts abundances with an absolute percentage error of \variable{output/ape_NN.txt} (which translates into a logarithmic error of \variable{output/ape_NN_log.txt} dex)  which is far below typical observational errors and even smaller away from the extremes of parameter space (see Fig.~\ref{fig:ape_NN})\footnote{Our NN emulator is publicly available on the github repository accompanying this manuscript \href{https://github.com/TobiBu/sbi-chempy/blob/main/src/scripts/train_torch_chempy.py}{https://github.com/TobiBu/sbi-chempy/blob/main/src/scripts/train\_torch\_chempy.py} with pre-trained NN weights available on zenodo \href{https://zenodo.org/records/14507134}{https://zenodo.org/records/14507134}.}. In fact, we will add additional observational uncertainty to our mock observational data later during training of the neural posterior estimator network. 
+Despite the additional complexity introduced by using multiple stellar data-points, our NN simply needs to predict the birth-time abundances for a single star (with index $i$) from a given set of six parameters; $\{\vec\Lambda,\vec\Theta_i,T_i\}$. The same NN can be used for all $n_\mathrm{stars}$ stars (and run in parallel), reducing a set of $n_\mathrm{stars}$ runs of \texttt{CHEMPY} to a single matrix computation. With the above network parameter choices, the NN predicts abundances with an absolute percentage error of \variable{output/ape_NN.txt} (which translates into a logarithmic error of %\variable{output/ape_NN_log.txt} dex)  
+which is far below typical observational errors and even smaller away from the extremes of parameter space (see Fig.~\ref{fig:ape_NN})\footnote{Our NN emulator is publicly available on the github repository accompanying this manuscript \href{https://github.com/TobiBu/sbi-chempy/blob/main/src/scripts/train_torch_chempy.py}{https://github.com/TobiBu/sbi-chempy/blob/main/src/scripts/train\_torch\_chempy.py} with pre-trained NN weights available on zenodo \href{https://zenodo.org/records/14507134}{https://zenodo.org/records/14507134}.}. In fact, we will add additional observational uncertainty to our mock observational data later during training of the neural posterior estimator network. 
 
 
 
@@ -429,7 +430,7 @@ In summary, our SBI pipeline is quite capable of correctly and precisely inferri
 \end{figure}
 
 There is an extensive discussion in the literature about stellar nucleosynthesis with various different yield sets proposed \citep[see e.g. discussion in][]{Rybizki_2017}. In fact, any tabulated yield set will differ from reality and during an application of our inference pipeline it will not be clear which tabulated yield set most closely matches reality and hence which should be used.
-In order to investigate how sensitive our method is to a model missspecification by using an incorrect yield set, we create another set of mock data using \texttt{CHEMPY} with a different yield set than during training of our NPE. For better cross-comparison we decided to use the same alternative yield set as presented in Tab.~5 of \citep{Philcox_2019}. 
+In order to investigate how sensitive our method is to a model misspecification by using an incorrect yield set, we create another set of mock data using \texttt{CHEMPY} with a different yield set than during training of our NPE. For better cross-comparison we decided to use the same alternative yield sets as presented in Tab.~5 of \citep{Philcox_2019}. 
 
 \begin{table}[]
 \caption{Alternative nucleosynthetic yield tables used in section \ref{sec: Results} for model misspecification tests.}
@@ -437,14 +438,14 @@ In order to investigate how sensitive our method is to a model missspecification
      \begin{tabular}{c|c}
        Type & Yield Table \\
         \hline
-         SN\,Ia & \citet{2003NuPhA.718..139T}\\
-         %SN\,II & \citet{2013ARA&A..51..457N}\\
+         SN\,Ia & \citet{2003NuPhA.718..139T} \\
+         SN\,II & \citet{2013ARA&A..51..457N} \\
          AGB & \citet{2016ApJ...825...26K}
      \end{tabular}
 \label{tab:chempy_ALT_yields}
 \end{table}
 
-In short this yield set uses SN Ia yields from \citet{2003NuPhA.718..139T}, SN II yields from \citet{2013ARA&A..51..457N} and AGB yields from \citet{2016ApJ...825...26K}. By choosing this set of yields we have made sure that contributions to all three processes differ by $\mathcal{O}(10\%)$ \citep[see Sec.~6.2 of][for more details]{Philcox_2019}.
+By choosing this set of yields we have made sure that contributions to all three processes differ by $\mathcal{O}(10\%)$ \citep[see Sec.~6.2 of][for more details]{Philcox_2019}.
 
 \begin{figure}
 %\vspace{-1.3cm}
