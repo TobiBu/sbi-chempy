@@ -1,3 +1,10 @@
+rule train_emulator:
+    input: 
+        "src/data/chempy_data/chempy_TNG_train_data.npz", "src/data/chempy_data/chempy_TNG_train_data.npz"
+    output:
+        "src/data/pytorch_state_dict.pt"
+    script:
+        "src/scripts/train_torch_chempy.py"
 rule compute_APE:
     input:
         "src/data/pytorch_state_dict.pt", "src/data/chempy_data/chempy_TNG_val_data.npz"
