@@ -52,7 +52,7 @@ N_stars = 1000
 simulations = 1000
 
 stars = local_GP.sample((N_stars,))
-global_params = torch.tensor([[-2.1, -3.0]])
+global_params = np.array([[-2.1, -3.0], [0.3, 0.3]])
 
 stars = torch.cat((global_params.repeat(N_stars, 1), stars), dim=1)
 
