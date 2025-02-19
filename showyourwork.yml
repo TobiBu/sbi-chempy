@@ -64,7 +64,7 @@ dependencies:
       - src/data/alpha_IMF_obs_NPE_C.npy
       - src/data/log10_N_Ia_obs_NPE_C.npy
   src/scripts/chempy_alt_yield_inference.py:
-      - src/data/chempy_data/chempy_alternative_yields.npz.npz
+      - src/data/chempy_data/chempy_alternative_yields.npz
       - src/scripts/plot_functions.py
       - src/data/alpha_IMF_obs_NPE_C.npy
       - src/data/log10_N_Ia_obs_NPE_C.npy
