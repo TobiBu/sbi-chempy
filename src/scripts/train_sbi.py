@@ -30,7 +30,7 @@ labels_out = a.elements_to_trace
 labels_in = [a.to_optimize[i] for i in range(len(a.to_optimize))] + ['time']
 priors = torch.tensor([[a.priors[opt][0], a.priors[opt][1]] for opt in a.to_optimize])
 
-
+"""
 combined_priors = utils.MultipleIndependent(
     [Normal(2*p[0]*torch.ones(1), 2*p[1]*torch.ones(1)) for p in priors] +
     [Uniform(torch.tensor([2.0]), torch.tensor([12.8]))],
@@ -41,7 +41,7 @@ combined_priors = utils.MultipleIndependent(
     [Uniform(p[0]*torch.ones(1)-5*p[1], p[0]*torch.ones(1)+5*p[1]) for p in priors] +
     [Uniform(torch.tensor([2.0]), torch.tensor([12.8]))],
     validate_args=False)
-"""
+
 
 
 # --- Set up the model ---
