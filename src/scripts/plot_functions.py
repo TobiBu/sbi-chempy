@@ -431,7 +431,7 @@ def gaussian_posterior_plot(alpha_IMF, log10_N_Ia, global_params, title):
     # create a figure
     plt.figure(figsize=(15,15))
     
-    plt.hist2d(samples[:,0], samples[:,1], bins=500, range=[grid_x, grid_y])
+    plt.hist2d(samples[:,0], samples[:,1], bins=500, range=[grid_x, grid_y], cmin=5, norm="log")
 
     # labels
     label_gt = r'Ground Truth' + f"\n" + r"$\alpha_{\rm IMF} = $" + f'${global_params[0,0]:.2f}$' + f"\n" + r"$\log_{10} N_{\rm Ia} = $" + f'${global_params[0,1]:.2f}$'

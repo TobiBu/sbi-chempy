@@ -45,13 +45,6 @@ val_x, val_y     = clean_data(val_x, val_y)
 val_x = torch.tensor(val_x, dtype=torch.float32)
 val_y = torch.tensor(val_y, dtype=torch.float32)
 
-
-# ----- Define the prior ------------------------------------------------------------------------------------------------------------------------------------------
-a = ModelParameters()
-labels = [a.to_optimize[i] for i in range(len(a.to_optimize))] + ['time']
-priors = torch.tensor([[a.priors[opt][0], a.priors[opt][1]] for opt in a.to_optimize])
-
-
 # ----- Define the model ------------------------------------------------------------------------------------------------------------------------------------------
 model = Model_Torch(val_x.shape[1], val_y.shape[1])
 
