@@ -2,6 +2,7 @@ import paths
 import pickle
 import torch
 import numpy as np
+from scipy.stats import norm
 from Chempy.parameter import ModelParameters
 
 
@@ -50,6 +51,14 @@ val_x = val_x[:5000]
 val_theta = torch.tensor(val_theta, dtype=torch.float32)
 val_x = torch.tensor(val_x, dtype=torch.float32)
 abundances =  torch.cat([val_x[:,:2], val_x[:,3:]], dim=1)
+
+# --- add noise ---
+pc_ab = 5 # percentage error in abundance
+
+# add noise to data to simulate observational errors
+x_err = np.ones_like(abundances)*float(pc_ab)/100.
+abundances = norm.rvs(loc=abundances,scale=x_err)
+abundances = torch.tensor(abundances).float()
 
 # --- Plot calbration using ltu-ili ---
 from metrics import PosteriorCoverage
