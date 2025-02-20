@@ -450,7 +450,7 @@ def gaussian_posterior_plot(alpha_IMF, log10_N_Ia, global_params, title):
     # create a figure
     plt.figure(figsize=(15,15))
     
-    plt.hist2d(samples[:,0], samples[:,1], bins=500, range=[grid_x, grid_y], cmin=5, norm="log")
+    plt.hist2d(samples[:,0], samples[:,1], bins=250, range=[grid_x, grid_y], cmin=1, norm="log")
 
     # labels
     label_gt = r'Ground Truth' + f"\n" + r"$\alpha_{\rm IMF} = $" + f'${global_params[0,0]:.2f}$' + f"\n" + r"$\log_{10} N_{\rm Ia} = $" + f'${global_params[0,1]:.2f}$'
@@ -462,8 +462,8 @@ def gaussian_posterior_plot(alpha_IMF, log10_N_Ia, global_params, title):
 
     legend_fit = plt.scatter(mu_alpha, mu_log10N_Ia, color='k', label=label_fit, s=100)
     
-    legend_fit = plt.legend(handles=[legend_fit], fontsize=30, shadow=True, fancybox=True, loc=2, bbox_to_anchor=(0, 0.2))
-    legend_true = plt.legend(handles=[legend_true], fontsize=30, shadow=True, fancybox=True, loc=2, bbox_to_anchor=(0, 0.35))
+    legend_fit = plt.legend(handles=[legend_fit], fontsize=30, shadow=True, fancybox=True, loc=1, bbox_to_anchor=(0, 0.8))
+    legend_true = plt.legend(handles=[legend_true], fontsize=30, shadow=True, fancybox=True, loc=1, bbox_to_anchor=(0, 0.95))
     
 
     # Sigma levels
