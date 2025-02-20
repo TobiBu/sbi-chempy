@@ -419,8 +419,27 @@ def gaussian_posterior_plot(alpha_IMF, log10_N_Ia, global_params, title):
     mu_log10N_Ia, sigma_log10N_Ia = mean_std(log10_N_Ia, global_params[0,1], global_params[1,1])
 
     # create a grid of points
-    grid_x = [-2.35,-2.25]
-    grid_y = [-3.0,-2.84]
+    #grid_x = [-2.35,-2.25]
+    #grid_y = [-3.0,-2.84]
+
+    xlim = [-0.05, 0.05]
+    ylim = [-0.05, 0.05]
+
+    if np.abs(global_params[0,0]-mu_alpha) > 0.05:
+        if mu_alpha-global_params[0,0] < 0:
+            xlim[0] = mu_alpha-global_params[0,0]-10*sigma_alpha
+        elif mu_alpha-global_params[0,0] > 0:
+            xlim[1] = mu_alpha-global_params[0,0]+10*sigma_alpha
+
+    if np.abs(global_params[0,1]-mu_log10N_Ia) > 0.05:
+        if mu_log10N_Ia-global_params[0,1] < 0:
+            ylim[0] = mu_log10N_Ia-global_params[0,1]-10*sigma_log10N_Ia
+        elif mu_log10N_Ia-global_params[0,1] > 0:
+            ylim[1] = mu_log10N_Ia-global_params[0,1]+10*sigma_log10N_Ia
+
+    grid_x = [global_params[0,0]+xlim[0], global_params[0,0]+xlim[1]]
+    grid_y = [global_params[0,1]+ylim[0], global_params[0,1]+ylim[1]]
+
     x, y = np.mgrid[grid_x[0]:grid_x[1]:0.001, grid_y[0]:grid_y[1]:0.001]
     pos = np.dstack((x, y))
 

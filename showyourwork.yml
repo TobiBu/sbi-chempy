@@ -53,7 +53,7 @@ dependencies:
   src/scripts/plot_posterior_APE.py:
       - src/data/ape_posterior_NPE_C.pt
   src/scripts/evaluate_sbi.py:
-      - src/scripts/plot_functions.py
+      #- src/scripts/plot_functions.py
       - src/data/posterior_NPE_C.pickle
       - src/data/pytorch_state_dict.pt
   src/scripts/plot_sbc.py:
