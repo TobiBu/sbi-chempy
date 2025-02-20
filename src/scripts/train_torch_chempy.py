@@ -13,7 +13,7 @@ import time as t
 import schedulefree
 
 # ---  You want to retrain? ---
-re_train = False #True
+re_train = True # False
 
 # ----- Load the data ---------------------------------------------------------------------------------------------------------------------------------------------
 # ---  Load in the validation data ---
