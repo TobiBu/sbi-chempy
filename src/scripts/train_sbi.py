@@ -69,7 +69,7 @@ check_sbi_inputs(simulator, prior)
 
 
 # ----- Train the SBI -------------------------------------------------------------------------------------------------------------------------------------------
-density_estimator_build_fun = posterior_nn(model="nsf", hidden_features=20, num_transforms=10)#, blocks=1)
+density_estimator_build_fun = posterior_nn(model="nsf", hidden_features=10, num_transforms=5)#, blocks=1)
 inference = NPE_C(prior=prior, density_estimator=density_estimator_build_fun, show_progress_bars=True)
 
 start = t.time()
