@@ -506,16 +506,16 @@ def gaussian_posterior_plot_n_stars(alpha_IMF, log10_N_Ia, global_params, title,
     #grid_x = [-2.35,-2.25]
     #grid_y = [-3.0,-2.84]
 
-    xlim = [-0.05, 0.05]
-    ylim = [-0.05, 0.05]
+    xlim = [-0.1, 0.1]
+    ylim = [-0.1, 0.1]
 
-    if np.abs(global_params[0,0]-mu_alpha) > 0.05:
+    if np.abs(global_params[0,0]-mu_alpha) > 0.1:
         if mu_alpha-global_params[0,0] < 0:
             xlim[0] = mu_alpha-global_params[0,0]-10*sigma_alpha
         elif mu_alpha-global_params[0,0] > 0:
             xlim[1] = mu_alpha-global_params[0,0]+10*sigma_alpha
 
-    if np.abs(global_params[0,1]-mu_log10N_Ia) > 0.05:
+    if np.abs(global_params[0,1]-mu_log10N_Ia) > 0.1:
         if mu_log10N_Ia-global_params[0,1] < 0:
             ylim[0] = mu_log10N_Ia-global_params[0,1]-10*sigma_log10N_Ia
         elif mu_log10N_Ia-global_params[0,1] > 0:
@@ -563,7 +563,9 @@ def gaussian_posterior_plot_n_stars(alpha_IMF, log10_N_Ia, global_params, title,
         s = int(sigma[i])
         t.set(text=f'{s} $\\sigma$')
 
-        # add Philcox ellipses
+    # add Philcox ellipses
+
+    legend_philcox = plt.scatter(philcox['med'][:,0][-1], philcox['med'][:,1][-1], marker='o', color='k', label=label_gt, s=150)
 
     sigma_h = (philcox['up'][:,0] - philcox['med'][:,0])
     sigma_l = (philcox['med'][:,0] - philcox['lo'][:,0])
@@ -584,13 +586,13 @@ def gaussian_posterior_plot_n_stars(alpha_IMF, log10_N_Ia, global_params, title,
     sigma = np.array([3,2,1], dtype=float)
     for n in sigma:
         levels.append(posterior.pdf([philcox['med'][:,0][-1]+n*sigma_philcox_1[-1], philcox['med'][:,1][-1]+n*sigma_philcox_2[-1]**2]))
-    CS = plt.contour(x, y, posterior.pdf(pos), levels=levels, colors='darkgray', linestyles='dotted')
+    CS = plt.contour(x, y, posterior.pdf(pos), levels=levels, colors='k', linestyles='dotted')
     text = plt.clabel(CS, inline=True, fontsize=25)
     for t in text:
         i = np.abs(np.array(levels) - float(t._text)).argmin()
         s = int(sigma[i])
         t.set(text=f'{s} $\\sigma$')
-        
+
     plt.xlabel(r'$\alpha_{\rm IMF}$', fontsize=40)
     plt.ylabel(r'$\log_{10} N_{\rm Ia}$', fontsize=40)
     plt.tick_params(labelsize=30)
