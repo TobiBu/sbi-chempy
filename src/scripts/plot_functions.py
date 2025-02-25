@@ -585,10 +585,10 @@ def gaussian_posterior_plot_n_stars(alpha_IMF, log10_N_Ia, global_params, title,
 
     # Sigma levels
     levels = []
-    sigma = np.array([3,2,1,0], dtype=float)
+    sigma = np.array([3,2,1], dtype=float)
     for n in sigma:
         levels.append(posterior.pdf([philcox['med'][:,0][-1]+n*sigma_philcox_1[-1], philcox['med'][:,1][-1]+n*sigma_philcox_2[-1]**2]))
-    CS = plt.contourf(x, y, posterior.pdf(pos), levels=levels, colors=['k','gray','darkgray','none'], alpha=0.4)# linestyles='dotted')
+    CS = plt.contour(x, y, posterior.pdf(pos), levels=levels, colors='gray', lw=2, linestyles='dotted')
     #text = plt.clabel(CS, inline=True, fontsize=25)
     #for t in text:
     #    i = np.abs(np.array(levels) - float(t._text)).argmin()
