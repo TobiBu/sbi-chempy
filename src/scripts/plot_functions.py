@@ -350,6 +350,13 @@ def n_stars_plot_comp2(x1, x2, x_true, philcox, save_name, no_stars = np.array([
     fig , ax = plt.subplots(nrows=1, ncols=2, figsize=(26,6))
 
     def plot(fit, err, x_true, ax, name):
+        two_sigma_h = philcox['med'][:,i] + 2*(philcox['up'][:,i] - philcox['med'][:,i])
+        two_sigma_l = philcox['med'][:,i] - 2*(philcox['med'][:,i] - philcox['lo'][:,i])
+        # Add Philcox
+        ax.plot(philcox['n_stars'],philcox['med'][:,i],c='r', label="HMC")
+        ax.fill_between(philcox['n_stars'],philcox['lo'][:,i],philcox['up'][:,i],alpha=0.1,color='r')
+        ax.fill_between(philcox['n_stars'],two_sigma_l,two_sigma_h,alpha=0.1,color='r')
+        
         ax.plot(no_stars, fit, color="b", label="Fit")
         ax.fill_between(no_stars, fit-err, fit+err, alpha=0.1, color="b", label=r"1 & 2 $\sigma$")
         ax.fill_between(no_stars, fit-2*err, fit+2*err, alpha=0.1, color="b")
@@ -363,13 +370,6 @@ def n_stars_plot_comp2(x1, x2, x_true, philcox, save_name, no_stars = np.array([
         ax.set_xlim([1,1000])
         ax.tick_params(labelsize=30, size=10, width=3)
         ax.tick_params(which='minor', size=5, width=2)
-
-        two_sigma_h = philcox['med'][:,i] + 2*(philcox['up'][:,i] - philcox['med'][:,i])
-        two_sigma_l = philcox['med'][:,i] - 2*(philcox['med'][:,i] - philcox['lo'][:,i])
-        # Add Philcox
-        ax.plot(philcox['n_stars'],philcox['med'][:,i],c='r', label="HMC")
-        ax.fill_between(philcox['n_stars'],philcox['lo'][:,i],philcox['up'][:,i],alpha=0.2,color='r')
-        ax.fill_between(philcox['n_stars'],two_sigma_l,two_sigma_h,alpha=0.2,color='r')
 
     for i, name in enumerate([r'$\alpha_{\rm IMF}$', r'$\log_{10} N_{\rm Ia}$']):
         plot(fit[:,i], err[:,i], x_true[0,i], ax[i], name)
