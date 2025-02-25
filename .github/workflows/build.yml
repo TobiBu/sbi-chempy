@@ -2,6 +2,7 @@ name: build
 
 on:
   push:
+  pull_request:
 
 jobs:
   build:
@@ -16,7 +17,9 @@ jobs:
 
       - name: Build the article PDF
         id: build
-  	uses: showyourwork/showyourwork-action@v1
+        with:
+          showyourwork-spec: git+https://github.com/showyourwork/showyourwork
+        uses: showyourwork/showyourwork-action@v1
         env:
           SANDBOX_TOKEN: ${{ secrets.SANDBOX_TOKEN }}
           OVERLEAF_TOKEN: ${{ secrets.OVERLEAF_TOKEN }}
