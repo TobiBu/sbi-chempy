@@ -364,10 +364,12 @@ def n_stars_plot_comp2(x1, x2, x_true, philcox, save_name, no_stars = np.array([
         ax.tick_params(labelsize=30, size=10, width=3)
         ax.tick_params(which='minor', size=5, width=2)
 
-        print(philcox['med'][:,i])
+        two_sigma_h = philcox['med'][:,i] + 2*(philcox['up'][:,i] - philcox['med'][:,i])
+        two_sigma_l = philcox['med'][:,i] - 2*(philcox['med'][:,i] - philcox['lo'][:,i])
         # Add Philcox
         ax.plot(philcox['n_stars'],philcox['med'][:,i],c='r', label="HMC")
         ax.fill_between(philcox['n_stars'],philcox['lo'][:,i],philcox['up'][:,i],alpha=0.2,color='r')
+        ax.fill_between(philcox['n_stars'],two_sigma_l,two_sigma_h,alpha=0.2,color='r')
 
     for i, name in enumerate([r'$\alpha_{\rm IMF}$', r'$\log_{10} N_{\rm Ia}$']):
         plot(fit[:,i], err[:,i], x_true[0,i], ax[i], name)
@@ -443,6 +445,115 @@ def gaussian_posterior_plot(alpha_IMF, log10_N_Ia, global_params, title):
     x, y = np.mgrid[grid_x[0]:grid_x[1]:0.001, grid_y[0]:grid_y[1]:0.001]
     pos = np.dstack((x, y))
 
+    # create a multivariate normal
+    posterior = multivariate_normal(mean=[mu_alpha,mu_log10N_Ia], cov=[[sigma_alpha**2,0],[0,sigma_log10N_Ia**2]])
+    samples = posterior.rvs(size=100_000_000)
+
+    # create a figure
+    plt.figure(figsize=(15,15))
+    
+    plt.hist2d(samples[:,0], samples[:,1], bins=250, range=[grid_x, grid_y], cmin=1, norm="log")
+
+    # labels
+    label_gt = r'Ground Truth' + f"\n" + r"$\alpha_{\rm IMF} = $" + f'${global_params[0,0]:.2f}$' + f"\n" + r"$\log_{10} N_{\rm Ia} = $" + f'${global_params[0,1]:.2f}$'
+    label_fit = r'Fit' + f"\n" + r"$\alpha_{\rm IMF} = $" + f'${mu_alpha:.3f} \\pm {sigma_alpha:.3f}$' + f"\n" + r"$\log_{10} N_{\rm Ia} = $" + f'${mu_log10N_Ia:.3f} \\pm {sigma_log10N_Ia:.3f}$'
+    
+    legend_true = plt.scatter(global_params[0,0], global_params[0,1], marker='*', color='red', label=label_gt, s=150)
+    plt.axhline(global_params[0,1], color='r', linestyle='dashed', linewidth=2)
+    plt.axvline(global_params[0,0], color='r', linestyle='dashed', linewidth=2)
+
+    legend_fit = plt.scatter(mu_alpha, mu_log10N_Ia, color='k', label=label_fit, s=100)
+    
+    legend_fit = plt.legend(handles=[legend_fit], fontsize=30, shadow=True, fancybox=True, loc=2, bbox_to_anchor=(0, 0.8))
+    legend_true = plt.legend(handles=[legend_true], fontsize=30, shadow=True, fancybox=True, loc=2, bbox_to_anchor=(0, 0.95))
+    
+
+    # Sigma levels
+    levels = []
+    sigma = np.array([3,2,1], dtype=float)
+    for n in sigma:
+        levels.append(posterior.pdf([mu_alpha+n*sigma_alpha, mu_log10N_Ia+n*sigma_log10N_Ia]))
+    CS = plt.contour(x, y, posterior.pdf(pos), levels=levels, colors='w', linestyles='dashed')
+    text = plt.clabel(CS, inline=True, fontsize=25)
+    for t in text:
+        i = np.abs(np.array(levels) - float(t._text)).argmin()
+        s = int(sigma[i])
+        t.set(text=f'{s} $\\sigma$')
+
+    plt.xlabel(r'$\alpha_{\rm IMF}$', fontsize=40)
+    plt.ylabel(r'$\log_{10} N_{\rm Ia}$', fontsize=40)
+    plt.tick_params(labelsize=30)
+
+    plt.gca().add_artist(legend_fit)
+    plt.gca().add_artist(legend_true)
+    
+    plt.title(title, fontsize=40)
+
+    plt.tight_layout()
+    plt.savefig(paths.figures / f'{title}.png')
+    plt.clf()
+
+
+##########################################################################################################
+# --- Gaussian Posterior plot ---
+
+def gaussian_posterior_plot_n_stars(alpha_IMF, log10_N_Ia, global_params, title, philcox, no_stars = 100):
+
+    mu_alpha, sigma_alpha = mean_std(alpha_IMF[:no_stars], global_params[0,0], global_params[1,0])
+    mu_log10N_Ia, sigma_log10N_Ia = mean_std(log10_N_Ia[:no_stars], global_params[0,1], global_params[1,1])
+
+    # create a grid of points
+    #grid_x = [-2.35,-2.25]
+    #grid_y = [-3.0,-2.84]
+
+    xlim = [-0.05, 0.05]
+    ylim = [-0.05, 0.05]
+
+    if np.abs(global_params[0,0]-mu_alpha) > 0.05:
+        if mu_alpha-global_params[0,0] < 0:
+            xlim[0] = mu_alpha-global_params[0,0]-10*sigma_alpha
+        elif mu_alpha-global_params[0,0] > 0:
+            xlim[1] = mu_alpha-global_params[0,0]+10*sigma_alpha
+
+    if np.abs(global_params[0,1]-mu_log10N_Ia) > 0.05:
+        if mu_log10N_Ia-global_params[0,1] < 0:
+            ylim[0] = mu_log10N_Ia-global_params[0,1]-10*sigma_log10N_Ia
+        elif mu_log10N_Ia-global_params[0,1] > 0:
+            ylim[1] = mu_log10N_Ia-global_params[0,1]+10*sigma_log10N_Ia
+
+    grid_x = [global_params[0,0]+xlim[0], global_params[0,0]+xlim[1]]
+    grid_y = [global_params[0,1]+ylim[0], global_params[0,1]+ylim[1]]
+
+    x, y = np.mgrid[grid_x[0]:grid_x[1]:0.001, grid_y[0]:grid_y[1]:0.001]
+    pos = np.dstack((x, y))
+
+    # add Philcox ellipses
+
+    sigma_h = (philcox['up'][:,0] - philcox['med'][:,0])
+    sigma_l = (philcox['med'][:,0] - philcox['lo'][:,0])
+    sigma_philcox_1 = (sigma_h + sigma_l) / 2
+
+    sigma_h = (philcox['up'][:,1] - philcox['med'][:,1])
+    sigma_l = (philcox['med'][:,1] - philcox['lo'][:,1])
+    sigma_philcox_2 = (sigma_h + sigma_l) / 2
+    
+    # create a multivariate normal
+    posterior = multivariate_normal(mean=[philcox['med'][:,0][-1],philcox['med'][:,1][-1]], cov=[[sigma_philcox_1[-1]**2,0],[0,sigma_philcox_2[-1]**2]])
+    samples = posterior.rvs(size=100_000_000)
+
+    # Sigma levels
+    levels = []
+    sigma = np.array([3,2,1], dtype=float)
+    for n in sigma:
+        levels.append(posterior.pdf([philcox['med'][:,0][-1]+n*sigma_philcox_1[-1], philcox['med'][:,1][-1]+n*sigma_philcox_2[-1]**2]))
+    CS = plt.contour(x, y, posterior.pdf(pos), levels=levels, colors='darkgray', linestyles='dotted')
+    text = plt.clabel(CS, inline=True, fontsize=25)
+    for t in text:
+        i = np.abs(np.array(levels) - float(t._text)).argmin()
+        s = int(sigma[i])
+        t.set(text=f'{s} $\\sigma$')
+
+    # add SBI data
     # create a multivariate normal
     posterior = multivariate_normal(mean=[mu_alpha,mu_log10N_Ia], cov=[[sigma_alpha**2,0],[0,sigma_log10N_Ia**2]])
     samples = posterior.rvs(size=100_000_000)
