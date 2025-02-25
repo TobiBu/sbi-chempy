@@ -581,12 +581,14 @@ def gaussian_posterior_plot_n_stars(alpha_IMF, log10_N_Ia, global_params, title,
     posterior = multivariate_normal(mean=[philcox['med'][:,0][-1],philcox['med'][:,1][-1]], cov=[[sigma_philcox_1[-1]**2,0],[0,sigma_philcox_2[-1]**2]])
     samples = posterior.rvs(size=100_000_000)
 
+    #plt.hist2d(samples[:,0], samples[:,1], bins=250, range=[grid_x, grid_y], cmap=, cmin=1, norm="log", alpha=0.1)
+
     # Sigma levels
     levels = []
     sigma = np.array([3,2,1], dtype=float)
     for n in sigma:
         levels.append(posterior.pdf([philcox['med'][:,0][-1]+n*sigma_philcox_1[-1], philcox['med'][:,1][-1]+n*sigma_philcox_2[-1]**2]))
-    CS = plt.contour(x, y, posterior.pdf(pos), levels=levels, colors='k', linestyles='dotted')
+    CS = plt.contourf(x, y, posterior.pdf(pos), levels=levels, cmap='Greys', alpha=0.1)# linestyles='dotted')
     text = plt.clabel(CS, inline=True, fontsize=25)
     for t in text:
         i = np.abs(np.array(levels) - float(t._text)).argmin()
