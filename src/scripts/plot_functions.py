@@ -541,11 +541,11 @@ def gaussian_posterior_plot_n_stars(alpha_IMF, log10_N_Ia, global_params, title,
     label_gt = r'Ground Truth' + f"\n" + r"$\alpha_{\rm IMF} = $" + f'${global_params[0,0]:.2f}$' + f"\n" + r"$\log_{10} N_{\rm Ia} = $" + f'${global_params[0,1]:.2f}$'
     label_fit = r'Fit' + f"\n" + r"$\alpha_{\rm IMF} = $" + f'${mu_alpha:.3f} \\pm {sigma_alpha:.3f}$' + f"\n" + r"$\log_{10} N_{\rm Ia} = $" + f'${mu_log10N_Ia:.3f} \\pm {sigma_log10N_Ia:.3f}$'
     
-    legend_true = plt.scatter(global_params[0,0], global_params[0,1], marker='*', color='red', label=label_gt, s=150)
+    legend_true = plt.scatter(global_params[0,0], global_params[0,1], marker='o', color='red', label=label_gt, s=150)
     plt.axhline(global_params[0,1], color='r', linestyle='dashed', linewidth=2)
     plt.axvline(global_params[0,0], color='r', linestyle='dashed', linewidth=2)
 
-    legend_fit = plt.scatter(mu_alpha, mu_log10N_Ia, color='k', label=label_fit, s=100)
+    legend_fit = plt.scatter(mu_alpha, mu_log10N_Ia, color='k', marker='*', label=label_fit, s=100)
     
     legend_fit = plt.legend(handles=[legend_fit], fontsize=30, shadow=True, fancybox=True, loc=2, bbox_to_anchor=(0, 0.8))
     legend_true = plt.legend(handles=[legend_true], fontsize=30, shadow=True, fancybox=True, loc=2, bbox_to_anchor=(0, 0.95))
@@ -565,7 +565,7 @@ def gaussian_posterior_plot_n_stars(alpha_IMF, log10_N_Ia, global_params, title,
 
     # add Philcox ellipses
 
-    legend_philcox = plt.scatter(philcox['med'][:,0][-1], philcox['med'][:,1][-1], marker='o', color='k', label=label_gt, s=150)
+    legend_philcox = plt.scatter(philcox['med'][:,0][-1], philcox['med'][:,1][-1], marker='s', color='k', label=label_gt, s=100)
 
     sigma_h = (philcox['up'][:,0] - philcox['med'][:,0])
     sigma_l = (philcox['med'][:,0] - philcox['lo'][:,0])
@@ -588,7 +588,7 @@ def gaussian_posterior_plot_n_stars(alpha_IMF, log10_N_Ia, global_params, title,
     sigma = np.array([3,2,1], dtype=float)
     for n in sigma:
         levels.append(posterior.pdf([philcox['med'][:,0][-1]+n*sigma_philcox_1[-1], philcox['med'][:,1][-1]+n*sigma_philcox_2[-1]**2]))
-    CS = plt.contourf(x, y, posterior.pdf(pos), levels=levels, colors=['darkgray','gray','k'], alpha=0.2)# linestyles='dotted')
+    CS = plt.contourf(x, y, posterior.pdf(pos), levels=levels, colors=['k','gray','darkgray'], alpha=0.2)# linestyles='dotted')
     text = plt.clabel(CS, inline=True, fontsize=25)
     for t in text:
         i = np.abs(np.array(levels) - float(t._text)).argmin()
