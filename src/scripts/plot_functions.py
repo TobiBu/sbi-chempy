@@ -536,7 +536,9 @@ def gaussian_posterior_plot_n_stars(alpha_IMF, log10_N_Ia, global_params, title,
     sigma_h = (philcox['up'][:,1] - philcox['med'][:,1])
     sigma_l = (philcox['med'][:,1] - philcox['lo'][:,1])
     sigma_philcox_2 = (sigma_h + sigma_l) / 2
-    
+
+    print("philcox data:")
+    print(philcox['med'][:,0][-1],philcox['med'][:,1][-1])
     # create a multivariate normal
     posterior = multivariate_normal(mean=[philcox['med'][:,0][-1],philcox['med'][:,1][-1]], cov=[[sigma_philcox_1[-1]**2,0],[0,sigma_philcox_2[-1]**2]])
     samples = posterior.rvs(size=100_000_000)
