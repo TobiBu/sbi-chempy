@@ -588,12 +588,12 @@ def gaussian_posterior_plot_n_stars(alpha_IMF, log10_N_Ia, global_params, title,
     sigma = np.array([3,2,1], dtype=float)
     for n in sigma:
         levels.append(posterior.pdf([philcox['med'][:,0][-1]+n*sigma_philcox_1[-1], philcox['med'][:,1][-1]+n*sigma_philcox_2[-1]**2]))
-    CS = plt.contour(x, y, posterior.pdf(pos), levels=levels, colors='gray', alpha=0.5, linestyles='dotted')
-    text = plt.clabel(CS, inline=True, fontsize=25)
-    for t in text:
-        i = np.abs(np.array(levels) - float(t._text)).argmin()
-        s = int(sigma[i])
-        t.set(text=f'{s} $\\sigma$')
+    CS = plt.contourf(x, y, posterior.pdf(pos), levels=levels, colors=['k','k','k'], alpha=0.3)# linestyles='dotted')
+    #text = plt.clabel(CS, inline=True, fontsize=25)
+    #for t in text:
+    #    i = np.abs(np.array(levels) - float(t._text)).argmin()
+    #    s = int(sigma[i])
+    #    t.set(text=f'{s} $\\sigma$')
 
     plt.xlabel(r'$\alpha_{\rm IMF}$', fontsize=40)
     plt.ylabel(r'$\log_{10} N_{\rm Ia}$', fontsize=40)
