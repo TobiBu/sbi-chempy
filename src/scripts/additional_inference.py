@@ -93,7 +93,7 @@ print(f'Time to run {simulations} simulations for {N_stars} stars: {end-start:.3
 alpha_IMF_obs = np.array(alpha_IMF_obs)
 log10_N_Ia_obs = np.array(log10_N_Ia_obs)
 
-gaussian_posterior_plot_n_stars(alpha_IMF_obs, log10_N_Ia_obs, global_params_plot, title="different_prior_philcox", philcox=None, no_stars=100)
+gaussian_posterior_plot_n_stars(alpha_IMF_obs, log10_N_Ia_obs, global_params_plot, title="different_prior", philcox=None, no_stars=100)
 
 # --- plot the data ---
 #gaussian_posterior_plot(alpha_IMF_obs, log10_N_Ia_obs, global_params_plot, title="different_prior")
