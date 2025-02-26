@@ -4,6 +4,8 @@ import torch
 import numpy as np
 from scipy.stats import norm
 from Chempy.parameter import ModelParameters
+from tqdm import tqdm
+import matplotlib.pyplot as plt
 
 
 # ----- Config -------------------------------------------------------------------------------------------------------------------------------------------
@@ -60,8 +62,16 @@ x_err = np.ones_like(abundances)*float(pc_ab)/100.
 abundances = norm.rvs(loc=abundances,scale=x_err)
 abundances = torch.tensor(abundances).float()
 
+theta_hat = torch.zeros_like(val_theta)
+theta_predicted_stored = torch.zeros((len(abundances), 1000, len(labels_in)))
+for index in tqdm(range(len(abundances))):
+    thetas_predicted = posterior.sample((1000,), x=abundances[index], show_progress_bars=False)
+    theta_predicted_stored[index] = thetas_predicted
+    thetas_predicted_mean = thetas_predicted.mean(dim=0)
+    theta_hat[index] = thetas_predicted_mean
+
 # --- Plot calbration using ltu-ili ---
-from metrics import PosteriorCoverage
+from metrics import PosteriorCoverage, PlotSinglePosterior
 
 plot_hist = ["coverage", "histogram", "predictions", "tarp"]
 metric = PosteriorCoverage(
@@ -76,3 +86,30 @@ fig = metric(
 
 for i, plot in enumerate(fig):
     fig[i].savefig(paths.figures / f'ili_{plot_hist[i]}.pdf')
+
+metric = PlotSinglePosterior(
+    num_samples=1000, sample_method='direct', 
+    labels=labels_in
+)
+
+# --- Plot corner plot posterior for single star using ltu-ili ---
+fig = metric(
+    posterior=posterior,
+    x=abundances[0], theta=val_theta[0],
+    plot_kws=dict(fill=True))
+
+fig.savefig(paths.figures / 'corner_plot_singlestar.pdf')
+
+# --- Plot the correlation between the distance and the correlation ---
+correlation = np.zeros(len(abundances))
+distance = np.zeros(len(abundances))
+mahalanobis_distance = np.zeros(len(abundances))
+for i in tqdm(range(len(abundances))):
+    samples = theta_predicted_stored[i]
+    correlation[i] = np.cov(samples[:, :2].T)[0, 1]
+    distance_vec = val_theta[i][:2] - samples.mean(dim=0)[:2]
+    distance[i] = np.linalg.norm(distance_vec)
+    mahalanobis_distance[i] = np.sqrt( (np.array(distance_vec)).T @ np.linalg.inv(np.cov(np.array(samples[:, :2].T) )) @ (np.array(distance_vec)) )
+
+percentile = np.percentile(correlation, [0, 99])
+percentile_mask = (correlation>percentile[0])&(correlation<percentile[1])

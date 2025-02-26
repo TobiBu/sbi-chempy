@@ -530,7 +530,7 @@ class PosteriorCoverage(PosteriorSamples):
                 'k--', ms=0.2, lw=0.5)
             axs[j].grid(which='both', lw=0.5)
             axs[j].set(adjustable='box', aspect='equal')
-            axs[j].set_title(self.labels[j], fontsize=12)
+            axs[j].set_title(self.labels[j])
             axs[j].set_xlabel('True')
         axs[0].set_ylabel('Predicted')
 
