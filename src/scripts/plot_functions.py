@@ -595,7 +595,7 @@ def gaussian_posterior_plot_n_stars(alpha_IMF, log10_N_Ia, global_params, title,
         #    i = np.abs(np.array(levels) - float(t._text)).argmin()
         #    s = int(sigma[i])
         #    t.set(text=f'{s} $\\sigma$')
-        legend_philcox = plt.legend(handles=[legend_philcox], fontsize=30, shadow=True, fancybox=True, loc=2, bbox_to_anchor=(0, 1.))
+        legend_philcox = plt.legend(handles=[legend_philcox], fontsize=30, shadow=True, fancybox=True, loc=2, bbox_to_anchor=(0, 1.01))
         plt.gca().add_artist(legend_philcox)
         
     plt.xlabel(r'$\alpha_{\rm IMF}$', fontsize=40)
