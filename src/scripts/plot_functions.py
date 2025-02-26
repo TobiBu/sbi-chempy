@@ -563,37 +563,38 @@ def gaussian_posterior_plot_n_stars(alpha_IMF, log10_N_Ia, global_params, title,
         s = int(sigma[i])
         t.set(text=f'{s} $\\sigma$')
 
-    # add Philcox ellipses
+    if philcox is not None:
+        # add Philcox ellipses
 
-    legend_philcox = plt.scatter(philcox['med'][:,0][-1], philcox['med'][:,1][-1], marker='s', color='gray', label=label_gt, s=50)
+        legend_philcox = plt.scatter(philcox['med'][:,0][-1], philcox['med'][:,1][-1], marker='s', color='gray', label=label_gt, s=50)
 
-    sigma_h = (philcox['up'][:,0] - philcox['med'][:,0])
-    sigma_l = (philcox['med'][:,0] - philcox['lo'][:,0])
-    sigma_philcox_1 = (sigma_h + sigma_l) / 2
+        sigma_h = (philcox['up'][:,0] - philcox['med'][:,0])
+        sigma_l = (philcox['med'][:,0] - philcox['lo'][:,0])
+        sigma_philcox_1 = (sigma_h + sigma_l) / 2
 
-    sigma_h = (philcox['up'][:,1] - philcox['med'][:,1])
-    sigma_l = (philcox['med'][:,1] - philcox['lo'][:,1])
-    sigma_philcox_2 = (sigma_h + sigma_l) / 2
+        sigma_h = (philcox['up'][:,1] - philcox['med'][:,1])
+        sigma_l = (philcox['med'][:,1] - philcox['lo'][:,1])
+        sigma_philcox_2 = (sigma_h + sigma_l) / 2
 
-    print("philcox data:")
-    print(philcox['med'][:,0][-1],philcox['med'][:,1][-1])
-    # create a multivariate normal
-    posterior = multivariate_normal(mean=[philcox['med'][:,0][-1],philcox['med'][:,1][-1]], cov=[[sigma_philcox_1[-1]**2,0],[0,sigma_philcox_2[-1]**2]])
-    samples = posterior.rvs(size=100_000_000)
+        print("philcox data:")
+        print(philcox['med'][:,0][-1],philcox['med'][:,1][-1])
+        # create a multivariate normal
+        posterior = multivariate_normal(mean=[philcox['med'][:,0][-1],philcox['med'][:,1][-1]], cov=[[sigma_philcox_1[-1]**2,0],[0,sigma_philcox_2[-1]**2]])
+        samples = posterior.rvs(size=100_000_000)
 
-    #plt.hist2d(samples[:,0], samples[:,1], bins=250, range=[grid_x, grid_y], cmap=, cmin=1, norm="log", alpha=0.1)
+        #plt.hist2d(samples[:,0], samples[:,1], bins=250, range=[grid_x, grid_y], cmap=, cmin=1, norm="log", alpha=0.1)
 
-    # Sigma levels
-    levels = []
-    sigma = np.array([3,2,1], dtype=float)
-    for n in sigma:
-        levels.append(posterior.pdf([philcox['med'][:,0][-1]+n*sigma_philcox_1[-1], philcox['med'][:,1][-1]+n*sigma_philcox_2[-1]**2]))
-    CS = plt.contour(x, y, posterior.pdf(pos), levels=levels, colors='gray', linewidths=3)#, linestyles='dotted')
-    #text = plt.clabel(CS, inline=True, fontsize=25)
-    #for t in text:
-    #    i = np.abs(np.array(levels) - float(t._text)).argmin()
-    #    s = int(sigma[i])
-    #    t.set(text=f'{s} $\\sigma$')
+        # Sigma levels
+        levels = []
+        sigma = np.array([3,2,1], dtype=float)
+        for n in sigma:
+            levels.append(posterior.pdf([philcox['med'][:,0][-1]+n*sigma_philcox_1[-1], philcox['med'][:,1][-1]+n*sigma_philcox_2[-1]**2]))
+        CS = plt.contour(x, y, posterior.pdf(pos), levels=levels, colors='gray', linewidths=3)#, linestyles='dotted')
+        #text = plt.clabel(CS, inline=True, fontsize=25)
+        #for t in text:
+        #    i = np.abs(np.array(levels) - float(t._text)).argmin()
+        #    s = int(sigma[i])
+        #    t.set(text=f'{s} $\\sigma$')
 
     plt.xlabel(r'$\alpha_{\rm IMF}$', fontsize=40)
     plt.ylabel(r'$\log_{10} N_{\rm Ia}$', fontsize=40)
