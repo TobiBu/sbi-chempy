@@ -360,6 +360,15 @@ Each set of parameters is passed to our \texttt{CHEMPY} emulator, producing eigh
 
 \begin{figure*}
     \centering
+    \includegraphics[width=\textwidth]{figures/corner_plot_singlestar.pdf}
+    \vspace{-.5cm}
+    \caption{Corner plot of the posteriors for all six parameters for a single star from the validation set. The gray contours show a kde-estimate of the posterior from our SBI inference and the red dot and lines show the ground truth parameter values. Gray histograms on the diagonal show a kde estimate of the marginals.}
+    \label{fig:corner_plot}
+    \script{plot_sbc.py}
+\end{figure*}
+
+\begin{figure*}
+    \centering
     \includegraphics[width=\textwidth]{figures/CHEMPY_TNG_yields_Nstar_comp.pdf}
     \vspace{-.5cm}
     \caption{Accuracy of inferred global galactic parameters $\alpha_{IMF}$ and $\log_{10}(N_{Ia})$ as a function of number of observed stars. We compare our SBI results (blue line) to the inferred values using HMC (red line) as done by \cite{Philcox_2019} and the ground truth values (black dashed line) for various test cases as described in Sec. For the SBI analysis we show $1\sigma$ and $2\sigma$ contours while HMC results only show $1\sigma$ statistical uncertainties as reported in Tab.~3 of \citet{Philcox_2019} (blue/red shaded regions). See Sec.~\ref{subsec:chempy_tng} for a full description.}
@@ -400,9 +409,16 @@ Hence, shorter computing times make it feasible to use orders of magnitudes more
 We start evaluating our method by using \texttt{CHEMPY} to produce a mock observational dataset to ensure no systematical shift between training and testing data in terms of physics parameters.
 
 To evaluate our method quantitatively, we compare the posterior mean to the ground truth value for each observation and calculate the absolute percentage error (APE, see Fig.~\ref{fig:posterior_APE}). For a single star observation, our NPE has an APE of \variable{output/global_posterior_APE.txt} when looking at all 6 parameters of interest.
-If we restrict ourselves to only the two global parameters $\vec\Lambda$, our NPE achieves an APE of \variable{output/posterior_APE.txt} as shown in Fig.~\ref{fig:posterior_APE}. There we can also see, that the accuracy for an individual star of the NPE is not particularly high. However, for the global parameters $\vec\Lambda$ we can boost the accuracy by combining the inference for many stars of the same galaxy.
+If we restrict ourselves to only the two global parameters $\vec\Lambda$, our NPE achieves an APE of \variable{output/posterior_APE.txt} as shown in Fig.~\ref{fig:posterior_APE}. There we can also see, that the accuracy for an individual star of the NPE is not particularly high. 
 
 However, currently our NPE network is not particularly good at estimating ages from abundances alone. On average our inference for ages results in an APE of $\sim21\%$ which is slightly larger than the observational noise of $20\%$ that we add during the mock up of our data but well in agreement with current uncertainties of stellar age inference that range from 15\% to 30\% for turn-off stars and giants respectively.
+
+We accompany the APE analysis by showing the full posterior inference results for a single star in Fig.~\ref{fig:corner_plot}. This figure shows that the SBI approach is well able to infer correct parameters and their cross-correlations. In partciular, there is a strong correlation between the two global parameters as seen in the top left corner as well as for time (or stellar age) and all other five parameters as visible from the bottom row.
+
+Finally, as already mentioned in the method section for the global parameters $\vec\Lambda$ we can boost the accuracy by combining the inference for many stars of the same galaxy.
+
+
+
 
 \subsection{Inference on mock data from \texttt{CHEMPY} with TNG yield set}
 \label{subsec:chempy_tng}
@@ -630,6 +646,19 @@ TARP \citep{Lemos2023} is an alternative calibration check for the joint distrib
 For each given coverage level $\alpha$, one can then calculate the corresponding average counts and check, whether they correspond to the given $\alpha$. The visualization and interpretation of TARP values is therefore similar to that of SBC. However, in contrast to SBC, TARP provides a necessary and sufficient condition for posterior accuracy, i.e., it can also detect inaccurate posterior estimators. In Fig.~\ref{fig:tarp} we show the result for our NPE in blue in comparison to the ideal line shown in black dashed style. This figure clearly shows that our NPE is well calibrated.
 
 Note, however, that this property depends on the choice of reference point distribution: to obtain the full diagnostic power of TARP, one would need to sample reference points from a distribution that depends on $x$. Thus, in general, it is recommended using and interpreting TARP like SBC and complementing coverage checks with posterior predictive checks.
+
+\section{}
+\label{sec: correlations}
+
+\begin{figure*}
+    \centering
+    \includegraphics[width=\textwidth]{figures/correlation_high_mass_slope_SN_delay.pdf}
+    \vspace{-.5cm}
+    \caption{.}
+    \label{fig:correlation}
+    \script{plot_sbc.py}
+\end{figure*}
+
 
 \section{Additional inference results}
 \label{sec: additional inference}

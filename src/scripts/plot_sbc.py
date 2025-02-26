@@ -114,6 +114,16 @@ for i in tqdm(range(len(abundances))):
 percentile = np.percentile(correlation, [0, 99])
 percentile_mask = (correlation>percentile[0])&(correlation<percentile[1])
 
+plt.rcParams.update({
+    'font.size': 20,
+    'axes.titlesize': 20,
+    'axes.labelsize': 20,
+    'xtick.labelsize': 13,
+    'ytick.labelsize': 13,
+    'legend.fontsize': 15,
+    'figure.titlesize': 20
+})
+
 fig = plt.figure(figsize=(35, 5))
 ax = fig.add_subplot(131)
 ax.hist(correlation[percentile_mask], histtype='step', color='black')
