@@ -565,7 +565,7 @@ def gaussian_posterior_plot_n_stars(alpha_IMF, log10_N_Ia, global_params, title,
 
     # add Philcox ellipses
 
-    legend_philcox = plt.scatter(philcox['med'][:,0][-1], philcox['med'][:,1][-1], marker='s', color='k', label=label_gt, s=75)
+    legend_philcox = plt.scatter(philcox['med'][:,0][-1], philcox['med'][:,1][-1], marker='s', color='gray', label=label_gt, s=50)
 
     sigma_h = (philcox['up'][:,0] - philcox['med'][:,0])
     sigma_l = (philcox['med'][:,0] - philcox['lo'][:,0])
