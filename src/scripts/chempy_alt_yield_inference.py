@@ -93,4 +93,4 @@ gaussian_posterior_plot_n_stars(alpha_IMF_alt_obs, log10_N_Ia_alt_obs, global_pa
 stars = np.arange(1,len(alt_y_obs))
 n_stars_plot_comp2(alpha_IMF_alt_obs, log10_N_Ia_alt_obs, global_params, philcox, "CHEMPY_alternative_yields_Nstar_comp", stars)
 
-gaussian_posterior_plot(alpha_IMF_alt_obs, log10_N_Ia_alt_obs, global_params, title="CHEMPY_alternative_yields")
+#gaussian_posterior_plot(alpha_IMF_alt_obs, log10_N_Ia_alt_obs, global_params, title="CHEMPY_alternative_yields")

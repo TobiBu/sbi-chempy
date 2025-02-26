@@ -566,7 +566,7 @@ def gaussian_posterior_plot_n_stars(alpha_IMF, log10_N_Ia, global_params, title,
     if philcox is not None:
         # add Philcox ellipses
 
-        legend_philcox = plt.scatter(philcox['med'][:,0][-1], philcox['med'][:,1][-1], marker='s', color='gray', label=label_gt, s=50)
+        legend_philcox = plt.scatter(philcox['med'][:,0][-1], philcox['med'][:,1][-1], marker='s', color='gray', label="HMC", s=50)
 
         sigma_h = (philcox['up'][:,0] - philcox['med'][:,0])
         sigma_l = (philcox['med'][:,0] - philcox['lo'][:,0])
@@ -595,6 +595,7 @@ def gaussian_posterior_plot_n_stars(alpha_IMF, log10_N_Ia, global_params, title,
         #    i = np.abs(np.array(levels) - float(t._text)).argmin()
         #    s = int(sigma[i])
         #    t.set(text=f'{s} $\\sigma$')
+        legend_philcox = plt.legend(handles=[legend_philcox], fontsize=30, shadow=True, fancybox=True, loc=2, bbox_to_anchor=(0, 0.975))
 
     plt.xlabel(r'$\alpha_{\rm IMF}$', fontsize=40)
     plt.ylabel(r'$\log_{10} N_{\rm Ia}$', fontsize=40)
@@ -602,6 +603,7 @@ def gaussian_posterior_plot_n_stars(alpha_IMF, log10_N_Ia, global_params, title,
 
     plt.gca().add_artist(legend_fit)
     plt.gca().add_artist(legend_true)
+    plt.gca().add_artist(legend_philcox)
     
     plt.title(title, fontsize=40)
 

@@ -96,7 +96,7 @@ log10_N_Ia_obs = np.array(log10_N_Ia_obs)
 gaussian_posterior_plot_n_stars(alpha_IMF_obs, log10_N_Ia_obs, global_params_plot, title="different_prior_philcox", philcox=None, no_stars=100)
 
 # --- plot the data ---
-gaussian_posterior_plot(alpha_IMF_obs, log10_N_Ia_obs, global_params_plot, title="different_prior")
+#gaussian_posterior_plot(alpha_IMF_obs, log10_N_Ia_obs, global_params_plot, title="different_prior")
 
 stars = np.arange(1,1000)
 n_stars_plot(alpha_IMF_obs, log10_N_Ia_obs, global_params_plot, "Nstar_comp_different_prior", stars)
