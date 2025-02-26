@@ -88,7 +88,7 @@ philcox["med"] = np.array([[-2.25,-3.01],[-2.21,-2.96],[-2.22,-2.96]])
 philcox["up"] = np.array([[-2.14,-2.86],[-2.17,-2.88],[-2.20,-2.93]])
 philcox["lo"] = np.array([[-2.34,-3.16],[-2.25,-3.04],[-2.24,-2.98]])
 
-gaussian_posterior_plot_n_stars(alpha_IMF_alt_obs, log10_N_Ia_alt_obs, global_params, title="CHEMPY_alternative_yields_philcox", philcox=philcox, no_stars=100)
+gaussian_posterior_plot_n_stars(alpha_IMF_alt_obs, log10_N_Ia_alt_obs, global_params, title="CHEMPY_alternative_yields", philcox=philcox, no_stars=100)
 
 stars = np.arange(1,len(alt_y_obs))
 n_stars_plot_comp2(alpha_IMF_alt_obs, log10_N_Ia_alt_obs, global_params, philcox, "CHEMPY_alternative_yields_Nstar_comp", stars)

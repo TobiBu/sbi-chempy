@@ -80,7 +80,7 @@ philcox["med"] = np.array([[-2.27,-2.86],[-2.27,-2.87],[-2.28,-2.89]])
 philcox["up"] = np.array([[-2.19,-2.75],[-2.24,-2.84],[-2.27,-2.88]])
 philcox["lo"] = np.array([[-2.35,-2.97],[-2.3,-2.91],[-2.29,-2.90]])
 
-gaussian_posterior_plot_n_stars(alpha_IMF_tng_obs, log10_N_Ia_tng_obs, global_params, title="TNG_simulation_philcox", philcox=philcox, no_stars=100)
+gaussian_posterior_plot_n_stars(alpha_IMF_tng_obs, log10_N_Ia_tng_obs, global_params, title="TNG_simulation", philcox=philcox, no_stars=100)
 
 stars = np.arange(1,len(tng_y_obs))
 n_stars_plot_comp2(alpha_IMF_tng_obs, log10_N_Ia_tng_obs, global_params, philcox, "TNG_sim_Nstar_comp", stars)
