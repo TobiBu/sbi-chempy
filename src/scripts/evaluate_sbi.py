@@ -1,15 +1,14 @@
-import paths
 import pickle
-import torch 
+
+import sbi.utils as utils
+import torch
+from Chempy.parameter import ModelParameters
+from sbi.analysis.plot import plot_tarp, sbc_rank_plot
+from sbi.diagnostics import check_tarp, run_sbc, run_tarp
 from torch.distributions.normal import Normal
 from torch.distributions.uniform import Uniform
 
-import sbi.utils as utils
-from sbi.analysis.plot import sbc_rank_plot, plot_tarp
-from sbi.diagnostics import check_tarp, run_sbc, run_tarp
-
-from Chempy.parameter import ModelParameters
-
+import paths
 from chempy_torch_model import Model_Torch
 from plot_functions import *
 
@@ -22,24 +21,26 @@ name = "NPE_C"
 # --- Define the prior ---
 a = ModelParameters()
 labels_out = a.elements_to_trace
-labels_in = [a.to_optimize[i] for i in range(len(a.to_optimize))] + ['time']
+labels_in = [a.to_optimize[i] for i in range(len(a.to_optimize))] + ["time"]
 priors = torch.tensor([[a.priors[opt][0], a.priors[opt][1]] for opt in a.to_optimize])
 
 combined_priors = utils.MultipleIndependent(
-    [Normal(p[0]*torch.ones(1), p[1]*torch.ones(1)) for p in priors] +
-    [Uniform(torch.tensor([2.0]), torch.tensor([12.8]))],
-    validate_args=False)
+    [Normal(p[0] * torch.ones(1), p[1] * torch.ones(1)) for p in priors]
+    + [Uniform(torch.tensor([2.0]), torch.tensor([12.8]))],
+    validate_args=False,
+)
 
 # ----- load the posterior -------------------------------------------------------------------------------------------------------------------------------------------
-with open(paths.data / f'posterior_{name}.pickle', 'rb') as f:
+with open(paths.data / f"posterior_{name}.pickle", "rb") as f:
     posterior = pickle.load(f)
 
 # --- Set up the model ---
 model = Model_Torch(len(labels_in), len(labels_out))
 
 # --- Load the weights ---
-model.load_state_dict(torch.load(paths.data / 'pytorch_state_dict.pt'))
+model.load_state_dict(torch.load(paths.data / "pytorch_state_dict.pt"))
 model.eval()
+
 
 # --- Simulation based calibration plot ---
 def simulator(params):
@@ -47,9 +48,10 @@ def simulator(params):
     y = y.detach().numpy()
 
     # Remove H from data, because it is just used for normalization (output with index 2)
-    y = np.delete(y, 2,1)
+    y = np.delete(y, 2, 1)
 
     return y
+
 
 num_sbc_samples = 200  # choose a number of sbc runs, should be ~100s
 # generate ground truth parameters and corresponding simulated observations for SBC.
@@ -60,7 +62,11 @@ xs = simulator(thetas)
 num_posterior_samples = 1_000
 num_workers = 1
 ranks, dap_samples = run_sbc(
-    thetas, xs, posterior, num_posterior_samples=num_posterior_samples, num_workers=num_workers
+    thetas,
+    xs,
+    posterior,
+    num_posterior_samples=num_posterior_samples,
+    num_workers=num_workers,
 )
 
 # --- SBC rank plot ---
@@ -70,14 +76,14 @@ f, ax = sbc_rank_plot(
     parameter_labels=labels_in,
     plot_type="hist",
     num_cols=3,
-    figsize=(10,6.67),
+    figsize=(10, 6.67),
     num_bins=None,  # by passing None we use a heuristic for the number of bins.
 )
 
 
 f.suptitle("SBC rank plot", fontsize=13)
 plt.tight_layout()
-plt.savefig(paths.figures / f'sbc_rank_plot_{name}.pdf')
+plt.savefig(paths.figures / f"sbc_rank_plot_{name}.pdf")
 plt.clf()
 
 # --- TARP plot ---
@@ -99,5 +105,5 @@ print(ks_pval, "Should be larger than 0.05")
 # Or, we can perform a visual check.
 f, ax = plot_tarp(ecp, alpha)
 plt.tight_layout()
-plt.savefig(paths.figures / f'tarp_plot_{name}.pdf')
+plt.savefig(paths.figures / f"tarp_plot_{name}.pdf")
 plt.clf()
