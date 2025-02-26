@@ -113,3 +113,27 @@ for i in tqdm(range(len(abundances))):
 
 percentile = np.percentile(correlation, [0, 99])
 percentile_mask = (correlation>percentile[0])&(correlation<percentile[1])
+
+fig = plt.figure(figsize=(35, 5))
+ax = fig.add_subplot(131)
+ax.hist(correlation[percentile_mask], histtype='step', color='black')
+ax.set_xlabel(r'$C_{ \alpha_{\text{IMF}, \log_{10}{N_{\text{Ia}} }} }$', fontsize=32 )  
+ax.set_ylabel('Counts', fontsize=32 )
+
+ax = fig.add_subplot(132)
+ax.scatter(distance[percentile_mask], correlation[percentile_mask], s=1, color='black')
+ax.set_xscale('log')
+ax.set_yscale('log')
+ax.set_xlabel(r'$|| \theta_\text{true} - \theta_{\text{predicted}} ||$', fontsize=32)
+ax.set_ylabel(r'$C_{ \alpha_{\text{IMF}, \log_{10}{N_{\text{Ia}} }} }$', fontsize=32)  
+ax.grid(True, color='gray', linestyle='--', linewidth=0.5)
+
+ax = fig.add_subplot(133)
+ax.scatter(mahalanobis_distance[percentile_mask], correlation[percentile_mask], s=1, color='black')
+ax.set_xscale('log')
+ax.set_yscale('log')
+ax.set_xlabel(r'$|| \theta_\text{true} - \theta_{\text{predicted}} ||_{\text{Mahalanobis}}$', fontsize=32)
+ax.set_ylabel(r'$C_{ \alpha_{\text{IMF}, \log_{10}{N_{\text{Ia}} }} }$', fontsize=32)  
+ax.grid(True, color='gray', linestyle='--', linewidth=0.5)
+
+fig.savefig(paths.figures / 'correlation_high_mass_slope_SN_delay.pdf', bbox_inches='tight')

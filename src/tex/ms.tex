@@ -402,7 +402,7 @@ We start evaluating our method by using \texttt{CHEMPY} to produce a mock observ
 To evaluate our method quantitatively, we compare the posterior mean to the ground truth value for each observation and calculate the absolute percentage error (APE, see Fig.~\ref{fig:posterior_APE}). For a single star observation, our NPE has an APE of \variable{output/global_posterior_APE.txt} when looking at all 6 parameters of interest.
 If we restrict ourselves to only the two global parameters $\vec\Lambda$, our NPE achieves an APE of \variable{output/posterior_APE.txt} as shown in Fig.~\ref{fig:posterior_APE}. There we can also see, that the accuracy for an individual star of the NPE is not particularly high. However, for the global parameters $\vec\Lambda$ we can boost the accuracy by combining the inference for many stars of the same galaxy.
 
-However, currently our NPE network is not particularly good at estimating ages from abundances alone. On average our inference for ages results in an APE of $\sim27\%$ which is slightly larger than the observational noise of $20\%$ that we add during the mock up of our data but well in agreement with current uncertainties of stellar age inference.
+However, currently our NPE network is not particularly good at estimating ages from abundances alone. On average our inference for ages results in an APE of $\sim21\%$ which is slightly larger than the observational noise of $20\%$ that we add during the mock up of our data but well in agreement with current uncertainties of stellar age inference that range from 15\% to 30\% for turn-off stars and giants respectively.
 
 \subsection{Inference on mock data from \texttt{CHEMPY} with TNG yield set}
 \label{subsec:chempy_tng}
