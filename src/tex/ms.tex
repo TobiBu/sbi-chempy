@@ -649,12 +649,15 @@ Note, however, that this property depends on the choice of reference point distr
 
 \section{Correlation analysis of inference results}
 \label{sec: correlations}
+In order to characterize the relation between the global parameters $\alpha_{\text{IMF}}$ and $\log_{10} N_{\text{Ia}}$, we have decided to study the correlation obtained from the inference results on the whole validation set. Figure \ref{fig:corner_plot} display a possible positive correlation, and in order to obtain a population level statics of this results, we calculate for each star in the validation set the 2x2 covariance matrix\footnote{We have used only the global parameters components of the sample to calculate the covariance matrix.} of the posterior samples, extracting the off diagonal value. In Figure \ref{fig:correlation}, the histogram of the correlation value is shown, and all the inference results suggest a positive correlation. We kept only the left sided 99 percentile for graphical reasons, but also those removed outliers are in agreement with the conclusion. 
+We checked the independence of this results from the accuracy of the inference with the central and right plots of Fig. \ref{fig:correlation}. 
 
 \begin{figure*}
     \centering
     \includegraphics[width=\textwidth]{figures/correlation_high_mass_slope_SN_delay.pdf}
     \vspace{-.5cm}
-    \caption{Correlation analysis of the global parameters.}
+    \caption{The left Figure shows the distribution of the correlation between the global parameters $\alpha_{\text{IMF}}$ and $\log_{10} N_{\text{Ia}}$, obtained by the covariance matrix of the sample of each star in the validation set. The central and right Figures show the correlation as a function of the Euclidean and Mahalanobis distance of the true value $\theta_{\text{true}}$ and the sample average $\theta_{\text{predicted}}$. This results shows that the correlation is independent on the accuracy of the inference.}
+
     \label{fig:correlation}
     \script{plot_sbc.py}
 \end{figure*}

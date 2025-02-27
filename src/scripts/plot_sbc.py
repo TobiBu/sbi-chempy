@@ -15,7 +15,15 @@ name = "NPE_C"
 # --- Define the prior ---
 a = ModelParameters()
 labels_out = a.elements_to_trace
-labels_in = [a.to_optimize[i] for i in range(len(a.to_optimize))] + ["time"]
+# labels_in = [a.to_optimize[i] for i in range(len(a.to_optimize))] + ["time"]
+labels_in = [
+    r"$\alpha_{\text{IMF}}$",
+    r"$\log_{10}{\text{N}_{\text{Ia}}}$",
+    r"$\log_{10}{\text{SFE}}$",
+    r"$\log_{10}{\text{SFR}_{\text{peak}}}$",
+    r"$x_{\text{out}}$",
+    r"$\text{Time}$",
+]
 
 # ----- load the posterior -------------------------------------------------------------------------------------------------------------------------------------------
 with open(paths.data / f"posterior_{name}.pickle", "rb") as f:
@@ -127,7 +135,7 @@ plt.rcParams.update(
     }
 )
 
-fig = plt.figure(figsize=(35, 5))
+fig = plt.figure(figsize=(37, 5))
 ax = fig.add_subplot(131)
 ax.hist(correlation[percentile_mask], histtype="step", color="black")
 ax.set_xlabel(r"$C_{ \alpha_{\text{IMF}, \log_{10}{N_{\text{Ia}} }} }$", fontsize=32)
