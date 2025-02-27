@@ -127,7 +127,7 @@ plt.rcParams.update(
     {
         "font.size": 20,
         "axes.titlesize": 20,
-        "axes.labelsize": 18,
+        "axes.labelsize": 20,
         "xtick.labelsize": 20,
         "ytick.labelsize": 20,
         "legend.fontsize": 15,
@@ -138,15 +138,15 @@ plt.rcParams.update(
 fig = plt.figure(figsize=(39.9, 5))
 ax = fig.add_subplot(131)
 ax.hist(correlation[percentile_mask], histtype="step", color="black")
-ax.set_xlabel(r"$C_{ \alpha_{\text{IMF}, \log_{10}{N_{\text{Ia}} }} }$", fontsize=32)
+ax.set_xlabel(r"$C_{ \alpha_{\text{IMF}, \log_{10}{N_{\text{Ia}} }} }$", fontsize=30)
 ax.set_ylabel("Counts", fontsize=32)
 
 ax = fig.add_subplot(132)
 ax.scatter(distance[percentile_mask], correlation[percentile_mask], s=1, color="black")
 ax.set_xscale("log")
 ax.set_yscale("log")
-ax.set_xlabel(r"$|| \theta_\text{true} - \theta_{\text{predicted}} ||$", fontsize=32)
-ax.set_ylabel(r"$C_{ \alpha_{\text{IMF}, \log_{10}{N_{\text{Ia}} }} }$", fontsize=32)
+ax.set_xlabel(r"$|| \theta_\text{true} - \theta_{\text{predicted}} ||$", fontsize=30)
+ax.set_ylabel(r"$C_{ \alpha_{\text{IMF}, \log_{10}{N_{\text{Ia}} }} }$", fontsize=30)
 ax.grid(True, color="gray", linestyle="--", linewidth=0.5)
 
 ax = fig.add_subplot(133)
@@ -160,9 +160,9 @@ ax.set_xscale("log")
 ax.set_yscale("log")
 ax.set_xlabel(
     r"$|| \theta_\text{true} - \theta_{\text{predicted}} ||_{\text{Mahalanobis}}$",
-    fontsize=32,
+    fontsize=30,
 )
-ax.set_ylabel(r"$C_{ \alpha_{\text{IMF}, \log_{10}{N_{\text{Ia}} }} }$", fontsize=32)
+ax.set_ylabel(r"$C_{ \alpha_{\text{IMF}, \log_{10}{N_{\text{Ia}} }} }$", fontsize=30)
 ax.grid(True, color="gray", linestyle="--", linewidth=0.5)
 
 fig.savefig(
