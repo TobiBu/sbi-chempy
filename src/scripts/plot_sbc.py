@@ -135,7 +135,7 @@ plt.rcParams.update(
     }
 )
 
-fig = plt.figure(figsize=(39.5, 5))
+fig = plt.figure(figsize=(39.9, 5))
 ax = fig.add_subplot(131)
 ax.hist(correlation[percentile_mask], histtype="step", color="black")
 ax.set_xlabel(r"$C_{ \alpha_{\text{IMF}, \log_{10}{N_{\text{Ia}} }} }$", fontsize=32)
