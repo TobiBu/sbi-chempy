@@ -45,7 +45,7 @@ def objective(trial):
 
     # ----- Train the SBI -------------------------------------------------------------------------------------------------------------------------------------------
     density_estimator_build_fun = posterior_nn(
-        model="nsf",
+        model="maf",
         hidden_features=hidden_features,
         num_transforms=num_transforms,
     )
@@ -64,7 +64,7 @@ def objective(trial):
     # --- build the posterior ---
     posterior = inference.build_posterior(density_estimator)
 
-    nll_test = -torch.mean(
+    nll_test = torch.mean(
         posterior.log_prob_batched(
             theta_test.repeat(1000, 1).view(1000, 100, 6), x=x_test
         )
