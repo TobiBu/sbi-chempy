@@ -1,5 +1,6 @@
 import corner
 import jax
+import jax.numpy as jnp
 import matplotlib.pyplot as plt
 import numpy as np
 import numpyro
@@ -51,17 +52,12 @@ def numpyro_model(obs_abundances, obs_errors):
     xout = numpyro.sample("xout", dist.Normal(0.5, 0.1))
     birth_time = numpyro.sample("birth_time", dist.Uniform(1.0, 13.8))
 
-    input_tensor = torch.tensor(
-        [
-            float(alpha_imf),
-            float(log10_n_ia),
-            float(log10_sfe),
-            float(log10_sfr_peak),
-            float(xout),
-            float(birth_time),
-        ],
-        dtype=torch.float32,
+    # Stack into a JAX array, convert to NumPy, then to PyTorch
+    input_array = jnp.array(
+        [alpha_imf, log10_n_ia, log10_sfe, log10_sfr_peak, xout, birth_time]
     )
+    input_numpy = np.array(input_array, dtype=np.float32)
+    input_tensor = torch.from_numpy(input_numpy)
 
     predicted_abundances = model(input_tensor).detach().numpy()
 
