@@ -39,42 +39,39 @@ def clean_data(x, y):
 
 
 val_theta, val_x = clean_data(val_theta, val_x)
-obs_abundances = val_x[0]
+obs_abundances = val_x[:10]
+val_theta = val_theta[:10]
 obs_errors = np.ones_like(obs_abundances) * 0.05  # fixed Gaussian noise
 
 
-def log_prob_fn(params):
-    # Convert to NumPy array if passed in as JAX array
-    params = np.asarray(params)
+def make_log_prob_fn(obs_abundances, obs_errors):
+    def log_prob_fn(params):
+        params = np.asarray(params)
+        alpha_imf, log10_n_ia, log10_sfe, log10_sfr_peak, xout, birth_time = params
 
-    # Unpack parameters
-    alpha_imf, log10_n_ia, log10_sfe, log10_sfr_peak, xout, birth_time = params
+        if not (1.0 <= birth_time <= 13.8):
+            return -np.inf
 
-    # Reject unphysical samples
-    if not (1.0 <= birth_time <= 13.8):
-        return -np.inf
+        logp = 0.0
+        logp += -0.5 * ((alpha_imf + 2.3) / 0.3) ** 2
+        logp += -0.5 * ((log10_n_ia + 2.89) / 0.3) ** 2
+        logp += -0.5 * ((log10_sfe + 0.3) / 0.3) ** 2
+        logp += -0.5 * ((log10_sfr_peak - 0.55) / 0.1) ** 2
+        logp += -0.5 * ((xout - 0.5) / 0.1) ** 2
 
-    # Gaussian priors
-    logp = 0.0
-    logp += -0.5 * ((alpha_imf + 2.3) / 0.3) ** 2
-    logp += -0.5 * ((log10_n_ia + 2.89) / 0.3) ** 2
-    logp += -0.5 * ((log10_sfe + 0.3) / 0.3) ** 2
-    logp += -0.5 * ((log10_sfr_peak - 0.55) / 0.1) ** 2
-    logp += -0.5 * ((xout - 0.5) / 0.1) ** 2
+        input_tensor = torch.tensor(params, dtype=torch.float32)
+        with torch.no_grad():
+            prediction = model(input_tensor).numpy()
 
-    # Run emulator (PyTorch)
-    input_tensor = torch.tensor(params, dtype=torch.float32)
-    with torch.no_grad():
-        prediction = model(input_tensor).numpy()
+        if not np.all(np.isfinite(prediction)):
+            return -np.inf
 
-    print("Params:", params)
-    print("Prediction:", prediction)
+        residual = (prediction - obs_abundances) / obs_errors
+        log_likelihood = -0.5 * np.sum(residual**2)
 
-    # Gaussian likelihood
-    residual = (prediction - obs_abundances) / obs_errors
-    log_likelihood = -0.5 * np.sum(residual**2)
+        return logp + log_likelihood
 
-    return logp + log_likelihood
+    return log_prob_fn
 
 
 # === MH Sampler ===
@@ -105,11 +102,32 @@ def metropolis_hastings(log_prob_fn, initial, num_samples=1000, proposal_scale=0
 # Initial parameter guess (safe values)
 initial_params = np.array([-2.3, -2.89, -0.3, 0.55, 0.5, 6.0], dtype=np.float32)
 
-print("logp(init):", log_prob_fn(initial_params))
+# print("logp(init):", log_prob_fn(initial_params))
 
-samples = metropolis_hastings(
-    log_prob_fn, initial_params, num_samples=5000, proposal_scale=0.02
-)
+mh_samples = []
+obs_errors = np.ones(val_x.shape[1]) * 0.05
+
+for i in range(len(val_x)):
+    print(f"Sampling star {i+1}/{len(val_x)}")
+
+    obs = val_x[i]
+    truth = val_theta[i]
+
+    log_prob = make_log_prob_fn(obs, obs_errors)
+    initial = np.array(
+        [-2.3, -2.89, -0.3, 0.55, 0.5, 6.0]
+    )  # or truth as a starting point
+
+    samples = metropolis_hastings(
+        log_prob, initial, num_samples=2000, proposal_scale=0.02
+    )
+    mh_samples.append(
+        {
+            "samples": samples,
+            "truth": truth,
+        }
+    )
+
 
 samples_np = np.asarray(samples)
 param_names = [
@@ -121,11 +139,13 @@ param_names = [
     "birth_time",
 ]
 
-# figure = corner.corner(samples_np, labels=param_names, show_titles=True)
-figure = corner.corner(
-    samples_np,
-    labels=param_names,
-    show_titles=True,
-    range=[(col.min() - 1e-2, col.max() + 1e-2) for col in samples_np.T],
-)
-plt.savefig(paths.figures / "hmc_corner_plot.pdf", dpi=300, bbox_inches="tight")
+for i, result in enumerate(mh_samples):
+    samples = result["samples"]
+    truth = result["truth"]
+
+    print(f"Plotting star {i}")
+    fig = corner.corner(
+        samples, labels=param_names, truths=truth, show_titles=True, title_fmt=".2f"
+    )
+    fig.suptitle(f"Star {i}")
+    plt.show()
