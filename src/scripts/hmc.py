@@ -45,6 +45,7 @@ obs_errors = np.ones_like(obs_abundances) * 0.05  # fixed Gaussian noise
 
 # ---- NumPyro model using PyTorch emulator ----
 def numpyro_model(obs_abundances, obs_errors):
+    # Sample all parameters
     alpha_imf = numpyro.sample("alpha_imf", dist.Normal(-2.3, 0.3))
     log10_n_ia = numpyro.sample("log10_n_ia", dist.Normal(-2.89, 0.3))
     log10_sfe = numpyro.sample("log10_sfe", dist.Normal(-0.3, 0.3))
@@ -52,15 +53,21 @@ def numpyro_model(obs_abundances, obs_errors):
     xout = numpyro.sample("xout", dist.Normal(0.5, 0.1))
     birth_time = numpyro.sample("birth_time", dist.Uniform(1.0, 13.8))
 
-    # Stack into a JAX array, convert to NumPy, then to PyTorch
-    input_array = jnp.array(
-        [alpha_imf, log10_n_ia, log10_sfe, log10_sfr_peak, xout, birth_time]
+    # Pack into a JAX DeviceArray and convert to a numpy float array explicitly using numpyro.deterministic
+    # Note: The model is not traced through the emulator, so this is fine
+    param_array = numpyro.deterministic(
+        "input_array",
+        jnp.array([alpha_imf, log10_n_ia, log10_sfe, log10_sfr_peak, xout, birth_time]),
     )
-    input_numpy = np.array(input_array, dtype=np.float32)
-    input_tensor = torch.from_numpy(input_numpy)
 
+    # Convert to numpy explicitly here (OUTSIDE any JAX tracing context)
+    param_numpy = np.asarray(param_array, dtype=np.float32)
+    input_tensor = torch.from_numpy(param_numpy)
+
+    # Run emulator and convert output
     predicted_abundances = model(input_tensor).detach().numpy()
 
+    # Likelihood
     numpyro.sample(
         "obs", dist.Normal(predicted_abundances, obs_errors), obs=obs_abundances
     )
