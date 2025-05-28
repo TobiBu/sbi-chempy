@@ -40,6 +40,7 @@ def clean_data(x, y):
 
 val_theta, val_x = clean_data(val_theta, val_x)
 obs_abundances = val_x[:10]
+val_x = val_x[:10]
 val_theta = val_theta[:10]
 obs_errors = np.ones_like(obs_abundances) * 0.05  # fixed Gaussian noise
 
@@ -149,3 +150,6 @@ for i, result in enumerate(mh_samples):
     )
     fig.suptitle(f"Star {i}")
     plt.show()
+
+with open("mh_results.pkl", "wb") as f:
+    pickle.dump(mh_samples, f)
