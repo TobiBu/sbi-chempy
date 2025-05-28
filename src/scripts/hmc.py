@@ -1,4 +1,5 @@
 import corner
+import jax
 import matplotlib.pyplot as plt
 import numpy as np
 import numpyro
@@ -64,7 +65,7 @@ def numpyro_model(obs_abundances, obs_errors):
 # ---- Run MCMC ----
 nuts_kernel = NUTS(numpyro_model)
 mcmc = MCMC(nuts_kernel, num_warmup=1000, num_samples=2000, num_chains=1)
-rng_key = numpyro.prng_key()
+rng_key = jax.random.PRNGKey(0)
 mcmc.run(rng_key, obs_abundances=obs_abundances, obs_errors=obs_errors)
 mcmc.print_summary()
 
