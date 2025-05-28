@@ -208,7 +208,7 @@ param_names = [
     "birth_time",
 ]
 
-true_mean = np.mean(stars.numpy(), axis=1)
+true_mean = np.mean(stars.numpy(), axis=0)
 print("True mean parameters:", true_mean)
 fig = corner.corner(
     all_samples, labels=param_names, show_titles=True, truths=true_mean, title_fmt=".2f"
