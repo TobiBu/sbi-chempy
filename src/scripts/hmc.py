@@ -5,12 +5,10 @@ import jax
 import jax.numpy as jnp
 import matplotlib.pyplot as plt
 import numpy as np
-import numpyro
-import numpyro.distributions as dist
+import sbi.utils as utils
 import torch
 import tqdm
 from Chempy.parameter import ModelParameters
-from numpyro.infer import HMC, MCMC, NUTS
 
 import paths
 from chempy_torch_model import Model_Torch
