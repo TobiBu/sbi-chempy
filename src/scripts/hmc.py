@@ -42,7 +42,7 @@ model.eval()
 
 # --- Define the simulator ---
 N_stars = 10
-samples = 1000
+N_samples = 1000
 
 stars = local_GP.sample((N_stars,))
 global_params = torch.tensor([[-2.3, -2.89]])
@@ -155,7 +155,7 @@ for i in tqdm(range(len(abundances))):
     )  # or truth as a starting point
 
     samples = metropolis_hastings(
-        log_prob, initial, num_samples=samples, proposal_scale=0.02
+        log_prob, initial, num_samples=N_samples, proposal_scale=0.02
     )
     mh_samples.append(
         {
