@@ -41,7 +41,7 @@ model.load_state_dict(torch.load(paths.data / "pytorch_state_dict.pt"))
 model.eval()
 
 # --- Define the simulator ---
-N_stars = 50
+N_stars = 200
 N_samples = 1000
 
 stars = local_GP.sample((N_stars,))
