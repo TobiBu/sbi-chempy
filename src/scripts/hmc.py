@@ -67,12 +67,17 @@ def log_prob_fn(params):
     with torch.no_grad():
         prediction = model(input_tensor).numpy()
 
+    print("Params:", params)
+    print("Prediction:", prediction)
+
     # Gaussian likelihood
     residual = (prediction - obs_abundances) / obs_errors
     log_likelihood = -0.5 * np.sum(residual**2)
 
     return logp + log_likelihood
 
+
+print("logp(init):", log_prob_fn(initial_params))
 
 # DO NOT JIT THIS — keep PyTorch isolated from JAX tracing
 kernel = HMC(log_prob_fn)  # , step_size=0.01, num_steps=10)
