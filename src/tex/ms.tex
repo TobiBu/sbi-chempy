@@ -46,6 +46,7 @@
 \newcommand{\T}[1]{\textcolor{orange}{#1}}
 %\newcommand{\U}[1]{\textbf{\textit{\textcolor{blue}{#1}}}}
 \newcommand{\U}[1]{\textcolor{black}{#1}}
+\newcommand{\resub}[1]{\textbf{\textcolor{blue}{#1}}}
 \usepackage{subfigure}
 
 \begin{document} 
@@ -258,6 +259,7 @@ which is far below typical observational errors and even smaller away from the e
 
 
 \subsection{Bayesian model}
+\label{subsec:bayesian-model}
 \texttt{CHEMPY} effectively is a Bayesian model for stellar abundances given a set of parameters $\{\Vec{\Lambda},\Vec{\Theta},T\}$ and \citet{Philcox_2019} extended the \texttt{CHEMPY} framework to be able to model multiple stellar data-points. Consider a given star with index $i$ that is born in some region of the ISM. This star will carry its own set of parameters $\{\Vec{\Lambda},\Vec{\Theta}_i,T_i\}$, where $\Vec{\Lambda}$ are star independent and hence taken to be global parameters while the ISM parameters $\Vec{\Theta}_i$ and the birth-time $T_i$ are star specific. Using \texttt{CHEMPY} (or the trained neural network emulator) we can easily model the set of $n_\mathrm{el}$ chemical abundances $\{X_i^j\}$ for the $i$-th star as: 
 \begin{equation}\label{eq:chempy_function}
 \{X_i^j\} = \texttt{CHEMPY}(\Vec{\Lambda},\Vec{\Theta}_i,T_i),
@@ -309,7 +311,8 @@ containing 8 hidden features and 4 transformation layers for the normalizing flo
 The expressivity of the MAF allows the NDE to be capture complex distributions, while also maintaining computational tractability. The final model was selected after extensive hyperparameter tuning, varying: the architecture between Neural Spline Flow \citep[NSF;][]{durkan2019neuralsplineflows}, MAF, and MAF with rational-quadratic spline (MAF-RQS), the number of neurons between {10, 20, 50, 100}, and the number of transformations between {1, 5, 10, 30}, optimizing over the test set for both the highest mean log posterior probability and the best calibration as measured by the TARP value \citep{Lemos2023}. For more details on the TARP value see section \ref{sec:sbc} in the appendix.
 
 We train our NPE with $10^5$ data points consisting of $n_{\rm elements}=8$ simulated with the NN emulator described in the previous section. Inputs are sampled from the Gaussian priors shown in Tab. \ref{tab:priors}. Training takes $\sim10$ minutes on an Apple M1 Max.
-We evaluate the accuracy of the NPE using $5\times10^3$ validation data points from the original \texttt{CHEMPY} simulator. In order to mimic observational noise, we add 5\% observational uncertainties to the abundances simulated with \texttt{CHEMPY} before feeding them to our NPE.
+We evaluate the accuracy of the NPE using $5\times10^3$ validation data points from the original \texttt{CHEMPY} simulator. In order to mimic observational noise, \resub{we add 5\%  Gaussian observational uncertainties ($=0.05$ dex) to the abundances simulated with \texttt{CHEMPY}, representative of typical APOGEE measurements \citep{apogee17}, to simulate observational noise. While this uniform treatment simplifies the modeling, we acknowledge that in real data, uncertainties can vary by stellar type, element, or SNR. Future extensions of this work will incorporate more realistic, element-specific or SNR-dependent noise models.}
+
 We have made sure that our NPE is well calibrated and posterior distributions are trustable. For more details on simulation-based calibration see appendix \ref{sec:sbc}.
 
 Note, the methods presented here can naturally be extended to any fast and flexible GCE model \citep[e.g.][and others]{Talbot1971,vice,omega2018}, not just \texttt{CHEMPY} and can even be used to infer vastly different galactic parameters such as accretion events from abundance distributions of stars \citep[e.g.][]{Viterbo2024}.
@@ -318,7 +321,9 @@ Note, the methods presented here can naturally be extended to any fast and flexi
 \paragraph{Multi-star inference:}
 Following eq.~\ref{eq:posterior} we can calculate the joint posterior for a combined inference using abundance observations of multiple stars. For this, we will condition our NPE individually on single star observations and sample the posterior. Then, according to eq.~\ref{eq:posterior} we simply have to multiply individual posteriors and account for the inverse weighting by some power of the prior which we take from Table~\ref{tab:priors}. 
 
-This does however present one issue, that since we only have access to samples from the posterior and not the posterior itself it is difficult to evaluate eq.~\ref{eq:posterior}. We circumvent this by approximating each single star posterior by a Gaussian and fit for the parameters of mean and covariance. With this it is straight forward to evaluate eq.~\ref{eq:posterior} analytically. In fact, under our assumption the combined posterior is a product between the prior and the product of multiple Gaussians for the individual star posteriors. The latter product is also a Gaussian with mean $\mathbf{\mu'}$ and variance $\mathbf{\sigma'^2}$:
+This does however present one issue, that since we only have access to samples from the posterior and not the posterior itself it is difficult to evaluate eq.~\ref{eq:posterior}. \resub{We circumvent this by approximating each single-star posterior by a Gaussian and fitting for the parameters of mean and covariance. This choice enables an analytical combination of multiple posteriors (see Eq.~\ref{eq:posterior}), providing computational tractability and allowing efficient inference over large datasets. While this approximation may limit the flexibility of the posterior, it significantly reduces computational complexity. Alternative strategies, such as using a Mixture Density Network (MDN) or normalizing flows with parametric forms, would provide richer posterior representations. However, these would complicate the composition of posteriors across stars. We acknowledge this as a simplification and plan to explore more expressive architectures in future work.} 
+
+With this it is straight forward to evaluate eq.~\ref{eq:posterior} analytically. In fact, under our assumption the combined posterior is a product between the prior and the product of multiple Gaussians for the individual star posteriors. The latter product is also a Gaussian with mean $\mathbf{\mu'}$ and variance $\mathbf{\sigma'^2}$:
 \begin{align}
     \mathbf{\mu'} &= \frac{\sum_{i=1}^{N_{stars}} \frac{\mu_i}{\sigma_i^2}}{\sum_{i=1}^{N_{stars}} \frac1{\sigma_i^2}} \\
 \mathbf{\sigma'}^2 &= \frac1 {\sum_{i=1}^{N_{stars}} \frac1{\sigma_i^2}}
@@ -413,7 +418,8 @@ If we restrict ourselves to only the two global parameters $\vec\Lambda$, our NP
 
 However, currently our NPE network is not particularly good at estimating ages from abundances alone. On average our inference for ages results in an APE of $\sim21\%$ which is slightly larger than the observational noise of $20\%$ that we add during the mock up of our data but well in agreement with current uncertainties of stellar age inference that range from 15\% to 30\% for turn-off stars and giants respectively.
 
-We accompany the APE analysis by showing the full posterior inference results for a single star in Fig.~\ref{fig:corner_plot}. This figure shows that the SBI approach is well able to infer correct parameters and their cross-correlations. In partciular, there is a strong correlation between the two global parameters as seen in the top left corner as well as for time (or stellar age) and all other five parameters as visible from the bottom row.
+We accompany the APE analysis by showing the full \resub{joint posterior over global and local parameters for a single star in Fig.~\ref{fig:corner_plot}. When performing inference across multiple stars, we marginalize over local parameters and use the factorized form in Eq. 5 to approximate the global posterior. This distinction between single-star and population-level inference will be emphasized in the revised captions and text for clarity.}
+This figure shows that the SBI approach is well able to infer correct parameters and their cross-correlations. In partciular, there is a strong correlation between the two global parameters as seen in the top left corner as well as for time (or stellar age) and all other five parameters as visible from the bottom row.
 
 Finally, as already mentioned in the method section for the global parameters $\vec\Lambda$ we can boost the accuracy by combining the inference for many stars of the same galaxy.
 
@@ -431,6 +437,8 @@ This is particularly important since sample variances play a large role when usi
 In Fig.~\ref{fig:CHEMPY_TNG_sbi} we show the joint posterior for $\alpha_{IMF}$ and $\log_{10}(N_{Ia})$ for our inference. The red star indicates the ground truth value, the black dot shows our posterior mean and white contours indicate $1-3\sigma$ levels.
 %
 Using a sample of 1,000 stars we infer \variable{output/CHEMPY_TNG_sbi.txt} which deviates less than $\sim0.04\%$ from the ground truth value. We have further checked the accuracy of our inference for a vastly different mock observational dataset created with shifted parameters of $\alpha_{IMF}=-2.1$ and $\log_{10}(N_{Ia})=-3$ and found that also in this case our model is well able to lead to correct inferences (see sec.~\ref{sec: additional inference} in the appendix).
+
+\resub{It is important to note that our SBI results are derived using 1,000 stars, whereas the HMC results from \citet{Philcox_2019} are based on only 200 stars and involve slightly different HMC setups with additional parameters reflecting the individual element abundance weights or model errors contributing to the inference \citep[see section 4 of][]{Philcox_2019}. This contributes to the observed differences in posterior contours. Additionally, our method approximates posteriors using Gaussian fits, which may underestimate uncertainty at large sample sizes (see also Sec.~\ref{sec: discussion}). To ensure a fairer comparison, in appendix~\ref{sec:hmc-sbi} we have run a comparison between our SBI model and a custom HMC model reflecting the exact same setup as for the SBI. Figure~\ref{fig:} in the appendix shows that ...}
 
 Note that our analysis is in principle also able to infer the local parameters $\Vec{\Theta}_i$ and $T_i$. This would allow us to estimate/infer stellar ages as well. But note, as discussed above at the end of sub-section \ref{subsec:mock obs} our NPE currently is not well calibrated to estimate stellar ages accurately enough.
 
@@ -515,6 +523,8 @@ Our study demonstrates that simulation-based inference (SBI) provides a powerful
 The key assumption underpinning our methodology -- that individual stars are independently sampled from their respective stellar environments -- is foundational for tractability. However, this assumption warrants closer examination. In reality, stellar abundances are correlated due to shared star formation histories, cumulative enrichment, and dynamical interactions. Future efforts should explore methodologies capable of incorporating such correlations to further refine the accuracy of SBI, potentially through hierarchical modeling or graph-based methods. In particular this assumption leads to over-confident models in the limit of large observational samples that drastically underestimate model uncertainties. One very promising avenue to circumvent this probelm will be compositional score models \citep{compositional_score} which we will explore in future work.
 
 An exciting avenue for future research involves expanding the SBI method presented here to be able to cope with missing data points by switching to a transformer model architecture.
+\resub{A natural question arises regarding the use of these alternative architectures -- such as transformer-based models -- which could process variable numbers of stellar inputs directly, bypassing the need for single-star posterior approximations. These models could potentially capture correlations across stars and remove the need for assuming a factorized posterior. However, incorporating such models would require a new approach to network training and posterior inference. We are currently investigating these strategies and will report results in a forthcoming paper.}
+
 Also, with slight modifications, SBI could be used 
 to directly infer empirical nucleosynthetic yields, which remain a major uncertainty in GCE models. In the current framework, \texttt{CHEMPY} relies on tabulated yields from theoretical studies, which may not fully represent the complex processes driving stellar enrichment. Adapting SBI to simultaneously infer galactic parameters and refine empirical yield tables would require changes to the simulator. Specifically, \texttt{CHEMPY} would need to incorporate parameterized yield modifications as part of its input space, allowing for flexible adjustments to enrichment rates during inference. This would also necessitate larger training datasets and enhanced validation techniques to ensure convergence. Such an approach could provide a unified framework for calibrating galactic models directly against observational data. Research in this direction is currently performed and will be part of a future paper.
 
@@ -523,6 +533,7 @@ In the meantime, SBI can also be used to perform model comparison \citep[e.g.][]
 Compared to previous HMC-based studies \citep[e.g.][]{Philcox_2019}, our results highlight SBI's resilience to certain types of model misspecification, such as mismatched yield tables. The robustness of SBI in these cases stems from its ability to approximate complex posterior distributions efficiently. Notably, SBI retained high accuracy in scenarios where HMC struggled, particularly for the high-mass slope of the IMF ($\alpha_{\rm ISM}$). This suggests SBI's potential for real-world applications, where the underlying models may deviate from observational data.
 
 The applicability of our method extends to surveys with more observed elements especially neutron capture elements such as GALAH DR4 \citep{Buder2024} and future spectroscopic surveys, such as those planned by the 4MOST \citep{4most} or WEAVE \citep{weave} consortia, which will provide orders of magnitude more data than current datasets. Our findings indicate that SBI can seamlessly scale to such large datasets, offering significant advantages in terms of speed and computational cost.
+\resub{While the present study focuses on mock datasets to validate the methodology under controlled conditions, we recognize the importance of testing our method on real survey data. Ongoing work is aimed at applying our pipeline to GALAH DR4 and APOGEE datasets. These surveys offer diverse chemical tracers and provide a valuable testbed for evaluating the robustness and calibration of our approach on real observations. This will be presented in future work.}
 
 As anticipated in Section \ref{sec:methods}, the speed of our NN emulator would allow us to perform SNPE, giving up the amortized property in favor of a stronger constraining power, since the Sequential techniques have been shown empirically to outperform the respective amortized version \citep{Ho2024}. This method trains the NDE on a fraction of the initial simulations budget, retrieving a first estimate of the posterior, and at inference time simulate new observations to train on in regions of high posterior density, obtained from the first estimate. In this way we can obtain posteriors that are deliberately optimized for a singular data point. We have decided to leave this approach for future work because the results are quite promising and the amortized property can be crucial for the scalability.
 
@@ -637,6 +648,8 @@ The core idea behind SBC is two fold: (i) SBC ranks of ground truth parameters u
 
 Hence, SBC can tell us whether the SBI method applied to the problem at hand produces posteriors that have well-calibrated uncertainties, and if the posteriors have uncalibrated uncertainties, SBC surfaces what kind of systematic bias is present: negative or positive bias (shift in the mean of the predictions) or over- or under-dispersion (too large or too small variance).
 
+\resub{The calibration tests shown here are performed using posterior samples from our NPE trained on CHEMPY mock data. Validation is carried out on a hold-out set of simulated stars, with Gaussian noise added (0.05 dex), following the same protocol as described in Sec.~\ref{subsec:bayesian-model}. These tests evaluate the quality of posterior estimates for the global parameters  using single-star inference.}
+
 In the top panel of Fig.~\ref{fig:tarp} we show the distribution of ranks (depicted in red) in each dimension. Highlighted with black lines, you see the 99\% confidence interval of a uniform distribution given the number of samples provided. In plain english: for a uniform distribution, we would expect 1 out of 100 (blue) bars to lie outside the grey area. This figure shows that overall our posteriors are decently calibrated. Only for the parameter $\log_{10}\left(\mathrm{SFE}\right)$ and Time we see a slight bmiss-calibration. But most importantly for the parameters of interest here, $\log_{10}\left(N_\mathrm{Ia}\right)$ and $\alpha_\mathrm{IMF}$ we have a well calibrated posterior.
 
 \paragraph{Tests of Accuracy with Random Points (TARP)}
@@ -664,6 +677,18 @@ We checked the independence of this results from the accuracy of the inference w
     \script{plot_sbc.py}
 \end{figure*}
 
+\section{\resub{Comparison between HMC and SBI}}
+\label{sec:hmc-sbi}
+\resub{put a new figure and some text...}
+
+\begin{figure}
+    \centering
+    \includegraphics[width=\columnwidth]{figures/hmc_corner_plot.pdf}
+    \vspace{-.5cm}
+    \caption{Caption}
+    \label{fig:hmc}
+    \script{hmc.py}
+\end{figure}
 
 \section{Additional inference results}
 \label{sec: additional inference}
