@@ -77,14 +77,14 @@ def log_prob_fn(params):
     return logp + log_likelihood
 
 
-print("logp(init):", log_prob_fn(initial_params))
-
 # DO NOT JIT THIS — keep PyTorch isolated from JAX tracing
 kernel = HMC(log_prob_fn)  # , step_size=0.01, num_steps=10)
 mcmc = MCMC(kernel, num_warmup=500, num_samples=1000, num_chains=1)
 
 # Initial parameter guess (safe values)
 initial_params = np.array([-2.3, -2.89, -0.3, 0.55, 0.5, 6.0], dtype=np.float32)
+
+print("logp(init):", log_prob_fn(initial_params))
 
 # Run MCMC
 mcmc.run(jax.random.PRNGKey(0), initial_params)
