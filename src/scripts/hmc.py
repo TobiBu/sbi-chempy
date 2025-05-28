@@ -41,9 +41,9 @@ def clean_data(x, y):
 
 
 val_theta, val_x = clean_data(val_theta, val_x)
-obs_abundances = val_x[:10]
-val_x = val_x[:10]
-val_theta = val_theta[:10]
+obs_abundances = val_x[:50]
+val_x = val_x[:50]
+val_theta = val_theta[:50]
 obs_errors = np.ones_like(obs_abundances) * 0.05  # fixed Gaussian noise
 
 
@@ -173,6 +173,10 @@ param_names = [
     "birth_time",
 ]
 
-fig = corner.corner(all_samples, labels=param_names, show_titles=True, title_fmt=".2f")
+true_mean = np.mean(val_theta, axis=0)
+
+fig = corner.corner(
+    all_samples, labels=param_names, show_titles=True, truths=true_mean, title_fmt=".2f"
+)
 fig.suptitle("Global posterior (combined from all stars)")
 plt.show()
