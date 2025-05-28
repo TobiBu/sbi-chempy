@@ -44,53 +44,48 @@ obs_errors = np.ones_like(obs_abundances) * 0.05  # fixed Gaussian noise
 
 
 def log_prob_fn(params):
+    # Convert to NumPy array if passed in as JAX array
+    params = np.asarray(params)
+
+    # Unpack parameters
     alpha_imf, log10_n_ia, log10_sfe, log10_sfr_peak, xout, birth_time = params
 
-    def log_prob_inner():
-        # Gaussian priors
-        logp = 0.0
-        logp += -0.5 * ((alpha_imf + 2.3) / 0.3) ** 2
-        logp += -0.5 * ((log10_n_ia + 2.89) / 0.3) ** 2
-        logp += -0.5 * ((log10_sfe + 0.3) / 0.3) ** 2
-        logp += -0.5 * ((log10_sfr_peak - 0.55) / 0.1) ** 2
-        logp += -0.5 * ((xout - 0.5) / 0.1) ** 2
+    # Reject unphysical samples
+    if not (1.0 <= birth_time <= 13.8):
+        return -np.inf
 
-        # Emulator call
-        input_tensor = torch.tensor(
-            [alpha_imf, log10_n_ia, log10_sfe, log10_sfr_peak, xout, birth_time],
-            dtype=torch.float32,
-        )
-        with torch.no_grad():
-            prediction = model(input_tensor).numpy()
+    # Gaussian priors
+    logp = 0.0
+    logp += -0.5 * ((alpha_imf + 2.3) / 0.3) ** 2
+    logp += -0.5 * ((log10_n_ia + 2.89) / 0.3) ** 2
+    logp += -0.5 * ((log10_sfe + 0.3) / 0.3) ** 2
+    logp += -0.5 * ((log10_sfr_peak - 0.55) / 0.1) ** 2
+    logp += -0.5 * ((xout - 0.5) / 0.1) ** 2
 
-        # Gaussian likelihood
-        residual = (prediction - obs_abundances) / obs_errors
-        log_likelihood = -0.5 * np.sum(residual**2)
-        return logp + log_likelihood
+    # Run emulator (PyTorch)
+    input_tensor = torch.tensor(params, dtype=torch.float32)
+    with torch.no_grad():
+        prediction = model(input_tensor).numpy()
 
-    # Conditionally reject samples with out-of-bounds birth_time
-    return jax.lax.cond(
-        jnp.logical_and(birth_time >= 1.0, birth_time <= 13.8),
-        lambda _: log_prob_inner(),
-        lambda _: -jnp.inf,
-        operand=None,
-    )
+    # Gaussian likelihood
+    residual = (prediction - obs_abundances) / obs_errors
+    log_likelihood = -0.5 * np.sum(residual**2)
+
+    return logp + log_likelihood
 
 
-# Wrap as a JAX function
-log_prob_jax = jax.jit(log_prob_fn)
-
-# Initial guess
-initial_params = np.array([-2.3, -2.89, -0.3, 0.55, 0.5, 5.0])
-
-# Run HMC
-kernel = HMC(log_prob_jax, num_steps=10)
+# DO NOT JIT THIS — keep PyTorch isolated from JAX tracing
+kernel = HMC(log_prob_fn, step_size=0.01, num_steps=10)
 mcmc = MCMC(kernel, num_warmup=500, num_samples=1000, num_chains=1)
+
+# Initial parameter guess (safe values)
+initial_params = np.array([-2.3, -2.89, -0.3, 0.55, 0.5, 6.0], dtype=np.float32)
+
+# Run MCMC
 mcmc.run(jax.random.PRNGKey(0), initial_params)
 
 # Retrieve samples
 samples = mcmc.get_samples()
-samples_np = np.array(samples)
 
 # Convert the samples dict to a NumPy array for plotting
 param_names = [
