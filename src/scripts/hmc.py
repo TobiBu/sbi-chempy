@@ -23,7 +23,7 @@ model.load_state_dict(torch.load(paths.data / "pytorch_state_dict.pt"))
 model.eval()
 
 # ---- Load observational data from validation file ----
-val_data = np.load(paths.data / "chempy_TNG_val_data.npz", mmap_mode="r")
+val_data = np.load(paths.data / "chempy_data/chempy_TNG_val_data.npz", mmap_mode="r")
 val_theta = val_data["params"]
 val_x = val_data["abundances"]
 
