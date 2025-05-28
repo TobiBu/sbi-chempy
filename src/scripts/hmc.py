@@ -7,7 +7,7 @@ import numpyro
 import numpyro.distributions as dist
 import torch
 from Chempy.parameter import ModelParameters
-from numpyro.infer import MCMC, NUTS
+from numpyro.infer import HMC, MCMC, NUTS
 
 import paths
 from chempy_torch_model import Model_Torch
