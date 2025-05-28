@@ -97,6 +97,6 @@ param_names = [
     "birth_time",
 ]
 
-figure = corner.corner(samples_np, labels=param_names, show_titles=True)
+figure = corner.corner(samples, labels=param_names, show_titles=True)
 
 plt.savefig(paths.figures / "hmc_corner_plot.pdf", dpi=300, bbox_inches="tight")
