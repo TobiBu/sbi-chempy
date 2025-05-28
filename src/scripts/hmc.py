@@ -75,7 +75,7 @@ def log_prob_fn(params):
 
 
 # DO NOT JIT THIS — keep PyTorch isolated from JAX tracing
-kernel = HMC(log_prob_fn, step_size=0.01, num_steps=10)
+kernel = HMC(log_prob_fn)  # , step_size=0.01, num_steps=10)
 mcmc = MCMC(kernel, num_warmup=500, num_samples=1000, num_chains=1)
 
 # Initial parameter guess (safe values)
