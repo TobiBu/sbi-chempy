@@ -14,5 +14,5 @@ dependencies:
       - schedulefree
       - numpyro
       - pyro-ppl
-      - corner
+      - corner==2.1.0
       - jax

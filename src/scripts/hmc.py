@@ -87,7 +87,7 @@ mcmc.run(jax.random.PRNGKey(0), initial_params)
 # Retrieve samples
 samples = mcmc.get_samples()
 
-# Convert the samples dict to a NumPy array for plotting
+samples_np = np.asarray(samples)
 param_names = [
     "alpha_imf",
     "log10_n_ia",
@@ -97,6 +97,5 @@ param_names = [
     "birth_time",
 ]
 
-figure = corner.corner(samples, labels=param_names, show_titles=True)
-
+figure = corner.corner(samples_np, labels=param_names, show_titles=True)
 plt.savefig(paths.figures / "hmc_corner_plot.pdf", dpi=300, bbox_inches="tight")
