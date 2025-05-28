@@ -96,6 +96,8 @@ def make_log_prob_fn(obs_abundances, obs_errors):
         input_tensor = torch.tensor(params, dtype=torch.float32)
         with torch.no_grad():
             prediction = model(input_tensor).numpy()
+            # Remove H from data, because it is just used for normalization (output with index 2)
+            prediction = torch.cat([prediction[:, 0:2], prediction[:, 3:]], axis=1)
 
         if not np.all(np.isfinite(prediction)):
             return -np.inf
