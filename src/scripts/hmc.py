@@ -1,0 +1,86 @@
+import corner
+import matplotlib.pyplot as plt
+import numpy as np
+import numpyro
+import numpyro.distributions as dist
+import torch
+from numpyro.infer import MCMC, NUTS
+
+import paths
+from chempy_torch_model import Model_Torch
+
+# ---- Load your emulator weights (pending file upload) ----
+model = Model_Torch(x_shape=6, y_shape=8)
+model.load_state_dict(torch.load(paths.data / "pytorch_state_dict.pt"))
+model.eval()
+
+# ---- Load observational data from validation file ----
+val_data = np.load(paths.data / "chempy_TNG_val_data.npz", mmap_mode="r")
+val_theta = val_data["params"]
+val_x = val_data["abundances"]
+
+
+def clean_data(x, y):
+    index = np.where((y == 0).all(axis=1))[0]
+    x = np.delete(x, index, axis=0)
+    y = np.delete(y, index, axis=0)
+    index = np.where(np.isfinite(y).all(axis=1))[0]
+    return x[index], y[index]
+
+
+val_theta, val_x = clean_data(val_theta, val_x)
+obs_abundances = val_x[0]
+obs_errors = np.ones_like(obs_abundances) * 0.05  # fixed Gaussian noise
+
+
+# ---- NumPyro model using PyTorch emulator ----
+def numpyro_model(obs_abundances, obs_errors):
+    alpha_imf = numpyro.sample("alpha_imf", dist.Normal(-2.3, 0.3))
+    log10_n_ia = numpyro.sample("log10_n_ia", dist.Normal(-2.89, 0.3))
+    log10_sfe = numpyro.sample("log10_sfe", dist.Normal(-0.3, 0.3))
+    log10_sfr_peak = numpyro.sample("log10_sfr_peak", dist.Normal(0.55, 0.1))
+    xout = numpyro.sample("xout", dist.Normal(0.5, 0.1))
+    birth_time = numpyro.sample("birth_time", dist.Uniform(1.0, 13.8))
+
+    input_tensor = torch.tensor(
+        [alpha_imf, log10_n_ia, log10_sfe, log10_sfr_peak, xout, birth_time],
+        dtype=torch.float32,
+    )
+    predicted_abundances = model(input_tensor).detach().numpy()
+
+    numpyro.sample(
+        "obs", dist.Normal(predicted_abundances, obs_errors), obs=obs_abundances
+    )
+
+
+# ---- Run MCMC ----
+nuts_kernel = NUTS(numpyro_model)
+mcmc = MCMC(nuts_kernel, num_warmup=1000, num_samples=2000, num_chains=1)
+rng_key = numpyro.prng_key()
+mcmc.run(rng_key, obs_abundances=obs_abundances, obs_errors=obs_errors)
+mcmc.print_summary()
+
+samples = mcmc.get_samples()
+
+# Convert the samples dict to a NumPy array for plotting
+param_names = [
+    "alpha_imf",
+    "log10_n_ia",
+    "log10_sfe",
+    "log10_sfr_peak",
+    "xout",
+    "birth_time",
+]
+sample_array = np.vstack([samples[p].numpy() for p in param_names]).T
+
+# Create corner plot
+figure = corner.corner(
+    sample_array,
+    labels=param_names,
+    truths=None,  # or provide [true_alpha_imf, true_log10_n_ia, ...] if known
+    show_titles=True,
+    title_fmt=".3f",
+    title_kwargs={"fontsize": 12},
+)
+
+plt.savefig(paths.figures / "hmc_corner_plot.pdf", dpi=300, bbox_inches="tight")
