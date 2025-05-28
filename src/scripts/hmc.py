@@ -214,4 +214,5 @@ fig = corner.corner(
     all_samples, labels=param_names, show_titles=True, truths=true_mean, title_fmt=".2f"
 )
 fig.suptitle("Global posterior (combined from all stars)")
-plt.show()
+# plt.show()
+plt.savefig("mh_results.pdf", dpi=300, bbox_inches="tight")
