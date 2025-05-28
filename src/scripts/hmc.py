@@ -84,9 +84,9 @@ log_prob_jax = jax.jit(log_prob_fn)
 initial_params = np.array([-2.3, -2.89, -0.3, 0.55, 0.5, 5.0])
 
 # Run HMC
-kernel = HMC(log_prob_jax, step_size=0.01, num_steps=10)
+kernel = HMC(log_prob_jax, num_steps=10)
 mcmc = MCMC(kernel, num_warmup=500, num_samples=1000, num_chains=1)
-mcmc.run(jax.random.PRNGKey(0), init_params=initial_params)
+mcmc.run(jax.random.PRNGKey(0), initial_params)
 
 # Retrieve samples
 samples = mcmc.get_samples()
