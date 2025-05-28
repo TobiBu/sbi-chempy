@@ -43,44 +43,56 @@ obs_abundances = val_x[0]
 obs_errors = np.ones_like(obs_abundances) * 0.05  # fixed Gaussian noise
 
 
-# ---- NumPyro model using PyTorch emulator ----
-def numpyro_model(obs_abundances, obs_errors):
-    # Sample all parameters
-    alpha_imf = numpyro.sample("alpha_imf", dist.Normal(-2.3, 0.3))
-    log10_n_ia = numpyro.sample("log10_n_ia", dist.Normal(-2.89, 0.3))
-    log10_sfe = numpyro.sample("log10_sfe", dist.Normal(-0.3, 0.3))
-    log10_sfr_peak = numpyro.sample("log10_sfr_peak", dist.Normal(0.55, 0.1))
-    xout = numpyro.sample("xout", dist.Normal(0.5, 0.1))
-    birth_time = numpyro.sample("birth_time", dist.Uniform(1.0, 13.8))
+# Log-posterior
+def log_prob_fn(params):
+    # Extract parameters
+    alpha_imf, log10_n_ia, log10_sfe, log10_sfr_peak, xout, birth_time = params
 
-    # Pack into a JAX DeviceArray and convert to a numpy float array explicitly using numpyro.deterministic
-    # Note: The model is not traced through the emulator, so this is fine
-    param_array = numpyro.deterministic(
-        "input_array",
-        jnp.array([alpha_imf, log10_n_ia, log10_sfe, log10_sfr_peak, xout, birth_time]),
+    # Priors
+    logp = 0.0
+    logp += -0.5 * ((alpha_imf + 2.3) / 0.3) ** 2
+    logp += -0.5 * ((log10_n_ia + 2.89) / 0.3) ** 2
+    logp += -0.5 * ((log10_sfe + 0.3) / 0.3) ** 2
+    logp += -0.5 * ((log10_sfr_peak - 0.55) / 0.1) ** 2
+    logp += -0.5 * ((xout - 0.5) / 0.1) ** 2
+    if birth_time < 1.0 or birth_time > 13.8:
+        return -jnp.inf
+
+    # Emulator
+    input_tensor = torch.tensor(
+        [alpha_imf, log10_n_ia, log10_sfe, log10_sfr_peak, xout, birth_time],
+        dtype=torch.float32,
     )
-
-    # Convert to numpy explicitly here (OUTSIDE any JAX tracing context)
-    param_numpy = np.asarray(param_array, dtype=np.float32)
-    input_tensor = torch.from_numpy(param_numpy)
-
-    # Run emulator and convert output
-    predicted_abundances = model(input_tensor).detach().numpy()
+    with torch.no_grad():
+        prediction = model(input_tensor).numpy()
 
     # Likelihood
-    numpyro.sample(
-        "obs", dist.Normal(predicted_abundances, obs_errors), obs=obs_abundances
+    residual = (prediction - obs_abundances) / obs_errors
+    log_likelihood = -0.5 * np.sum(residual**2)
+    return logp + log_likelihood
+
+
+# Wrap for JAX
+def wrapped_logprob(q):
+    return jax.lax.cond(
+        jnp.logical_and(q[-1] >= 1.0, q[-1] <= 13.8),
+        lambda _: log_prob_fn(q),
+        lambda _: -jnp.inf,
+        operand=None,
     )
 
 
-# ---- Run MCMC ----
-nuts_kernel = NUTS(numpyro_model)
-mcmc = MCMC(nuts_kernel, num_warmup=1000, num_samples=2000, num_chains=1)
-rng_key = jax.random.PRNGKey(0)
-mcmc.run(rng_key, obs_abundances=obs_abundances, obs_errors=obs_errors)
-mcmc.print_summary()
+# Initialize
+initial_params = np.array([-2.3, -2.89, -0.3, 0.55, 0.5, 5.0], dtype=np.float32)
 
+# Run HMC
+kernel = HMC(wrapped_logprob, step_size=0.01, num_steps=10)
+mcmc = MCMC(kernel, num_warmup=500, num_samples=1000)
+mcmc.run(jax.random.PRNGKey(0), init_params=initial_params)
 samples = mcmc.get_samples()
+
+# Convert to NumPy
+samples_np = np.array(samples)
 
 # Convert the samples dict to a NumPy array for plotting
 param_names = [
