@@ -45,38 +45,42 @@ obs_errors = np.ones_like(obs_abundances) * 0.05  # fixed Gaussian noise
 
 # Log-posterior
 def log_prob_fn(params):
-    # Extract parameters
-    alpha_imf, log10_n_ia, log10_sfe, log10_sfr_peak, xout, birth_time = params
+    """
+    JAX-compatible log-probability function for HMC.
+    Expects `params` to be a 1D JAX array of shape (6,)
+    """
 
-    # Priors
-    logp = 0.0
-    logp += -0.5 * ((alpha_imf + 2.3) / 0.3) ** 2
-    logp += -0.5 * ((log10_n_ia + 2.89) / 0.3) ** 2
-    logp += -0.5 * ((log10_sfe + 0.3) / 0.3) ** 2
-    logp += -0.5 * ((log10_sfr_peak - 0.55) / 0.1) ** 2
-    logp += -0.5 * ((xout - 0.5) / 0.1) ** 2
-    if birth_time < 1.0 or birth_time > 13.8:
-        return -jnp.inf
+    def evaluate_log_prob(_):
+        # Unpack parameters
+        alpha_imf, log10_n_ia, log10_sfe, log10_sfr_peak, xout, birth_time = params
 
-    # Emulator
-    input_tensor = torch.tensor(
-        [alpha_imf, log10_n_ia, log10_sfe, log10_sfr_peak, xout, birth_time],
-        dtype=torch.float32,
-    )
-    with torch.no_grad():
-        prediction = model(input_tensor).numpy()
+        # Compute log-priors
+        logp = 0.0
+        logp += -0.5 * ((alpha_imf + 2.3) / 0.3) ** 2
+        logp += -0.5 * ((log10_n_ia + 2.89) / 0.3) ** 2
+        logp += -0.5 * ((log10_sfe + 0.3) / 0.3) ** 2
+        logp += -0.5 * ((log10_sfr_peak - 0.55) / 0.1) ** 2
+        logp += -0.5 * ((xout - 0.5) / 0.1) ** 2
 
-    # Likelihood
-    residual = (prediction - obs_abundances) / obs_errors
-    log_likelihood = -0.5 * np.sum(residual**2)
-    return logp + log_likelihood
+        # Evaluate emulator (PyTorch — outside JAX tracing)
+        input_tensor = torch.tensor(
+            [alpha_imf, log10_n_ia, log10_sfe, log10_sfr_peak, xout, birth_time],
+            dtype=torch.float32,
+        )
+        with torch.no_grad():
+            prediction = model(input_tensor).numpy()
 
+        # Compute log-likelihood
+        residual = (prediction - obs_abundances) / obs_errors
+        log_likelihood = -0.5 * np.sum(residual**2)
 
-# Wrap for JAX
-def wrapped_logprob(q):
+        return logp + log_likelihood
+
+    # Use jax.lax.cond to guard against invalid birth_time
+    birth_time = params[-1]
     return jax.lax.cond(
-        jnp.logical_and(q[-1] >= 1.0, q[-1] <= 13.8),
-        lambda _: log_prob_fn(q),
+        jnp.logical_and(birth_time >= 1.0, birth_time <= 13.8),
+        evaluate_log_prob,
         lambda _: -jnp.inf,
         operand=None,
     )
@@ -86,7 +90,7 @@ def wrapped_logprob(q):
 initial_params = np.array([-2.3, -2.89, -0.3, 0.55, 0.5, 5.0], dtype=np.float32)
 
 # Run HMC
-kernel = HMC(wrapped_logprob, step_size=0.01, num_steps=10)
+kernel = HMC(log_prob_fn, step_size=0.01, num_steps=10)
 mcmc = MCMC(kernel, num_warmup=500, num_samples=1000)
 mcmc.run(jax.random.PRNGKey(0), init_params=initial_params)
 samples = mcmc.get_samples()
