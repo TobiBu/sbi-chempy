@@ -12,49 +12,22 @@ from numpyro.infer import HMC, MCMC, NUTS
 import paths
 from chempy_torch_model import Model_Torch
 
-# ----- Load the data -----
-a = ModelParameters()
-labels_out = a.elements_to_trace
-labels = [a.to_optimize[i] for i in range(len(a.to_optimize))] + ["time"]
-priors = torch.tensor([[a.priors[opt][0], a.priors[opt][1]] for opt in a.to_optimize])
-
-
-# ---- Load your emulator weights ----
-model = Model_Torch(len(labels), len(labels_out))
-model.load_state_dict(torch.load(paths.data / "pytorch_state_dict.pt"))
+# Load emulator
+model = Model_Torch(x_shape=6, y_shape=8)
+model.load_state_dict(torch.load("pytorch_state_dict.pt", map_location="cpu"))
 model.eval()
 
-# ---- Load observational data from validation file ----
-val_data = np.load(paths.data / "chempy_data/chempy_TNG_val_data.npz", mmap_mode="r")
-val_theta = val_data["params"]
-val_x = val_data["abundances"]
-
-
-def clean_data(x, y):
-    index = np.where((y == 0).all(axis=1))[0]
-    x = np.delete(x, index, axis=0)
-    y = np.delete(y, index, axis=0)
-    index = np.where(np.isfinite(y).all(axis=1))[0]
-    return x[index], y[index]
-
-
-val_theta, val_x = clean_data(val_theta, val_x)
-obs_abundances = val_x[0]
+# Load a sample observation
+# e.g., obs_abundances = val_x[0]
+obs_abundances = np.array([...])  # length 8
 obs_errors = np.ones_like(obs_abundances) * 0.05  # fixed Gaussian noise
 
 
-# Log-posterior
 def log_prob_fn(params):
-    """
-    JAX-compatible log-probability function for HMC.
-    Expects `params` to be a 1D JAX array of shape (6,)
-    """
+    alpha_imf, log10_n_ia, log10_sfe, log10_sfr_peak, xout, birth_time = params
 
-    def evaluate_log_prob(_):
-        # Unpack parameters
-        alpha_imf, log10_n_ia, log10_sfe, log10_sfr_peak, xout, birth_time = params
-
-        # Compute log-priors
+    def log_prob_inner():
+        # Gaussian priors
         logp = 0.0
         logp += -0.5 * ((alpha_imf + 2.3) / 0.3) ** 2
         logp += -0.5 * ((log10_n_ia + 2.89) / 0.3) ** 2
@@ -62,7 +35,7 @@ def log_prob_fn(params):
         logp += -0.5 * ((log10_sfr_peak - 0.55) / 0.1) ** 2
         logp += -0.5 * ((xout - 0.5) / 0.1) ** 2
 
-        # Evaluate emulator (PyTorch — outside JAX tracing)
+        # Emulator call
         input_tensor = torch.tensor(
             [alpha_imf, log10_n_ia, log10_sfe, log10_sfr_peak, xout, birth_time],
             dtype=torch.float32,
@@ -70,32 +43,33 @@ def log_prob_fn(params):
         with torch.no_grad():
             prediction = model(input_tensor).numpy()
 
-        # Compute log-likelihood
+        # Gaussian likelihood
         residual = (prediction - obs_abundances) / obs_errors
         log_likelihood = -0.5 * np.sum(residual**2)
-
         return logp + log_likelihood
 
-    # Use jax.lax.cond to guard against invalid birth_time
-    birth_time = params[-1]
+    # Conditionally reject samples with out-of-bounds birth_time
     return jax.lax.cond(
         jnp.logical_and(birth_time >= 1.0, birth_time <= 13.8),
-        evaluate_log_prob,
+        lambda _: log_prob_inner(),
         lambda _: -jnp.inf,
         operand=None,
     )
 
 
-# Initialize
-initial_params = np.array([-2.3, -2.89, -0.3, 0.55, 0.5, 5.0], dtype=np.float32)
+# Wrap as a JAX function
+log_prob_jax = jax.jit(lambda x: log_prob_fn(x))
+
+# Initial guess
+initial_params = np.array([-2.3, -2.89, -0.3, 0.55, 0.5, 5.0])
 
 # Run HMC
-kernel = HMC(log_prob_fn, step_size=0.01, num_steps=10)
-mcmc = MCMC(kernel, num_warmup=500, num_samples=1000)
+kernel = HMC(log_prob_jax, step_size=0.01, num_steps=10)
+mcmc = MCMC(kernel, num_warmup=500, num_samples=1000, num_chains=1)
 mcmc.run(jax.random.PRNGKey(0), init_params=initial_params)
-samples = mcmc.get_samples()
 
-# Convert to NumPy
+# Retrieve samples
+samples = mcmc.get_samples()
 samples_np = np.array(samples)
 
 # Convert the samples dict to a NumPy array for plotting
