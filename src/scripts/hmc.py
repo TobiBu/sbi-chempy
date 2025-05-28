@@ -1,3 +1,5 @@
+import pickle
+
 import corner
 import jax
 import jax.numpy as jnp
@@ -140,16 +142,37 @@ param_names = [
     "birth_time",
 ]
 
-for i, result in enumerate(mh_samples):
-    samples = result["samples"]
-    truth = result["truth"]
+# for i, result in enumerate(mh_samples):
+#    samples = result["samples"]
+#    truth = result["truth"]
 
-    print(f"Plotting star {i}")
-    fig = corner.corner(
-        samples, labels=param_names, truths=truth, show_titles=True, title_fmt=".2f"
-    )
-    fig.suptitle(f"Star {i}")
-    plt.show()
+#    print(f"Plotting star {i}")
+#    fig = corner.corner(
+#        samples, labels=param_names, truths=truth, show_titles=True, title_fmt=".2f"
+#    )
+#    fig.suptitle(f"Star {i}")
+#    plt.show()
 
 with open("mh_results.pkl", "wb") as f:
     pickle.dump(mh_samples, f)
+
+
+# Step 1: Stack samples from all stars
+all_samples = np.vstack([d["samples"] for d in mh_samples])
+
+# Optional: Thin if needed
+# all_samples = all_samples[::10]
+
+# Step 2: Plot the combined posterior
+param_names = [
+    "alpha_imf",
+    "log10_n_ia",
+    "log10_sfe",
+    "log10_sfr_peak",
+    "xout",
+    "birth_time",
+]
+
+fig = corner.corner(all_samples, labels=param_names, show_titles=True, title_fmt=".2f")
+fig.suptitle("Global posterior (combined from all stars)")
+plt.show()
