@@ -78,7 +78,7 @@ def log_prob_fn(params):
 
 
 # Wrap as a JAX function
-log_prob_jax = jax.jit(lambda x: log_prob_fn(x))
+log_prob_jax = jax.jit(log_prob_fn)
 
 # Initial guess
 initial_params = np.array([-2.3, -2.89, -0.3, 0.55, 0.5, 5.0])
