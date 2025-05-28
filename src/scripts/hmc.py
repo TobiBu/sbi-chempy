@@ -4,13 +4,21 @@ import numpy as np
 import numpyro
 import numpyro.distributions as dist
 import torch
+from Chempy.parameter import ModelParameters
 from numpyro.infer import MCMC, NUTS
 
 import paths
 from chempy_torch_model import Model_Torch
 
-# ---- Load your emulator weights (pending file upload) ----
-model = Model_Torch(x_shape=6, y_shape=8)
+# ----- Load the data -----
+a = ModelParameters()
+labels_out = a.elements_to_trace
+labels = [a.to_optimize[i] for i in range(len(a.to_optimize))] + ["time"]
+priors = torch.tensor([[a.priors[opt][0], a.priors[opt][1]] for opt in a.to_optimize])
+
+
+# ---- Load your emulator weights ----
+model = Model_Torch(len(labels), len(labels_out))
 model.load_state_dict(torch.load(paths.data / "pytorch_state_dict.pt"))
 model.eval()
 
