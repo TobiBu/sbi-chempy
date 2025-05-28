@@ -77,20 +77,39 @@ def log_prob_fn(params):
     return logp + log_likelihood
 
 
-# DO NOT JIT THIS — keep PyTorch isolated from JAX tracing
-kernel = HMC(log_prob_fn)  # , step_size=0.01, num_steps=10)
-mcmc = MCMC(kernel, num_warmup=500, num_samples=1000, num_chains=1)
+# === MH Sampler ===
+def metropolis_hastings(log_prob_fn, initial, num_samples=1000, proposal_scale=0.05):
+    current = np.array(initial)
+    samples = []
+    accepted = 0
+
+    current_log_prob = log_prob_fn(current)
+
+    for i in range(num_samples):
+        proposal = current + np.random.normal(scale=proposal_scale, size=current.shape)
+        proposal_log_prob = log_prob_fn(proposal)
+
+        if np.log(np.random.rand()) < proposal_log_prob - current_log_prob:
+            current = proposal
+            current_log_prob = proposal_log_prob
+            accepted += 1
+
+        samples.append(current.copy())
+
+        if (i + 1) % 100 == 0:
+            print(f"Step {i+1}: acceptance rate = {accepted / (i+1):.2f}")
+
+    return np.array(samples)
+
 
 # Initial parameter guess (safe values)
 initial_params = np.array([-2.3, -2.89, -0.3, 0.55, 0.5, 6.0], dtype=np.float32)
 
 print("logp(init):", log_prob_fn(initial_params))
 
-# Run MCMC
-mcmc.run(jax.random.PRNGKey(0), initial_params)
-
-# Retrieve samples
-samples = mcmc.get_samples()
+samples = metropolis_hastings(
+    log_prob_fn, initial_params, num_samples=5000, proposal_scale=0.02
+)
 
 samples_np = np.asarray(samples)
 param_names = [
