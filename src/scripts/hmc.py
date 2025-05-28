@@ -9,6 +9,7 @@ import numpy as np
 import sbi.utils as utils
 import torch
 from Chempy.parameter import ModelParameters
+from scipy.stats import norm
 from torch.distributions.normal import Normal
 from torch.distributions.uniform import Uniform
 from tqdm import tqdm
