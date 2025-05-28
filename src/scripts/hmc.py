@@ -66,7 +66,7 @@ def add_noise(true_abundances):
     obs_ab_errors = np.ones_like(true_abundances) * float(pc_ab) / 100.0
     obs_abundances = norm.rvs(loc=true_abundances, scale=obs_ab_errors)
 
-    return obs_abundances
+    return obs_abundances, obs_ab_errors
 
 
 def clean_data(x, y):
@@ -138,12 +138,11 @@ initial_params = np.array([-2.3, -2.89, -0.3, 0.55, 0.5, 6.0], dtype=np.float32)
 # print("logp(init):", log_prob_fn(initial_params))
 
 mh_samples = []
-obs_errors = np.ones_like(abundances[0]) * 0.05
 
 start = t.time()
 for i in tqdm(range(len(abundances))):
     print(f"Sampling star {i+1}/{len(abundances)}")
-    x = add_noise(abundances[i].detach().numpy())
+    x, obs_errors = add_noise(abundances[i].detach().numpy())
 
     truth = stars[i]
 
