@@ -96,16 +96,7 @@ param_names = [
     "xout",
     "birth_time",
 ]
-sample_array = np.vstack([samples[p].numpy() for p in param_names]).T
 
-# Create corner plot
-figure = corner.corner(
-    sample_array,
-    labels=param_names,
-    truths=None,  # or provide [true_alpha_imf, true_log10_n_ia, ...] if known
-    show_titles=True,
-    title_fmt=".3f",
-    title_kwargs={"fontsize": 12},
-)
+figure = corner.corner(samples_np, labels=param_names, show_titles=True)
 
 plt.savefig(paths.figures / "hmc_corner_plot.pdf", dpi=300, bbox_inches="tight")
