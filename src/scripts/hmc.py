@@ -12,14 +12,34 @@ from numpyro.infer import HMC, MCMC, NUTS
 import paths
 from chempy_torch_model import Model_Torch
 
-# Load emulator
-model = Model_Torch(x_shape=6, y_shape=8)
-model.load_state_dict(torch.load("pytorch_state_dict.pt", map_location="cpu"))
+# ----- Load the data -----
+a = ModelParameters()
+labels_out = a.elements_to_trace
+labels = [a.to_optimize[i] for i in range(len(a.to_optimize))] + ["time"]
+priors = torch.tensor([[a.priors[opt][0], a.priors[opt][1]] for opt in a.to_optimize])
+
+
+# ---- Load your emulator weights ----
+model = Model_Torch(len(labels), len(labels_out))
+model.load_state_dict(torch.load(paths.data / "pytorch_state_dict.pt"))
 model.eval()
 
-# Load a sample observation
-# e.g., obs_abundances = val_x[0]
-obs_abundances = np.array([...])  # length 8
+# ---- Load observational data from validation file ----
+val_data = np.load(paths.data / "chempy_data/chempy_TNG_val_data.npz", mmap_mode="r")
+val_theta = val_data["params"]
+val_x = val_data["abundances"]
+
+
+def clean_data(x, y):
+    index = np.where((y == 0).all(axis=1))[0]
+    x = np.delete(x, index, axis=0)
+    y = np.delete(y, index, axis=0)
+    index = np.where(np.isfinite(y).all(axis=1))[0]
+    return x[index], y[index]
+
+
+val_theta, val_x = clean_data(val_theta, val_x)
+obs_abundances = val_x[0]
 obs_errors = np.ones_like(obs_abundances) * 0.05  # fixed Gaussian noise
 
 
