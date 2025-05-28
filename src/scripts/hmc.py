@@ -9,6 +9,8 @@ import sbi.utils as utils
 import torch
 import tqdm
 from Chempy.parameter import ModelParameters
+from torch.distributions.normal import Normal
+from torch.distributions.uniform import Uniform
 
 import paths
 from chempy_torch_model import Model_Torch
