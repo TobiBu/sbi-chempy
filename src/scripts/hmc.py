@@ -1,4 +1,5 @@
 import pickle
+import time as t
 
 import corner
 import jax
@@ -7,10 +8,10 @@ import matplotlib.pyplot as plt
 import numpy as np
 import sbi.utils as utils
 import torch
-import tqdm
 from Chempy.parameter import ModelParameters
 from torch.distributions.normal import Normal
 from torch.distributions.uniform import Uniform
+from tqdm import tqdm
 
 import paths
 from chempy_torch_model import Model_Torch
