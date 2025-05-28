@@ -8,6 +8,7 @@ import numpy as np
 import numpyro
 import numpyro.distributions as dist
 import torch
+import tqdm
 from Chempy.parameter import ModelParameters
 from numpyro.infer import HMC, MCMC, NUTS
 
@@ -20,16 +21,51 @@ labels_out = a.elements_to_trace
 labels = [a.to_optimize[i] for i in range(len(a.to_optimize))] + ["time"]
 priors = torch.tensor([[a.priors[opt][0], a.priors[opt][1]] for opt in a.to_optimize])
 
+# --- Define the priors ---
+local_GP = utils.MultipleIndependent(
+    [Normal(p[0] * torch.ones(1), p[1] * torch.ones(1)) for p in priors[2:]]
+    + [Uniform(torch.tensor([2.0]), torch.tensor([12.8]))],
+    validate_args=False,
+)
+
+global_GP = utils.MultipleIndependent(
+    [Normal(p[0] * torch.ones(1), p[1] * torch.ones(1)) for p in priors[:2]],
+    validate_args=False,
+)
 
 # ---- Load your emulator weights ----
 model = Model_Torch(len(labels), len(labels_out))
 model.load_state_dict(torch.load(paths.data / "pytorch_state_dict.pt"))
 model.eval()
 
-# ---- Load observational data from validation file ----
-val_data = np.load(paths.data / "chempy_data/chempy_TNG_val_data.npz", mmap_mode="r")
-val_theta = val_data["params"]
-val_x = val_data["abundances"]
+# --- Define the simulator ---
+N_stars = 10
+samples = 1000
+
+stars = local_GP.sample((N_stars,))
+global_params = torch.tensor([[-2.3, -2.89]])
+
+stars = torch.cat((global_params.repeat(N_stars, 1), stars), dim=1)
+
+# ----- Simulate abundances -----
+start = t.time()
+abundances = model(stars)
+# Remove H from data, because it is just used for normalization (output with index 2)
+abundances = torch.cat([abundances[:, 0:2], abundances[:, 3:]], axis=1)
+end = t.time()
+print(f"Time to create data for {N_stars} stars: {end-start:.3f} s")
+
+
+# ----- Add noise -----
+def add_noise(true_abundances):
+    # Define observational erorrs
+    pc_ab = 5  # percentage error in abundance
+
+    # Jitter true abundances and birth-times by these errors to create mock observational values.
+    obs_ab_errors = np.ones_like(true_abundances) * float(pc_ab) / 100.0
+    obs_abundances = norm.rvs(loc=true_abundances, scale=obs_ab_errors)
+
+    return obs_abundances
 
 
 def clean_data(x, y):
@@ -38,13 +74,6 @@ def clean_data(x, y):
     y = np.delete(y, index, axis=0)
     index = np.where(np.isfinite(y).all(axis=1))[0]
     return x[index], y[index]
-
-
-val_theta, val_x = clean_data(val_theta, val_x)
-obs_abundances = val_x[:200]
-val_x = val_x[:200]
-val_theta = val_theta[:200]
-obs_errors = np.ones_like(obs_abundances) * 0.05  # fixed Gaussian noise
 
 
 def make_log_prob_fn(obs_abundances, obs_errors):
@@ -108,21 +137,22 @@ initial_params = np.array([-2.3, -2.89, -0.3, 0.55, 0.5, 6.0], dtype=np.float32)
 # print("logp(init):", log_prob_fn(initial_params))
 
 mh_samples = []
-obs_errors = np.ones(val_x.shape[1]) * 0.05
+obs_errors = np.ones_like(abundances[0]) * 0.05
 
-for i in range(len(val_x)):
-    print(f"Sampling star {i+1}/{len(val_x)}")
+start = t.time()
+for i in tqdm(range(len(abundances))):
+    print(f"Sampling star {i+1}/{len(abundances)}")
+    x = add_noise(abundances[i].detach().numpy())
 
-    obs = val_x[i]
-    truth = val_theta[i]
+    truth = stars[i]
 
-    log_prob = make_log_prob_fn(obs, obs_errors)
+    log_prob = make_log_prob_fn(x, obs_errors)
     initial = np.array(
         [-2.3, -2.89, -0.3, 0.55, 0.5, 6.0]
     )  # or truth as a starting point
 
     samples = metropolis_hastings(
-        log_prob, initial, num_samples=2000, proposal_scale=0.02
+        log_prob, initial, num_samples=samples, proposal_scale=0.02
     )
     mh_samples.append(
         {
@@ -130,6 +160,8 @@ for i in range(len(val_x)):
             "truth": truth,
         }
     )
+end = t.time()
+print(f"Time to run {samples} MH inferences for {N_stars} stars: {end-start:.3f} s")
 
 
 samples_np = np.asarray(samples)
