@@ -52,9 +52,17 @@ def numpyro_model(obs_abundances, obs_errors):
     birth_time = numpyro.sample("birth_time", dist.Uniform(1.0, 13.8))
 
     input_tensor = torch.tensor(
-        [alpha_imf, log10_n_ia, log10_sfe, log10_sfr_peak, xout, birth_time],
+        [
+            float(alpha_imf),
+            float(log10_n_ia),
+            float(log10_sfe),
+            float(log10_sfr_peak),
+            float(xout),
+            float(birth_time),
+        ],
         dtype=torch.float32,
     )
+
     predicted_abundances = model(input_tensor).detach().numpy()
 
     numpyro.sample(
