@@ -41,9 +41,9 @@ def clean_data(x, y):
 
 
 val_theta, val_x = clean_data(val_theta, val_x)
-obs_abundances = val_x[:100]
-val_x = val_x[:100]
-val_theta = val_theta[:100]
+obs_abundances = val_x[:200]
+val_x = val_x[:200]
+val_theta = val_theta[:200]
 obs_errors = np.ones_like(obs_abundances) * 0.05  # fixed Gaussian noise
 
 
