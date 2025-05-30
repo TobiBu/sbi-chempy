@@ -257,7 +257,7 @@ fig = plotter(
             color=color_mh,
             fill=False,
             linestyle="--",
-            linewidths=1.5,
+            linewidth=1.5,
         ),
     },
 )
