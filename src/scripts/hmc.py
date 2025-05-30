@@ -2,8 +2,6 @@ import pickle
 import time as t
 
 import corner
-import jax
-import jax.numpy as jnp
 import matplotlib.pyplot as plt
 import numpy as np
 import sbi.utils as utils
@@ -34,6 +32,10 @@ global_GP = utils.MultipleIndependent(
     [Normal(p[0] * torch.ones(1), p[1] * torch.ones(1)) for p in priors[:2]],
     validate_args=False,
 )
+
+# ----- load the posterior -------------------------------------------------------------------------------------------------------------------------------------------
+with open(paths.data / f"posterior_{name}.pickle", "rb") as f:
+    posterior = pickle.load(f)
 
 # ---- Load your emulator weights ----
 model = Model_Torch(len(labels), len(labels_out))
@@ -177,6 +179,15 @@ param_names = [
     "birth_time",
 ]
 
+labels_in = [
+    r"$\alpha_{\text{IMF}}$",
+    r"$\log_{10}{\text{N}_{\text{Ia}}}$",
+    r"$\log_{10}{\text{SFE}}$",
+    r"$\log_{10}{\text{SFR}_{\text{peak}}}$",
+    r"$x_{\text{out}}$",
+    r"$\text{Time}$",
+]
+
 # for i, result in enumerate(mh_samples):
 #    samples = result["samples"]
 #    truth = result["truth"]
@@ -216,3 +227,38 @@ fig = corner.corner(
 fig.suptitle("Global posterior (combined from all stars)")
 # plt.show()
 plt.savefig("mh_results.pdf", dpi=300, bbox_inches="tight")
+
+
+# --- Plot the posterior for MH vs. SBI ---
+
+import seaborn as sns
+
+# --- Plot calbration using ltu-ili ---
+from metrics import PlotSinglePosterior
+
+# Get two distinct colors
+palette = sns.color_palette("colorblind", 2)
+color_sbi = palette[0]
+color_mh = palette[1]
+
+
+plotter = PlotSinglePosterior(labels=labels_in, num_samples=1000)
+
+fig = plotter(
+    posterior=posterior,
+    x=abundances[0],
+    theta=stars[0],
+    plot_kws=dict(fill=True),
+    mh_samples=mh_samples[0]["samples"],
+    plot_kws_per_model={
+        "SBI": dict(levels=[0.05, 0.32, 1], color=color_sbi, fill=True, alpha=0.4),
+        "MH": dict(
+            levels=[0.05, 0.32, 1],
+            color=color_mh,
+            fill=False,
+            linestyle="--",
+            linewidths=1.5,
+        ),
+    },
+)
+fig.savefig(paths.figures / "corner_plot_comparison_singlestar.pdf")
