@@ -237,7 +237,7 @@ plotter = PlotSinglePosterior(
 sbi_samples = []
 
 for k in range(len(abundances)):
-    fig, data = plotter(
+    fig = plotter(
         posterior=posterior,
         x=abundances[k].detach().numpy(),
         theta=stars[k].detach().numpy(),
