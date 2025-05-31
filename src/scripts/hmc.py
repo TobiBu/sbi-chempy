@@ -235,14 +235,17 @@ color_sbi = palette[0]
 color_mh = palette[1]
 
 
-plotter = PlotSinglePosterior(labels=labels_in, num_samples=1000)
+plotter = PlotSinglePosterior(
+    labels=labels_in,
+    num_samples=1000,
+    sample_method="direct",
+)
 
 fig = plotter(
     posterior=posterior,
     x=abundances[0].detach().numpy(),
     theta=stars[0].detach().numpy(),
     plot_kws=dict(fill=True),
-    sample_method="direct",
     mh_samples=mh_samples[0]["samples"],
     plot_kws_per_model={
         "SBI": dict(levels=[0.05, 0.32, 1], color=color_sbi, fill=True, alpha=0.4),
