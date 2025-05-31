@@ -15,6 +15,9 @@ from tqdm import tqdm
 import paths
 from chempy_torch_model import Model_Torch
 
+# ----- Config -------------------------------------------------------------------------------------------------------------------------------------------
+name = "NPE_C"
+
 # ----- Load the data -----
 a = ModelParameters()
 labels_out = a.elements_to_trace
@@ -208,16 +211,6 @@ all_samples = np.vstack([d["samples"] for d in mh_samples])
 
 # Optional: Thin if needed
 # all_samples = all_samples[::10]
-
-# Step 2: Plot the combined posterior
-param_names = [
-    "alpha_imf",
-    "log10_n_ia",
-    "log10_sfe",
-    "log10_sfr_peak",
-    "xout",
-    "birth_time",
-]
 
 true_mean = np.mean(stars.numpy(), axis=0)
 print("True mean parameters:", true_mean)
