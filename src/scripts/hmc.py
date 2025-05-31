@@ -240,7 +240,7 @@ plotter = PlotSinglePosterior(labels=labels_in, num_samples=1000)
 fig = plotter(
     posterior=posterior,
     x=abundances[0],
-    theta=stars[0],
+    theta=stars[0].detach().numpy(),
     plot_kws=dict(fill=True),
     mh_samples=mh_samples[0]["samples"],
     plot_kws_per_model={
