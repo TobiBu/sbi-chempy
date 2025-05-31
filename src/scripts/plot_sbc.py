@@ -2,6 +2,7 @@ import pickle
 
 import matplotlib.pyplot as plt
 import numpy as np
+import seaborn as sns
 import torch
 from Chempy.parameter import ModelParameters
 from scipy.stats import norm
