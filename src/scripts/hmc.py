@@ -230,6 +230,8 @@ plotter = PlotSinglePosterior(
     labels=labels_in,
     num_samples=1000,
     sample_method="direct",
+    save_samples=True,
+    out_dir=paths.data,
 )
 
 sbi_samples = []
@@ -245,11 +247,14 @@ for k in range(len(abundances)):
             "SBI": dict(levels=[0.05, 0.32, 1], color=color_sbi, fill=True, alpha=0.6),
             "MH": dict(levels=[0.05, 0.32, 1], color=color_mh, fill=True, alpha=0.4),
         },
+        signature=f"MH_{k}_",
     )
-    sbi_samples.append(data)
     fig.savefig(paths.figures / f"corner_plot_comparison_singlestar_{k}.pdf")
 
-all_sbi_samples = np.vstack([d["samples"] for d in sbi_samples])
+for k in range(len(abundances)):
+    tmp_samples = np.load()(paths.data / f"MH_{k}_single_samples.npy")
+    sbi_samples.append(tmp_samples)
+all_sbi_samples = np.vstack([d for d in sbi_samples])
 
 true_mean = np.mean(stars.numpy(), axis=0)
 print("True mean parameters:", true_mean)
