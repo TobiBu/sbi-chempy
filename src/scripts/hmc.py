@@ -97,6 +97,7 @@ def make_log_prob_fn(obs_abundances, obs_errors):
         logp += -0.5 * ((log10_sfe + 0.3) / 0.3) ** 2
         logp += -0.5 * ((log10_sfr_peak - 0.55) / 0.1) ** 2
         logp += -0.5 * ((xout - 0.5) / 0.1) ** 2
+        logp += -np.log(12.8 - 2.0)  # log(1 / width)
 
         input_tensor = torch.tensor(params, dtype=torch.float32)
         with torch.no_grad():
