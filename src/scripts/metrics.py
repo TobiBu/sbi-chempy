@@ -280,7 +280,12 @@ class PlotSinglePosterior(_SampleBasedMetric):
         # Diagonal
         for i in range(len(self.labels)):
             ax = fig.axes[i, i]
-            sns.kdeplot(group[self.labels[i]], ax=ax, **kws)
+            for model_label, group in data.groupby("Model"):
+                kws = plot_kws_per_model.get(model_label, {})
+                # Prevent filled diagonals — seaborn does weird things there
+                diag_kws = kws.copy()
+                diag_kws.pop("fill", None)  # ensure fill doesn't apply on diagonal
+                sns.kdeplot(group[self.labels[i]], ax=ax, **diag_kws)
 
         fig.add_legend()
         fig._legend.set_title("Inference")
