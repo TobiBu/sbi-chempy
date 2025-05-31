@@ -266,7 +266,7 @@ class PlotSinglePosterior(_SampleBasedMetric):
             **grid_kws,
         )
         fig.map_lower(sns.kdeplot, **plot_kws)
-        # fig.map_diag(sns.kdeplot, **plot_kws)
+        fig.map_diag(sns.kdeplot, **plot_kws)
         # Plot each model's KDE separately
         for model_label, group in data.groupby("Model"):
             kws = plot_kws_per_model.get(model_label, {})
@@ -277,15 +277,6 @@ class PlotSinglePosterior(_SampleBasedMetric):
                     sns.kdeplot(
                         x=group[self.labels[j]], y=group[self.labels[i]], ax=ax, **kws
                     )
-        # Diagonal
-        for i in range(len(self.labels)):
-            ax = fig.axes[i, i]
-            for model_label, group in data.groupby("Model"):
-                kws = plot_kws_per_model.get(model_label, {})
-                # Prevent filled diagonals — seaborn does weird things there
-                diag_kws = kws.copy()
-                diag_kws.pop("fill", None)  # ensure fill doesn't apply on diagonal
-                sns.kdeplot(group[self.labels[i]], ax=ax, **diag_kws)
 
         fig.add_legend()
         fig._legend.set_title("Inference")
