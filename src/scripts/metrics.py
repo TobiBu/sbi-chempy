@@ -317,7 +317,7 @@ class PlotSinglePosterior(_SampleBasedMetric):
             logging.info(f"Saving single posterior samples to {filepath}...")
             np.save(filepath, samples)
 
-        return fig
+        return fig, data
 
 
 # Metrics evaluated over a whole test set (use x and theta)

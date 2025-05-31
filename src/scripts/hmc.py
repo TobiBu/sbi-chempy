@@ -254,7 +254,7 @@ all_sbi_samples = np.vstack([d["samples"] for d in sbi_samples])
 true_mean = np.mean(stars.numpy(), axis=0)
 print("True mean parameters:", true_mean)
 fig = corner.corner(
-    all_sbi_samples,,
+    all_sbi_samples,
     labels=param_names,
     color="C0",
     bins=30,
