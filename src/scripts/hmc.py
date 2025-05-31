@@ -253,7 +253,6 @@ fig = plotter(
             levels=[0.05, 0.32, 1],
             color=color_mh,
             fill=False,
-            contour_kws=dict(linestyle="--", linewidth=1.5),
         ),
     },
 )
