@@ -245,10 +245,10 @@ plotter = PlotSinglePosterior(
 for k in range(len(abundances)):
     fig = plotter(
         posterior=posterior,
-        x=abundances[10].detach().numpy(),
-        theta=stars[10].detach().numpy(),
+        x=abundances[k].detach().numpy(),
+        theta=stars[k].detach().numpy(),
         plot_kws=dict(fill=True),
-        mh_samples=mh_samples[10]["samples"],
+        mh_samples=mh_samples[k]["samples"],
         plot_kws_per_model={
             "SBI": dict(levels=[0.05, 0.32, 1], color=color_sbi, fill=True, alpha=0.6),
             "MH": dict(levels=[0.05, 0.32, 1], color=color_mh, fill=True, alpha=0.4),
