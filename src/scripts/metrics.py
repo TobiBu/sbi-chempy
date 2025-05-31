@@ -278,8 +278,9 @@ class PlotSinglePosterior(_SampleBasedMetric):
                         x=group[self.labels[j]], y=group[self.labels[i]], ax=ax, **kws
                     )
 
+        fig._legend.remove()
         fig.add_legend()
-        fig._legend.set_title("Inference")
+        fig._legend.set_title("Inference Model")
         sns.move_legend(fig, "upper right", bbox_to_anchor=(1.0, 1.0))
 
         if grid is not None:
