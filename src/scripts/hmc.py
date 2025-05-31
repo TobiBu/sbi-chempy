@@ -241,6 +241,19 @@ plotter = PlotSinglePosterior(
     sample_method="direct",
 )
 
+for k in range(len(abundances)):
+    # Plot SBI posterior
+    fig = plotter(
+        posterior=posterior,
+        x=abundances[k].detach().numpy(),
+        theta=stars[k].detach().numpy(),
+        plot_kws=dict(fill=True),
+        mh_samples=None,  # No MH samples for SBI
+        plot_kws_per_model={
+            "SBI": dict(levels=[0.05, 0.32, 1], color=color_sbi, fill=True, alpha=0.6),
+        },
+    )
+    fig.savefig(paths.figures / f"corner_plot_singlestar_{k}.pdf")
 fig = plotter(
     posterior=posterior,
     x=abundances[10].detach().numpy(),
@@ -249,7 +262,7 @@ fig = plotter(
     mh_samples=mh_samples[10]["samples"],
     plot_kws_per_model={
         "SBI": dict(levels=[0.05, 0.32, 1], color=color_sbi, fill=True, alpha=0.6),
-        "MH": dict(levels=[0.05, 0.32, 1], color=color_mh, fill=False, alpha=0.4),
+        "MH": dict(levels=[0.05, 0.32, 1], color=color_mh, fill=True, alpha=0.4),
     },
 )
 fig.savefig(paths.figures / "corner_plot_comparison_singlestar.pdf")
