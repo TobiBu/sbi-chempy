@@ -213,16 +213,6 @@ all_samples = np.vstack([d["samples"] for d in mh_samples])
 # Optional: Thin if needed
 # all_samples = all_samples[::10]
 
-true_mean = np.mean(stars.numpy(), axis=0)
-print("True mean parameters:", true_mean)
-fig = corner.corner(
-    all_samples, labels=param_names, show_titles=True, truths=true_mean, title_fmt=".2f"
-)
-fig.suptitle("Global posterior (combined from all stars)")
-# plt.show()
-plt.savefig("mh_results.pdf", dpi=300, bbox_inches="tight")
-
-
 # --- Plot the posterior for MH vs. SBI ---
 
 import seaborn as sns
@@ -242,9 +232,10 @@ plotter = PlotSinglePosterior(
     sample_method="direct",
 )
 
+sbi_samples = []
 
 for k in range(len(abundances)):
-    fig = plotter(
+    fig, data = plotter(
         posterior=posterior,
         x=abundances[k].detach().numpy(),
         theta=stars[k].detach().numpy(),
@@ -255,4 +246,42 @@ for k in range(len(abundances)):
             "MH": dict(levels=[0.05, 0.32, 1], color=color_mh, fill=True, alpha=0.4),
         },
     )
+    sbi_samples.append(data)
     fig.savefig(paths.figures / f"corner_plot_comparison_singlestar_{k}.pdf")
+
+all_sbi_samples = np.vstack([d["samples"] for d in sbi_samples])
+
+true_mean = np.mean(stars.numpy(), axis=0)
+print("True mean parameters:", true_mean)
+fig = corner.corner(
+    all_sbi_samples,,
+    labels=param_names,
+    color="C0",
+    bins=30,
+    smooth=1.0,
+    fill_contours=True,
+    plot_density=True,
+    plot_contours=True,
+    show_titles=True,
+    truths=true_mean,
+    title_fmt=".2f",
+)
+# fig.suptitle("Global posterior (combined from all stars)")
+# plt.show()
+
+corner.corner(
+    all_samples,  # shape: [N_samples, D]
+    labels=param_names,
+    fig=fig,  # reuse the same figure
+    color="C1",
+    bins=30,
+    smooth=1.0,
+    fill_contours=False,  # outlines only
+    plot_density=True,
+    plot_contours=True,
+    hist_kwargs={"linestyle": "--", "linewidth": 1.5},
+    contour_kwargs={"linestyle": "--", "linewidth": 1.5},
+    no_fill_contours=True,  # keep SBI shaded, MH outlined
+)
+
+plt.savefig(paths.figure / "mh_results.pdf", dpi=300, bbox_inches="tight")
