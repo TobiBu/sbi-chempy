@@ -295,4 +295,4 @@ handles = [
 ]
 fig.legend(handles=handles, loc="upper right")
 
-plt.savefig(paths.figure / "mh_results.pdf", dpi=300, bbox_inches="tight")
+plt.savefig(paths.figures / "mh_results.pdf", dpi=300, bbox_inches="tight")
