@@ -252,7 +252,7 @@ for k in range(len(abundances)):
     fig.savefig(paths.figures / f"corner_plot_comparison_singlestar_{k}.pdf")
 
 for k in range(len(abundances)):
-    tmp_samples = np.load()(paths.data / f"MH_{k}_single_samples.npy")
+    tmp_samples = np.load(paths.data / f"MH_{k}_single_samples.npy")
     sbi_samples.append(tmp_samples)
 all_sbi_samples = np.vstack([d for d in sbi_samples])
 
@@ -288,5 +288,11 @@ corner.corner(
     contour_kwargs={"linestyle": "--", "linewidth": 1.5},
     no_fill_contours=True,  # keep SBI shaded, MH outlined
 )
+
+handles = [
+    plt.Line2D([], [], color="C0", label="SBI", lw=2),
+    plt.Line2D([], [], color="C1", linestyle="--", label="MH", lw=2),
+]
+fig.legend(handles=handles, loc="upper right")
 
 plt.savefig(paths.figure / "mh_results.pdf", dpi=300, bbox_inches="tight")
