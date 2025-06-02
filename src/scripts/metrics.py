@@ -226,7 +226,7 @@ class PlotSinglePosterior(_SampleBasedMetric):
         if plot_kws_per_model is None:
             plot_kws_per_model = {
                 "SBI": dict(levels=[0.05, 0.32, 1], color="C0", linewidth=1.5),
-                "MH": dict(
+                "MCMC": dict(
                     levels=[0.05, 0.32, 1], color="C1", linestyle="--", linewidth=1.5
                 ),
             }
@@ -266,7 +266,7 @@ class PlotSinglePosterior(_SampleBasedMetric):
             **grid_kws,
         )
         fig.map_lower(sns.kdeplot, **plot_kws)
-        fig.map_diag(sns.kdeplot, **plot_kws)
+        fig.map_diag(sns.kdeplot, common_norm=True, **plot_kws)
         # Plot each model's KDE separately
         for model_label, group in data.groupby("Model"):
             kws = plot_kws_per_model.get(model_label, {})

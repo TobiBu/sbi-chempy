@@ -253,9 +253,12 @@ for k in range(len(abundances)):
     tmp_samples = np.load(paths.data / f"MCMC_{k}_single_samples.npy")
     sbi_samples.append(tmp_samples)
 all_sbi_samples = np.vstack([d for d in sbi_samples])
+all_sbi_samples = all_sbi_samples[:, 0:2]
 
 true_mean = np.mean(stars.numpy(), axis=0)
+true_mean = true_mean[:2]
 print("True mean parameters:", true_mean)
+
 fig = corner.corner(
     all_sbi_samples,
     labels=param_names,
@@ -272,6 +275,7 @@ fig = corner.corner(
 # fig.suptitle("Global posterior (combined from all stars)")
 # plt.show()
 
+all_samples = all_samples[:, 0:2]  # only take the first two parameters for comparison
 corner.corner(
     all_samples,  # shape: [N_samples, D]
     labels=param_names,
