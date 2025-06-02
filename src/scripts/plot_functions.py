@@ -423,71 +423,73 @@ def gaussian_posterior_plot_n_stars(alpha_IMF, log10_N_Ia, global_params, title,
 # --- N-Star comparison plot 2 ---
 
 def n_stars_plot_comp2(
-        x1, x2, x_true, philcox, save_name, no_stars=np.array([1, 10, 100, 500, 1000])
+        x1, x2, x_true, philcox, save_name, no_stars=np.array([1, 10, 100, 500, 1000]), prior=np.array([[-2.3, -2.89], [0.3, 0.3]])
     ):
-        fit = []
-        err = []
+    fit = []
+    err = []
 
-        # --- Fit a 2D Gaussian to the data ---
-        for n in no_stars:
-            mu_alpha, sigma_alpha = mean_std(x1[:n], x_true[0, 0], x_true[1, 0])
-            mu_logNIa, sigma_logNIa = mean_std(x2[:n], x_true[0, 1], x_true[1, 1])
+    # --- Fit a 2D Gaussian to the data ---
+    for n in no_stars:
+        data = np.stack([x1[:n], x2[:n]],2)
+        mu, cov = mean_std(data, prior[0], prior[1])
+        mu_alpha, mu_log10N_Ia = mu[0], mu[1]
+        sigma_alpha, sigma_log10N_Ia = np.sqrt(cov[0,0]), np.sqrt(cov[1,1])
 
-            fit.append([mu_alpha, mu_logNIa])
-            err.append([sigma_alpha, sigma_logNIa])
+        fit.append([mu_alpha, mu_log10N_Ia])
+        err.append([sigma_alpha, sigma_log10N_Ia])
 
-        fit = np.array(fit)
-        err = np.array(err)
+    fit = np.array(fit)
+    err = np.array(err)
 
-        # --- Plot the data ---
-        fig, ax = plt.subplots(nrows=1, ncols=2, figsize=(26, 6))
+    # --- Plot the data ---
+    fig, ax = plt.subplots(nrows=1, ncols=2, figsize=(26, 6))
 
-        def plot(fit, err, x_true, ax, name):
-            two_sigma_h = philcox["med"][:, i] + 2 * (
-                philcox["up"][:, i] - philcox["med"][:, i]
-            )
-            two_sigma_l = philcox["med"][:, i] - 2 * (
-                philcox["med"][:, i] - philcox["lo"][:, i]
-            )
-            # Add Philcox
-            ax.plot(philcox["n_stars"], philcox["med"][:, i], c="r", label="HMC")
-            ax.fill_between(
-                philcox["n_stars"],
-                philcox["lo"][:, i],
-                philcox["up"][:, i],
-                alpha=0.1,
-                color="r",
-            )
-            ax.fill_between(
-                philcox["n_stars"], two_sigma_l, two_sigma_h, alpha=0.1, color="r"
-            )
+    def plot(fit, err, x_true, ax, name):
+        two_sigma_h = philcox["med"][:, i] + 2 * (
+            philcox["up"][:, i] - philcox["med"][:, i]
+        )
+        two_sigma_l = philcox["med"][:, i] - 2 * (
+            philcox["med"][:, i] - philcox["lo"][:, i]
+        )
+        # Add Philcox
+        ax.plot(philcox["n_stars"], philcox["med"][:, i], c="r", label="HMC")
+        ax.fill_between(
+            philcox["n_stars"],
+            philcox["lo"][:, i],
+            philcox["up"][:, i],
+            alpha=0.1,
+            color="r",
+        )
+        ax.fill_between(
+            philcox["n_stars"], two_sigma_l, two_sigma_h, alpha=0.1, color="r"
+        )
 
-            ax.plot(no_stars, fit, color="b", label="Fit")
-            ax.fill_between(
-                no_stars,
-                fit - err,
-                fit + err,
-                alpha=0.1,
-                color="b",
-                label=r"1 & 2 $\sigma$",
-            )
-            ax.fill_between(no_stars, fit - 2 * err, fit + 2 * err, alpha=0.1, color="b")
+        ax.plot(no_stars, fit, color="b", label="Fit")
+        ax.fill_between(
+            no_stars,
+            fit - err,
+            fit + err,
+            alpha=0.1,
+            color="b",
+            label=r"1 & 2 $\sigma$",
+        )
+        ax.fill_between(no_stars, fit - 2 * err, fit + 2 * err, alpha=0.1, color="b")
 
-            ax.axhline(x_true, color="k", linestyle=":", linewidth=2, label="Ground Truth")
+        ax.axhline(x_true, color="k", linestyle=":", linewidth=2, label="Ground Truth")
 
-            ax.set_xlabel(r"$N_{\rm stars}$", fontsize=40)
-            ax.set_ylabel(name, fontsize=40)
-            ax.set_ylim([x_true - 0.2 * abs(x_true), x_true + 0.2 * abs(x_true)])
-            ax.set_xscale("log")
-            ax.set_xlim([1, 1000])
-            ax.tick_params(labelsize=30, size=10, width=3)
-            ax.tick_params(which="minor", size=5, width=2)
+        ax.set_xlabel(r"$N_{\rm stars}$", fontsize=40)
+        ax.set_ylabel(name, fontsize=40)
+        ax.set_ylim([x_true - 0.2 * abs(x_true), x_true + 0.2 * abs(x_true)])
+        ax.set_xscale("log")
+        ax.set_xlim([1, no_stars[-1]])
+        ax.tick_params(labelsize=30, size=10, width=3)
+        ax.tick_params(which="minor", size=5, width=2)
 
-        for i, name in enumerate([r"$\alpha_{\rm IMF}$", r"$\log_{10} N_{\rm Ia}$"]):
-            plot(fit[:, i], err[:, i], x_true[0, i], ax[i], name)
+    for i, name in enumerate([r"$\alpha_{\rm IMF}$", r"$\log_{10} N_{\rm Ia}$"]):
+        plot(fit[:, i], err[:, i], x_true[0, i], ax[i], name)
 
-        ax[0].legend(fontsize=20, fancybox=True, shadow=True)
+    ax[0].legend(fontsize=20, fancybox=True, shadow=True)
 
-        plt.tight_layout()
-        plt.savefig(paths.figures / f"{save_name}.pdf")
-        plt.clf()
+    plt.tight_layout()
+    plt.savefig(paths.figures / f"{save_name}.pdf")
+    plt.clf()
