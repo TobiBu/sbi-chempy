@@ -245,7 +245,7 @@ def gaussian_posterior_plot(alpha_IMF, log10_N_Ia, global_params, title, prior=n
         s = int(sigma[i])
         t.set(text=f'{s} $\\sigma$')
 
-    legend_true = plt.scatter(global_params[0,0], global_params[0,1], color='k', label=label_gt, s=200, marker='x', linewidths=3)
+    legend_true = plt.scatter(global_params[0,0], global_params[0,1], color='k', label=label_gt, s=400, marker='x', linewidths=5)
     legend_fit = plt.scatter(mu_alpha, mu_log10N_Ia, color='blue', label=label_fit, s=100)
     
     legend_fit = plt.legend(handles=[legend_fit], fontsize=15, shadow=True, fancybox=True, loc=2, bbox_to_anchor=(0, 0.9))
@@ -289,6 +289,32 @@ def gaussian_posterior_plot_n_stars(alpha_IMF, log10_N_Ia, global_params, title,
         elif mu_log10N_Ia-global_params[0,1] > 0:
             ylim[1] = mu_log10N_Ia-global_params[0,1]+10*sigma_log10N_Ia
 
+    if philcox is not None:
+        
+        # add Philcox ellipses
+        idx = np.where(philcox["n_stars"] == no_stars)[0][0]
+        
+        # Calculate the sigmas for specific index
+        sigma_h_1 = philcox["up"][idx, 0] - philcox["med"][idx, 0]
+        sigma_l_1 = philcox["med"][idx, 0] - philcox["lo"][idx, 0]
+        sigma_philcox_1 = (sigma_h_1 + sigma_l_1) / 2
+        
+        sigma_h_2 = philcox["up"][idx, 1] - philcox["med"][idx, 1]
+        sigma_l_2 = philcox["med"][idx, 1] - philcox["lo"][idx, 1]
+        sigma_philcox_2 = (sigma_h_2 + sigma_l_2) / 2
+
+        if np.abs(global_params[0,0]-philcox["med"][idx, 0]) > 0.03:
+            if philcox["med"][idx, 0]-global_params[0,0] < 0:
+                xlim[0] = philcox["med"][idx, 0]-global_params[0,0]-2*sigma_philcox_1
+            elif philcox["med"][idx, 0]-global_params[0,0] > 0:
+                xlim[1] = philcox["med"][idx, 0]-global_params[0,0]+2*sigma_philcox_1
+
+        if np.abs(global_params[0,1]-philcox["med"][idx, 1]) > 0.03:
+            if philcox["med"][idx, 1]-global_params[0,1] < 0:
+                ylim[0] = philcox["med"][idx, 1]-global_params[0,1]-2*sigma_philcox_2
+            elif philcox["med"][idx, 1]-global_params[0,1] > 0:
+                ylim[1] = philcox["med"][idx, 1]-global_params[0,1]+2*sigma_philcox_2
+
 
     grid_x = [global_params[0,0]+xlim[0], global_params[0,0]+xlim[1]]
     grid_y = [global_params[0,1]+ylim[0], global_params[0,1]+ylim[1]]
@@ -302,9 +328,59 @@ def gaussian_posterior_plot_n_stars(alpha_IMF, log10_N_Ia, global_params, title,
     # create a figure
     plt.figure(figsize=(15,15))
 
+    # Add Philcox values to plot
+    if philcox is not None:
+     
+        # Create label with scalar values
+        label_hmc = (r'HMC' + f"\n" + 
+                    r"$\alpha_{\rm IMF} = $" + f'${philcox["med"][idx, 0]:.3f} \\pm {sigma_philcox_1:.3f}$' + f"\n" + 
+                    r"$\log_{10} N_{\rm Ia} = $" + f'${philcox["med"][idx, 1]:.3f} \\pm {sigma_philcox_2:.3f}$')
+        
+        legend_philcox = plt.scatter(philcox["med"][idx, 0], philcox["med"][idx, 1], color="red", label=label_hmc, s=100)
+        
+        # create a multivariate normal
+        posterior_philcox = multivariate_normal(
+            mean=[philcox["med"][:, 0][-1], philcox["med"][:, 1][-1]],
+            cov=[[sigma_philcox_1 ** 2, 0], [0, sigma_philcox_2 ** 2]],
+        )
+
+        # Sigma levels
+        levels = []
+        sigma = np.array([3, 2, 1,0], dtype=float)
+        for n in sigma:
+            levels.append(
+                posterior_philcox.pdf(
+                    [
+                        philcox["med"][:, 0][-1] + n * sigma_philcox_1,
+                        philcox["med"][:, 1][-1] + n * sigma_philcox_2 ** 2,
+                    ]
+                )
+            )
+        
+        cmap = plt.get_cmap('Reds')
+        colors = [cmap(0.3), cmap(0.5), cmap(0.8)]
+        cf = plt.contourf(x, y, posterior_philcox.pdf(pos), levels=levels, colors=colors, alpha=0.7)
+        CS = plt.contour(
+            x, y, posterior_philcox.pdf(pos), levels=levels, colors="gray", linewidths=3, linestyles='dotted')
+        text = plt.clabel(CS, inline=True, fontsize=15)
+        for t in text:
+           i = np.abs(np.array(levels) - float(t._text)).argmin()
+           s = int(sigma[i])
+           t.set(text=f'{s} $\\sigma$', color='gray')
+        legend_philcox = plt.legend(
+            handles=[legend_philcox],
+            fontsize=15,
+            shadow=True,
+            fancybox=True,
+            loc=2,
+            bbox_to_anchor=(0, 0.81),
+        )
+        plt.gca().add_artist(legend_philcox)
+
+
     # labels
     label_gt = r'Ground Truth' + f"\n" + r"$\alpha_{\rm IMF} = $" + f'${global_params[0,0]:.2f}$' + f"\n" + r"$\log_{10} N_{\rm Ia} = $" + f'${global_params[0,1]:.2f}$'
-    label_fit = r'Fit' + f"\n" + r"$\alpha_{\rm IMF} = $" + f'${mu_alpha:.3f} \\pm {sigma_alpha:.3f}$' + f"\n" + r"$\log_{10} N_{\rm Ia} = $" + f'${mu_log10N_Ia:.3f} \\pm {sigma_log10N_Ia:.3f}$'
+    label_fit = r'SBI' + f"\n" + r"$\alpha_{\rm IMF} = $" + f'${mu_alpha:.3f} \\pm {sigma_alpha:.3f}$' + f"\n" + r"$\log_{10} N_{\rm Ia} = $" + f'${mu_log10N_Ia:.3f} \\pm {sigma_log10N_Ia:.3f}$'
     
 
     # Sigma levels
@@ -315,80 +391,21 @@ def gaussian_posterior_plot_n_stars(alpha_IMF, log10_N_Ia, global_params, title,
     cmap = plt.get_cmap('Blues')
     colors = [cmap(0.3), cmap(0.5), cmap(0.8)]
     cf = plt.contourf(x, y, posterior.pdf(pos), levels=levels, colors=colors, alpha=0.7)
-    CS = plt.contour(x, y, posterior.pdf(pos), levels=levels, colors='k', linestyles='dashed')
+    CS = plt.contour(x, y, posterior.pdf(pos), levels=levels, colors='gray', linestyles='dashed')
     text = plt.clabel(CS, inline=True, fontsize=15)
     for t in text:
         i = np.abs(np.array(levels) - float(t._text)).argmin()
         s = int(sigma[i])
-        t.set(text=f'{s} $\\sigma$')
+        t.set(text=f'{s} $\\sigma$', color='gray')
 
-    legend_true = plt.scatter(global_params[0,0], global_params[0,1], color='k', label=label_gt, s=200, marker='x', linewidths=3)
+    legend_true = plt.scatter(global_params[0,0], global_params[0,1], color='k', label=label_gt, s=400, marker='x', linewidths=5)
     legend_fit = plt.scatter(mu_alpha, mu_log10N_Ia, color='blue', label=label_fit, s=100)
+    legend_philcox = plt.scatter(philcox["med"][:, 0][-1], philcox["med"][:, 1][-1], color="red",label="HMC",s=100,)
     
     legend_fit = plt.legend(handles=[legend_fit], fontsize=15, shadow=True, fancybox=True, loc=2, bbox_to_anchor=(0, 0.9))
     legend_true = plt.legend(handles=[legend_true], fontsize=15, shadow=True, fancybox=True, loc=2, bbox_to_anchor=(0, 0.99))
 
-    # Add Philcox values to plot
-    if philcox is not None:
-        # add Philcox ellipses
-
-        legend_philcox = plt.scatter(
-            philcox["med"][:, 0][-1],
-            philcox["med"][:, 1][-1],
-            color="red",
-            label="HMC",
-            s=100,
-        )
-
-        sigma_h = philcox["up"][:, 0] - philcox["med"][:, 0]
-        sigma_l = philcox["med"][:, 0] - philcox["lo"][:, 0]
-        sigma_philcox_1 = (sigma_h + sigma_l) / 2
-
-        sigma_h = philcox["up"][:, 1] - philcox["med"][:, 1]
-        sigma_l = philcox["med"][:, 1] - philcox["lo"][:, 1]
-        sigma_philcox_2 = (sigma_h + sigma_l) / 2
-
-        print("philcox data:")
-        print(philcox["med"][:, 0][-1], philcox["med"][:, 1][-1])
-        # create a multivariate normal
-        posterior = multivariate_normal(
-            mean=[philcox["med"][:, 0][-1], philcox["med"][:, 1][-1]],
-            cov=[[sigma_philcox_1[-1] ** 2, 0], [0, sigma_philcox_2[-1] ** 2]],
-        )
-
-        # Sigma levels
-        levels = []
-        sigma = np.array([3, 2, 1,0], dtype=float)
-        for n in sigma:
-            levels.append(
-                posterior.pdf(
-                    [
-                        philcox["med"][:, 0][-1] + n * sigma_philcox_1[-1],
-                        philcox["med"][:, 1][-1] + n * sigma_philcox_2[-1] ** 2,
-                    ]
-                )
-            )
-        
-        cmap = plt.get_cmap('Reds')
-        colors = [cmap(0.3), cmap(0.5), cmap(0.8)]
-        cf = plt.contourf(x, y, posterior.pdf(pos), levels=levels, colors=colors, alpha=0.2)
-        CS = plt.contour(
-            x, y, posterior.pdf(pos), levels=levels, colors="k", linewidths=3, linestyles='dotted')
-        text = plt.clabel(CS, inline=True, fontsize=15)
-        for t in text:
-           i = np.abs(np.array(levels) - float(t._text)).argmin()
-           s = int(sigma[i])
-           t.set(text=f'{s} $\\sigma$')
-        legend_philcox = plt.legend(
-            handles=[legend_philcox],
-            fontsize=15,
-            shadow=True,
-            fancybox=True,
-            loc=2,
-            bbox_to_anchor=(0, 0.8),
-        )
-        plt.gca().add_artist(legend_philcox)
-
+    
     plt.xlabel(r'$\alpha_{\rm IMF}$', fontsize=40)
     plt.ylabel(r'$\log_{10} N_{\rm Ia}$', fontsize=40)
     plt.tick_params(labelsize=30)
@@ -401,3 +418,76 @@ def gaussian_posterior_plot_n_stars(alpha_IMF, log10_N_Ia, global_params, title,
     plt.tight_layout()
     plt.savefig(paths.figures / f"{title}.png")
     plt.clf()
+
+##########################################################################################################
+# --- N-Star comparison plot 2 ---
+
+def n_stars_plot_comp2(
+        x1, x2, x_true, philcox, save_name, no_stars=np.array([1, 10, 100, 500, 1000])
+    ):
+        fit = []
+        err = []
+
+        # --- Fit a 2D Gaussian to the data ---
+        for n in no_stars:
+            mu_alpha, sigma_alpha = mean_std(x1[:n], x_true[0, 0], x_true[1, 0])
+            mu_logNIa, sigma_logNIa = mean_std(x2[:n], x_true[0, 1], x_true[1, 1])
+
+            fit.append([mu_alpha, mu_logNIa])
+            err.append([sigma_alpha, sigma_logNIa])
+
+        fit = np.array(fit)
+        err = np.array(err)
+
+        # --- Plot the data ---
+        fig, ax = plt.subplots(nrows=1, ncols=2, figsize=(26, 6))
+
+        def plot(fit, err, x_true, ax, name):
+            two_sigma_h = philcox["med"][:, i] + 2 * (
+                philcox["up"][:, i] - philcox["med"][:, i]
+            )
+            two_sigma_l = philcox["med"][:, i] - 2 * (
+                philcox["med"][:, i] - philcox["lo"][:, i]
+            )
+            # Add Philcox
+            ax.plot(philcox["n_stars"], philcox["med"][:, i], c="r", label="HMC")
+            ax.fill_between(
+                philcox["n_stars"],
+                philcox["lo"][:, i],
+                philcox["up"][:, i],
+                alpha=0.1,
+                color="r",
+            )
+            ax.fill_between(
+                philcox["n_stars"], two_sigma_l, two_sigma_h, alpha=0.1, color="r"
+            )
+
+            ax.plot(no_stars, fit, color="b", label="Fit")
+            ax.fill_between(
+                no_stars,
+                fit - err,
+                fit + err,
+                alpha=0.1,
+                color="b",
+                label=r"1 & 2 $\sigma$",
+            )
+            ax.fill_between(no_stars, fit - 2 * err, fit + 2 * err, alpha=0.1, color="b")
+
+            ax.axhline(x_true, color="k", linestyle=":", linewidth=2, label="Ground Truth")
+
+            ax.set_xlabel(r"$N_{\rm stars}$", fontsize=40)
+            ax.set_ylabel(name, fontsize=40)
+            ax.set_ylim([x_true - 0.2 * abs(x_true), x_true + 0.2 * abs(x_true)])
+            ax.set_xscale("log")
+            ax.set_xlim([1, 1000])
+            ax.tick_params(labelsize=30, size=10, width=3)
+            ax.tick_params(which="minor", size=5, width=2)
+
+        for i, name in enumerate([r"$\alpha_{\rm IMF}$", r"$\log_{10} N_{\rm Ia}$"]):
+            plot(fit[:, i], err[:, i], x_true[0, i], ax[i], name)
+
+        ax[0].legend(fontsize=20, fancybox=True, shadow=True)
+
+        plt.tight_layout()
+        plt.savefig(paths.figures / f"{save_name}.pdf")
+        plt.clf()
