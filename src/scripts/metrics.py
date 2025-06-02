@@ -266,7 +266,7 @@ class PlotSinglePosterior(_SampleBasedMetric):
             **grid_kws,
         )
         fig.map_lower(sns.kdeplot, **plot_kws)
-        fig.map_diag(sns.kdeplot, common_norm=True, **plot_kws)
+        fig.map_diag(sns.kdeplot, common_norm=False, **plot_kws)
         # Plot each model's KDE separately
         for model_label, group in data.groupby("Model"):
             kws = plot_kws_per_model.get(model_label, {})
@@ -278,7 +278,6 @@ class PlotSinglePosterior(_SampleBasedMetric):
                         x=group[self.labels[j]],
                         y=group[self.labels[i]],
                         ax=ax,
-                        common_norm=True,
                         **kws,
                     )
 

@@ -259,8 +259,11 @@ true_mean = np.mean(stars.numpy(), axis=0)
 true_mean = true_mean[:2]
 print("True mean parameters:", true_mean)
 
+weights = np.ones(len(all_sbi_samples)) / len(all_sbi_samples)
+
 fig = corner.corner(
     all_sbi_samples,
+    weights=weights,
     labels=param_names,
     color="C0",
     bins=30,
@@ -276,8 +279,10 @@ fig = corner.corner(
 # plt.show()
 
 all_samples = all_samples[:, 0:2]  # only take the first two parameters for comparison
+weights = np.ones(len(all_samples)) / len(all_samples)
 corner.corner(
     all_samples,  # shape: [N_samples, D]
+    weights=weights,
     labels=param_names,
     fig=fig,  # reuse the same figure
     color="C1",
@@ -293,7 +298,7 @@ corner.corner(
 
 handles = [
     plt.Line2D([], [], color="C0", label="SBI", lw=2),
-    plt.Line2D([], [], color="C1", linestyle="--", label="MH", lw=2),
+    plt.Line2D([], [], color="C1", linestyle="--", label="MCMC", lw=2),
 ]
 fig.legend(handles=handles, loc="upper right")
 
