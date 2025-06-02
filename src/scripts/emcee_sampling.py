@@ -124,7 +124,7 @@ initial_params = np.array([-2.3, -2.89, -0.3, 0.55, 0.5, 6.0], dtype=np.float32)
 
 ndim = 6  # number of parameters
 nwalkers = 32
-nsteps = 10000
+nsteps = 12000
 nburn = 500
 
 mh_samples = []
@@ -145,11 +145,6 @@ for i in tqdm(range(len(abundances))):
     # Initialize the sampler
     sampler = emcee.EnsembleSampler(nwalkers, ndim, log_prob)
 
-    # Burn-in phase
-    print("Running burn-in...")
-    sampler.run_mcmc(pos, nburn, progress=True)
-    sampler.reset()
-
     # Main sampling phase
     print("Running production sampling...")
     sampler.run_mcmc(None, nsteps, progress=True)
@@ -163,7 +158,7 @@ for i in tqdm(range(len(abundances))):
 
     # Extract samples
     samples = sampler.get_chain(
-        flat=True, thin=thin
+        discard=nburn, flat=True, thin=thin
     )  # shape: [(nwalkers * nsteps), ndim]
 
     n_steps = sampler.get_chain().shape[0]
