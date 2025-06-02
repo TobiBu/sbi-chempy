@@ -47,7 +47,7 @@ model.load_state_dict(torch.load(paths.data / "pytorch_state_dict.pt"))
 model.eval()
 
 # --- Define the simulator ---
-N_stars = 100
+N_stars = 5
 N_samples = 1000
 
 stars = local_GP.sample((N_stars,))
@@ -243,9 +243,9 @@ for k in range(len(abundances)):
         mh_samples=mh_samples[k]["samples"],
         plot_kws_per_model={
             "SBI": dict(levels=[0.05, 0.32, 1], color=color_sbi, fill=True, alpha=0.6),
-            "MH": dict(levels=[0.05, 0.32, 1], color=color_mh, fill=True, alpha=0.4),
+            "MCMC": dict(levels=[0.05, 0.32, 1], color=color_mh, fill=True, alpha=0.4),
         },
-        signature=f"MH_{k}_",
+        signature=f"MCMC_{k}_",
     )
     fig.savefig(paths.figures / f"corner_plot_comparison_singlestar_{k}.pdf")
 
