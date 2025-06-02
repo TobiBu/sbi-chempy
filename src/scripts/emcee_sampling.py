@@ -145,6 +145,11 @@ for i in tqdm(range(len(abundances))):
     # Initialize the sampler
     sampler = emcee.EnsembleSampler(nwalkers, ndim, log_prob)
 
+    # Burn-in phase
+    print("Running burn-in...")
+    sampler.run_mcmc(pos, nburn, progress=True)
+    sampler.reset()
+
     # Main sampling phase
     print("Running production sampling...")
     sampler.run_mcmc(None, nsteps, progress=True)
@@ -158,7 +163,7 @@ for i in tqdm(range(len(abundances))):
 
     # Extract samples
     samples = sampler.get_chain(
-        discard=nburn, flat=True, thin=thin
+        flat=True, thin=thin
     )  # shape: [(nwalkers * nsteps), ndim]
 
     n_steps = sampler.get_chain().shape[0]
