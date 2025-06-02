@@ -89,8 +89,7 @@ def n_stars_plot(
     ax[0].legend(fontsize=15, fancybox=True, shadow=True)
 
     plt.tight_layout()
-    plt.savefig(paths.figures / f"{save_name}.png")
-    plt.show()
+    plt.savefig(paths.figures / f"{save_name}.pdf")
 
 
 ##########################################################################################################
@@ -181,8 +180,7 @@ def n_stars_plot_comp(
     ax[0].legend(fontsize=20, fancybox=True, shadow=True)
 
     plt.tight_layout()
-    plt.savefig(paths.figures / f"{save_name}.png")
-    plt.show()
+    plt.savefig(paths.figures / f"{save_name}.pdf")
 
 
 ##########################################################################################################

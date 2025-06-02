@@ -60,6 +60,7 @@ gaussian_posterior_plot_n_stars(
     no_stars=100,
 )
 
+
 stars = np.arange(1, 1000)
 n_stars_plot_comp2(
     alpha_IMF_obs,
