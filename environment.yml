@@ -12,7 +12,5 @@ dependencies:
       - tqdm
       - git+https://github.com/maho3/tarp.git
       - schedulefree
-      - numpyro
-      - pyro-ppl
       - corner==2.1.0
-      - jax
+      - emcee
