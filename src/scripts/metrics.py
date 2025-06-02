@@ -175,7 +175,7 @@ class PlotSinglePosterior(_SampleBasedMetric):
         self,
         posterior: ModelClass,
         mh_samples: Optional[np.ndarray] = None,
-        mh_label: Optional[str] = "MH",
+        mh_label: Optional[str] = "MCMC",
         x: Optional[np.array] = None,
         theta: Optional[np.array] = None,
         x_obs: Optional[np.array] = None,
@@ -275,7 +275,11 @@ class PlotSinglePosterior(_SampleBasedMetric):
                 for j in range(i):
                     ax = fig.axes[i, j]
                     sns.kdeplot(
-                        x=group[self.labels[j]], y=group[self.labels[i]], ax=ax, **kws
+                        x=group[self.labels[j]],
+                        y=group[self.labels[i]],
+                        ax=ax,
+                        common_norm=True,
+                        **kws,
                     )
 
         fig._legend.remove()

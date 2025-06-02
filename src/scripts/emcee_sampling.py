@@ -154,8 +154,23 @@ for i in tqdm(range(len(abundances))):
     print("Running production sampling...")
     sampler.run_mcmc(None, nsteps, progress=True)
 
+    tau = sampler.get_autocorr_time()
+    print(f"Autocorrelation time: {tau}")
+
+    thin = int(np.max(tau))
+    print(f"Thinning factor: {thin}")
+    # Thin the chain
+
     # Extract samples
-    samples = sampler.get_chain(flat=True)  # shape: [(nwalkers * nsteps), ndim]
+    samples = sampler.get_chain(
+        flat=True, thin=thin
+    )  # shape: [(nwalkers * nsteps), ndim]
+
+    n_steps = sampler.get_chain().shape[0]
+    n_walkers = sampler.get_chain().shape[1]
+    ess = (n_walkers * n_steps) / np.max(tau)
+
+    print(f"Effective sample size: {ess}")
 
     mh_samples.append(
         {
