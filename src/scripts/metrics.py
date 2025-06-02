@@ -310,9 +310,9 @@ class PlotSinglePosterior(_SampleBasedMetric):
         # save
         if self.out_dir is None:
             return fig
-        filepath = self.out_dir / (signature + "plot_single_posterior.jpg")
-        logging.info(f"Saving single posterior plot to {filepath}...")
-        fig.savefig(filepath)
+        # filepath = self.out_dir / (signature + "plot_single_posterior.jpg")
+        # logging.info(f"Saving single posterior plot to {filepath}...")
+        # fig.savefig(filepath)
 
         # save single posterior samples if asked
         if self.save_samples:

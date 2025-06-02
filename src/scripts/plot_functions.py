@@ -1,322 +1,34 @@
 import matplotlib.pyplot as plt
 import numpy as np
-from matplotlib.ticker import NullFormatter
-from scipy.stats import multivariate_normal, norm
+from scipy.stats import multivariate_normal
 
 import paths
 
 
 ##########################################################################################################
 # --- Calculate mean and error ---
-def mean_std(x, mu_prior, sigma_prior):
-    # Calculate mean and std for each observation
-    mu_sample, sigma_sample = x.mean(axis=1), x.std(axis=1)
+def mean_std(data, mu_prior, sigma_prior):
 
-    # Calculate mean and std for joint distribution
-    mu = (np.sum(mu_sample / sigma_sample**2)) / (np.sum(1 / sigma_sample**2))
-    sigma = 1 / np.sqrt(np.sum(1 / sigma_sample**2))
+    prior_mean = mu_prior
+    prior_cov = np.array([[sigma_prior[0] ** 2, 0], [0, sigma_prior[1] ** 2]])
+    mean_n = np.zeros_like(prior_mean)
+    inv_cov = np.zeros_like(prior_cov)
+    n = len(data)
 
-    # Calculate the product of the prior and posterior
-    mu_post = (mu / sigma**2 - (1 - len(x)) * mu_prior / sigma_prior**2) / (
-        1 / sigma**2 - (1 - len(x)) / sigma_prior**2
-    )
-    sigma_post = 1 / np.sqrt(1 / sigma**2 - (1 - len(x)) / sigma_prior**2)
+    for x in data:
+        mean = x.mean(axis=0)
+        cov_n = np.cov(x, rowvar=False)
+        inv_cov_n = np.linalg.inv(cov_n)
 
-    return mu_post, sigma_post
+        mean_n += inv_cov_n @ mean
+        inv_cov += inv_cov_n
 
+    post_cov = inv_cov - ((1 - n) * np.linalg.inv(prior_cov))
+    post_cov = np.linalg.inv(post_cov)
 
-##########################################################################################################
-# --- Plot 1D Histogram ---
-def plot_1d_hist(x1, x2, x_true, names, simulations):
-    fig, ax = plt.subplots(1, 2, figsize=(12, 6))
-    plot_width = 0.3
+    post_mean = post_cov @ (mean_n - (1 - n) * (np.linalg.inv(prior_cov) @ prior_mean))
 
-    def plot_subplot(i, x, true, name):
-        N_stars = int(len(x) / simulations)
-        mean, err, std = mean_error(x, N_stars)
-
-        # Set the x-axis limits
-        x_min = true - plot_width * true
-        x_max = true + plot_width * true
-
-        # Fit a Gaussian to the data
-        lin = np.linspace(x_min, x_max, 1000)
-        p = norm.pdf(lin, mean, std)
-
-        # Plot the data
-        ax[i].hist(x, bins=500, density=True, alpha=0.6, color="g")
-        ax[i].plot(lin, p, "k", linewidth=2)
-        ax[i].axvline(x=true, color="r", linestyle="dashed", linewidth=2)
-
-        ax[i].set_title(rf"{name}: {true:.3f}" "\n" rf"Fit: {mean:.3f} $\pm$ {err:.3f}")
-        ax[i].set_xlim(x_min, x_max)
-
-    for i in [0, 1]:
-        if i == 0:
-            x = x1
-        else:
-            x = x2
-
-        plot_subplot(i, x, x_true[0, i], names[i])
-
-    fig.suptitle(f"{int(len(x1)/simulations)} Stars", fontsize=30)
-    plt.tight_layout()
-    plt.show()
-
-
-##########################################################################################################
-# --- 2D Histogram preparation ---
-def hist_2d_prep(x1, x2, x_true, N_stars):
-    x_lim, y_lim = [-3, -1.6], [-3.6, -2.2]
-
-    # --- Fit a 2D Gaussian to the data ---
-    mean_1, err_1, std_1 = mean_error(x1, int(N_stars))
-    mean_2, err_2, std_2 = mean_error(x2, int(N_stars))
-
-    x = np.linspace(x_lim[0], x_lim[1], 1000)
-    y = np.linspace(y_lim[0], y_lim[1], 1000)
-
-    X, Y = np.meshgrid(x, y)
-    pos = np.empty(X.shape + (2,))
-
-    pos[:, :, 0] = X
-    pos[:, :, 1] = Y
-
-    popt, pcov = multivariate_normal.fit(np.array([x1, x2]).T)
-    rv = multivariate_normal(popt, pcov)
-
-    # --- Calculate the sigma levels ---
-    levels = []
-    sigma = [3, 2, 1]
-    for n in sigma:
-        level = rv.pdf(popt + n * np.array([std_1, std_2]))
-        levels.append(level)
-
-    return (
-        x_lim,
-        y_lim,
-        X,
-        Y,
-        pos,
-        rv,
-        levels,
-        sigma,
-        mean_1,
-        err_1,
-        std_1,
-        mean_2,
-        err_2,
-        std_2,
-    )
-
-
-##########################################################################################################
-# --- Plot 2D Histogram ---
-def plot_2d_hist(x1, x2, x_true, N_stars):
-    (
-        x_lim,
-        y_lim,
-        X,
-        Y,
-        pos,
-        rv,
-        levels,
-        sigma,
-        mean_1,
-        err_1,
-        std_1,
-        mean_2,
-        err_2,
-        std_2,
-    ) = hist_2d_prep(x1, x2, x_true, N_stars)
-
-    # labels
-    label_gt = (
-        r"Ground Truth"
-        + f"\n"
-        + r"$\alpha_{\rm IMF} = $"
-        + f"${round(x_true[0].item(), 2)}$"
-        + f"\n"
-        + r"$\log_{10} N_{\rm Ia} = $"
-        + f"${round(x_true[1].item(), 2)}$"
-    )
-
-    label_fit = (
-        r"Fit"
-        + f"\n"
-        + r"$\alpha_{\rm IMF} = $"
-        + f"${round(mean_1.item(), 3)} \\pm {round(err_1.item(),3)}$"
-        + f"\n"
-        + r"$\log_{10} N_{\rm Ia} = $"
-        + f"${round(mean_2.item(), 3)} \\pm {round(err_2.item(),3)}$"
-    )
-
-    # --- Plot the data ---
-    plt.figure(figsize=(15, 15))
-    plt.hist2d(x1, x2, bins=500, range=[x_lim, y_lim])
-
-    # draw contour lines on1,2,3 sigma
-    CS = plt.contour(X, Y, rv.pdf(pos), levels=levels, colors="k", linestyles="dashed")
-    text = plt.clabel(CS, inline=True, fontsize=10)
-
-    rd_levels = [str(round(n, 2)) for n in levels]
-    for t in text:
-        # i = rd_levels.index(t._text)
-        i = (np.array(levels) - float(t._text)).argmin()
-        s = sigma[i]
-        t.set(text=f"{s} $\\sigma$")
-
-    legend_true = plt.scatter(x_true[0], x_true[1], color="r", s=10, label=label_gt)
-    legend_fit = plt.errorbar(
-        mean_1, mean_2, yerr=err_2, xerr=err_1, color="k", marker=".", label=label_fit
-    )
-
-    legend_fit = plt.legend(
-        handles=[legend_fit],
-        fontsize=15,
-        shadow=True,
-        fancybox=True,
-        loc=2,
-        bbox_to_anchor=(0, 0.9),
-    )
-    legend_true = plt.legend(
-        handles=[legend_true],
-        fontsize=15,
-        shadow=True,
-        fancybox=True,
-        loc=2,
-        bbox_to_anchor=(0, 0.99),
-    )
-
-    plt.gca().add_artist(legend_fit)
-    plt.gca().add_artist(legend_true)
-
-    plt.xlabel(r"$\alpha_{\rm IMF}$", fontsize=20)
-    plt.ylabel(r"$\log_{10} N_{\rm Ia}$", fontsize=20)
-    # plt.legend(fontsize=15, shadow=True, fancybox=True, loc=2,)
-    plt.show()
-
-
-##########################################################################################################
-# --- Plot 2D Histogram with side plots ---
-def plot_2d_hist_sides(x1, x2, x_true, N_stars):
-    (
-        x_lim,
-        y_lim,
-        X,
-        Y,
-        pos,
-        rv,
-        levels,
-        sigma,
-        mean_1,
-        err_1,
-        std_1,
-        mean_2,
-        err_2,
-        std_2,
-    ) = hist_2d_prep(x1, x2, x_true, N_stars)
-
-    x = np.linspace(x_lim[0], x_lim[1], 1000)
-    y = np.linspace(y_lim[0], y_lim[1], 1000)
-
-    # --- Plot the data ---
-    fig = plt.figure(1, figsize=(15, 15))
-
-    # Define the locations for the axes
-    left, width = 0.12, 0.7
-    bottom, height = 0.12, 0.7
-    bottom_h = left_h = left + width + 0.02
-
-    # Set up the geometry of the three plots
-    rect_temperature = [left, bottom, width, height]  # dimensions of temp plot
-    rect_histx = [left, bottom_h, width, 0.15]  # dimensions of x-histogram
-    rect_histy = [left_h, bottom, 0.15, height]  # dimensions of y-histogram
-
-    # Make the three plots
-    axTemperature = plt.axes(rect_temperature)  # temperature plot
-    axHistx = plt.axes(rect_histx)  # x histogram
-    axHisty = plt.axes(rect_histy)  # y histogram
-
-    # Remove the inner axes numbers of the histograms
-    nullfmt = NullFormatter()
-    axHistx.xaxis.set_major_formatter(nullfmt)
-    axHisty.yaxis.set_major_formatter(nullfmt)
-
-    axHistx.axis("off")
-    axHisty.axis("off")
-
-    # Plot the data
-    axTemperature.hist2d(x1, x2, bins=500, range=[x_lim, y_lim])
-
-    # draw contour lines on sigma levels
-    CS = axTemperature.contour(
-        X, Y, rv.pdf(pos), levels=levels, colors="k", linestyles="dashed"
-    )
-    text = axTemperature.clabel(CS, inline=True, fontsize=15)
-
-    rd_levels = [str(round(n, 3)) for n in levels]
-    for t in text:
-        i = rd_levels.index(t._text)
-        s = sigma[i]
-        t.set(text=f"{s} $\\sigma$")
-
-    # labels
-    label_gt = (
-        r"Ground Truth"
-        + f"\n"
-        + r"$\alpha_{\rm IMF} = $"
-        + f"${round(x_true[0].item(), 2)}$"
-        + f"\n"
-        + r"$\log_{10} N_{\rm Ia} = $"
-        + f"${round(x_true[1].item(), 2)}$"
-    )
-
-    label_fit = (
-        r"Fit"
-        + f"\n"
-        + r"$\alpha_{\rm IMF} = $"
-        + f"${round(mean_1.item(), 3)} \\pm {round(err_1.item(),3)}$"
-        + f"\n"
-        + r"$\log_{10} N_{\rm Ia} = $"
-        + f"${round(mean_2.item(), 3)} \\pm {round(err_2.item(),3)}$"
-    )
-
-    # plot the ground truth and the fit
-    legend_true = axTemperature.scatter(
-        x_true[0], x_true[1], color="r", label=label_gt, s=10
-    )
-    legend_fit = axTemperature.errorbar(
-        mean_1, mean_2, yerr=err_2, xerr=err_1, color="k", marker=".", label=label_fit
-    )
-
-    axTemperature.set_xlabel(r"$\alpha_{\rm IMF}$", fontsize=40)
-    axTemperature.set_ylabel(r"$\log_{10} N_{\rm Ia}$", fontsize=40)
-    axTemperature.tick_params(labelsize=30)
-
-    # plot the histograms
-    axHistx.hist(x1, bins=500, density=True, alpha=0.6, color="g")
-    axHisty.hist(
-        x2, bins=500, density=True, alpha=0.6, color="g", orientation="horizontal"
-    )
-
-    axHistx.plot(x, norm.pdf(x, mean_1, std_1), "k", linewidth=2)
-    axHisty.plot(norm.pdf(y, mean_2, std_2), y, "k", linewidth=2)
-
-    axHistx.axvline(x=x_true[0], color="r", linestyle="dashed", linewidth=2)
-    axHisty.axhline(y=x_true[1], color="r", linestyle="dashed", linewidth=2)
-
-    axHistx.set_xlim(x_lim)
-    axHisty.set_ylim(y_lim)
-
-    fig.legend(
-        handles=[legend_true], fontsize=25, shadow=True, fancybox=True, loc=2
-    )  # , bbox_to_anchor=(0.05, 0.92))
-    fig.legend(
-        handles=[legend_fit], fontsize=25, shadow=True, fancybox=True, loc=1
-    )  # , bbox_to_anchor=(0.05, 0.99))
-
-    plt.show()
+    return post_mean, post_cov
 
 
 ##########################################################################################################
@@ -328,17 +40,20 @@ def n_stars_plot(
     save_name,
     no_stars=np.array([1, 10, 100, 500, 1000]),
     simulations=1000,
+    prior=np.array([[-2.3, -2.89], [0.3, 0.3]]),
 ):
     fit = []
     err = []
 
     # --- Fit a 2D Gaussian to the data ---
     for n in no_stars:
-        mu_alpha, sigma_alpha = mean_std(x1[:n], x_true[0, 0], x_true[1, 0])
-        mu_logNIa, sigma_logNIa = mean_std(x2[:n], x_true[0, 1], x_true[1, 1])
+        data = np.stack([x1[:n], x2[:n]], 2)
+        mu, cov = mean_std(data, prior[0], prior[1])
+        mu_alpha, mu_log10N_Ia = mu[0], mu[1]
+        sigma_alpha, sigma_log10N_Ia = np.sqrt(cov[0, 0]), np.sqrt(cov[1, 1])
 
-        fit.append([mu_alpha, mu_logNIa])
-        err.append([sigma_alpha, sigma_logNIa])
+        fit.append([mu_alpha, mu_log10N_Ia])
+        err.append([sigma_alpha, sigma_log10N_Ia])
 
     fit = np.array(fit)
     err = np.array(err)
@@ -346,7 +61,7 @@ def n_stars_plot(
     # --- Plot the data ---
     fig, ax = plt.subplots(nrows=1, ncols=2, figsize=(26, 6))
 
-    def plot(fit, err, x_true, ax, name):
+    def plot(fit, err, true, ax, name):
         ax.plot(no_stars, fit, color="b", label="Fit")
         ax.fill_between(
             no_stars,
@@ -358,13 +73,13 @@ def n_stars_plot(
         )
         ax.fill_between(no_stars, fit - 2 * err, fit + 2 * err, alpha=0.2, color="b")
 
-        ax.axhline(x_true, color="k", linestyle=":", linewidth=2, label="Ground Truth")
+        ax.axhline(true, color="k", linestyle=":", linewidth=2, label="Ground Truth")
 
         ax.set_xlabel(r"$N_{\rm stars}$", fontsize=40)
         ax.set_ylabel(name, fontsize=40)
-        ax.set_ylim([x_true - 0.2 * abs(x_true), x_true + 0.2 * abs(x_true)])
+        ax.set_ylim([true - 0.2 * abs(true), true + 0.2 * abs(true)])
         ax.set_xscale("log")
-        ax.set_xlim([1, 1000])
+        ax.set_xlim([1, no_stars[-1]])
         ax.tick_params(labelsize=30, size=10, width=3)
         ax.tick_params(which="minor", size=5, width=2)
 
@@ -374,7 +89,8 @@ def n_stars_plot(
     ax[0].legend(fontsize=15, fancybox=True, shadow=True)
 
     plt.tight_layout()
-    plt.savefig(paths.figures / f"{save_name}.pdf")
+    plt.savefig(f"./plots/{save_name}.png")
+    plt.show()
 
 
 ##########################################################################################################
@@ -382,7 +98,14 @@ def n_stars_plot(
 
 
 def n_stars_plot_comp(
-    x1, x2, x_true, dat, save_name, no_stars=np.array([1, 10, 100, 500, 1000])
+    x1,
+    x2,
+    x_true,
+    dat,
+    save_name,
+    no_stars=np.array([1, 10, 100, 500, 1000]),
+    simulations=1000,
+    prior=np.array([[-2.3, -2.89], [0.3, 0.3]]),
 ):
     fit = []
     err = []
@@ -412,11 +135,13 @@ def n_stars_plot_comp(
 
     # --- Fit a 2D Gaussian to the data ---
     for n in no_stars:
-        mu_alpha, sigma_alpha = mean_std(x1[:n], x_true[0, 0], x_true[1, 0])
-        mu_logNIa, sigma_logNIa = mean_std(x2[:n], x_true[0, 1], x_true[1, 1])
+        data = np.stack([x1[:n], x2[:n]], 2)
+        mu, cov = mean_std(data, prior[0], prior[1])
+        mu_alpha, mu_log10N_Ia = mu[0], mu[1]
+        sigma_alpha, sigma_log10N_Ia = np.sqrt(cov[0, 0]), np.sqrt(cov[1, 1])
 
-        fit.append([mu_alpha, mu_logNIa])
-        err.append([sigma_alpha, sigma_logNIa])
+        fit.append([mu_alpha, mu_log10N_Ia])
+        err.append([sigma_alpha, sigma_log10N_Ia])
 
     fit = np.array(fit)
     err = np.array(err)
@@ -424,7 +149,7 @@ def n_stars_plot_comp(
     # --- Plot the data ---
     fig, ax = plt.subplots(nrows=1, ncols=2, figsize=(26, 6))
 
-    def plot(fit, err, x_true, ax, name):
+    def plot(fit, err, true, ax, name):
         ax.plot(no_stars, fit, color="b", label="Fit")
         ax.fill_between(
             no_stars,
@@ -436,13 +161,13 @@ def n_stars_plot_comp(
         )
         ax.fill_between(no_stars, fit - 2 * err, fit + 2 * err, alpha=0.1, color="b")
 
-        ax.axhline(x_true, color="k", linestyle=":", linewidth=2, label="Ground Truth")
+        ax.axhline(true, color="k", linestyle=":", linewidth=2, label="Ground Truth")
 
         ax.set_xlabel(r"$N_{\rm stars}$", fontsize=40)
         ax.set_ylabel(name, fontsize=40)
-        ax.set_ylim([x_true - 0.2 * abs(x_true), x_true + 0.2 * abs(x_true)])
+        ax.set_ylim([true - 0.2 * abs(true), true + 0.2 * abs(true)])
         ax.set_xscale("log")
-        ax.set_xlim([1, 1000])
+        ax.set_xlim([1, no_stars[-1]])
         ax.tick_params(labelsize=30, size=10, width=3)
         ax.tick_params(which="minor", size=5, width=2)
         # Add Philcox
@@ -456,7 +181,444 @@ def n_stars_plot_comp(
     ax[0].legend(fontsize=20, fancybox=True, shadow=True)
 
     plt.tight_layout()
-    plt.savefig(paths.figures / f"{save_name}.pdf")
+    plt.savefig(f"./plots/{save_name}.png")
+    plt.show()
+
+
+##########################################################################################################
+# --- Absolute percentage error plot ---
+
+
+def ape_plot(ape, labels_in, save_path):
+    fig, (ax_box, ax_hist) = plt.subplots(
+        2, sharex=True, gridspec_kw={"height_ratios": (0.20, 0.80)}
+    )
+    colors = ["tomato", "skyblue", "olive", "gold", "teal", "orchid"]
+
+    print("\nAPE of the Posterior:")
+    print("Median + upper quantile - lower quantile")
+    l_quantile, median, u_quantile = np.percentile(ape, [25, 50, 75])
+    print(f"Total : {median:.1f}% + {u_quantile-median:.1f} - {median-l_quantile:.1f}")
+    print("")
+
+    for i in range(ape.shape[1]):
+        l_quantile, median, u_quantile = np.percentile(ape[:, i], [25, 50, 75])
+        ax_hist.hist(
+            ape[:, i],
+            bins=25,
+            density=True,
+            range=(0, 100),
+            label=labels_in[i],
+            color=colors[i],
+            alpha=0.5,
+        )
+        median = np.percentile(ape[:, i], 50)
+        ax_hist.axvline(median, color=colors[i], linestyle="--")
+        print(
+            labels_in[i]
+            + f" : {median:.1f}% + {u_quantile-median:.1f} - {median-l_quantile:.1f}"
+        )
+
+    print()
+
+    ax_hist.set_xlabel("Error (%)", fontsize=15)
+    ax_hist.set_ylabel("Density", fontsize=15)
+    ax_hist.spines["top"].set_visible(False)
+    ax_hist.spines["right"].set_visible(False)
+    ax_hist.legend()
+
+    bplot = ax_box.boxplot(
+        ape,
+        vert=False,
+        autorange=False,
+        widths=0.5,
+        patch_artist=True,
+        showfliers=False,
+        boxprops=dict(facecolor="tomato"),
+        medianprops=dict(color="black"),
+    )
+    for patch, color in zip(bplot["boxes"], colors):
+        patch.set_facecolor(color)
+    ax_box.set(yticks=[])
+    ax_box.spines["left"].set_visible(False)
+    ax_box.spines["right"].set_visible(False)
+    ax_box.spines["top"].set_visible(False)
+
+    fig.suptitle("APE of the Posterior", fontsize=20)
+    plt.xlim(0, 100)
+    fig.tight_layout()
+    plt.savefig(save_path)
+    plt.clf()
+
+
+##########################################################################################################
+# --- Gaussian Posterior plot ---
+
+
+def gaussian_posterior_plot(
+    alpha_IMF,
+    log10_N_Ia,
+    global_params,
+    title,
+    prior=np.array([[-2.3, -2.89], [0.3, 0.3]]),
+):
+
+    data = np.stack([alpha_IMF, log10_N_Ia], 2)
+    mu, cov = mean_std(data, prior[0], prior[1])
+    mu_alpha, mu_log10N_Ia = mu[0], mu[1]
+    sigma_alpha, sigma_log10N_Ia = np.sqrt(cov[0, 0]), np.sqrt(cov[1, 1])
+
+    xlim = [-0.03, 0.03]
+    ylim = [-0.03, 0.03]
+
+    if np.abs(global_params[0, 0] - mu_alpha) > 0.03:
+        if mu_alpha - global_params[0, 0] < 0:
+            xlim[0] = mu_alpha - global_params[0, 0] - 10 * sigma_alpha
+        elif mu_alpha - global_params[0, 0] > 0:
+            xlim[1] = mu_alpha - global_params[0, 0] + 10 * sigma_alpha
+
+    if np.abs(global_params[0, 1] - mu_log10N_Ia) > 0.03:
+        if mu_log10N_Ia - global_params[0, 1] < 0:
+            ylim[0] = mu_log10N_Ia - global_params[0, 1] - 10 * sigma_log10N_Ia
+        elif mu_log10N_Ia - global_params[0, 1] > 0:
+            ylim[1] = mu_log10N_Ia - global_params[0, 1] + 10 * sigma_log10N_Ia
+
+    grid_x = [global_params[0, 0] + xlim[0], global_params[0, 0] + xlim[1]]
+    grid_y = [global_params[0, 1] + ylim[0], global_params[0, 1] + ylim[1]]
+
+    x, y = np.mgrid[grid_x[0] : grid_x[1] : 0.001, grid_y[0] : grid_y[1] : 0.001]
+    pos = np.dstack((x, y))
+
+    # create a multivariate normal
+    posterior = multivariate_normal(mean=mu, cov=cov)
+
+    # create a figure
+    plt.figure(figsize=(15, 15))
+
+    # labels
+    label_gt = (
+        r"Ground Truth"
+        + f"\n"
+        + r"$\alpha_{\rm IMF} = $"
+        + f"${global_params[0,0]:.2f}$"
+        + f"\n"
+        + r"$\log_{10} N_{\rm Ia} = $"
+        + f"${global_params[0,1]:.2f}$"
+    )
+    label_fit = (
+        r"Fit"
+        + f"\n"
+        + r"$\alpha_{\rm IMF} = $"
+        + f"${mu_alpha:.3f} \\pm {sigma_alpha:.3f}$"
+        + f"\n"
+        + r"$\log_{10} N_{\rm Ia} = $"
+        + f"${mu_log10N_Ia:.3f} \\pm {sigma_log10N_Ia:.3f}$"
+    )
+
+    # Sigma levels
+    levels = []
+    sigma = np.array([3, 2, 1, 0], dtype=float)
+    for n in sigma:
+        levels.append(
+            posterior.pdf(
+                [mu_alpha + n * sigma_alpha, mu_log10N_Ia + n * sigma_log10N_Ia]
+            )
+        )
+    cmap = plt.get_cmap("Blues")
+    colors = [cmap(0.3), cmap(0.5), cmap(0.8)]
+    cf = plt.contourf(x, y, posterior.pdf(pos), levels=levels, colors=colors, alpha=0.7)
+    CS = plt.contour(
+        x, y, posterior.pdf(pos), levels=levels, colors="k", linestyles="dashed"
+    )
+    text = plt.clabel(CS, inline=True, fontsize=15)
+    for t in text:
+        i = np.abs(np.array(levels) - float(t._text)).argmin()
+        s = int(sigma[i])
+        t.set(text=f"{s} $\\sigma$")
+
+    legend_true = plt.scatter(
+        global_params[0, 0],
+        global_params[0, 1],
+        color="k",
+        label=label_gt,
+        s=400,
+        marker="x",
+        linewidths=5,
+    )
+    legend_fit = plt.scatter(
+        mu_alpha, mu_log10N_Ia, color="blue", label=label_fit, s=100
+    )
+
+    legend_fit = plt.legend(
+        handles=[legend_fit],
+        fontsize=15,
+        shadow=True,
+        fancybox=True,
+        loc=2,
+        bbox_to_anchor=(0, 0.9),
+    )
+    legend_true = plt.legend(
+        handles=[legend_true],
+        fontsize=15,
+        shadow=True,
+        fancybox=True,
+        loc=2,
+        bbox_to_anchor=(0, 0.99),
+    )
+
+    plt.xlabel(r"$\alpha_{\rm IMF}$", fontsize=40)
+    plt.ylabel(r"$\log_{10} N_{\rm Ia}$", fontsize=40)
+    plt.tick_params(labelsize=30)
+
+    plt.gca().add_artist(legend_fit)
+    plt.gca().add_artist(legend_true)
+
+    # plt.title(title, fontsize=60)
+
+    plt.tight_layout()
+    plt.savefig(paths.figures / f"{title}.png")
+    plt.clf()
+
+
+##########################################################################################################
+# --- Gaussian Posterior plot Comparison ---
+
+
+def gaussian_posterior_plot_n_stars(
+    alpha_IMF,
+    log10_N_Ia,
+    global_params,
+    title,
+    philcox,
+    no_stars=100,
+    prior=np.array([[-2.3, -2.89], [0.3, 0.3]]),
+):
+
+    data = np.stack([alpha_IMF, log10_N_Ia], 2)
+    mu, cov = mean_std(data, prior[0], prior[1])
+    mu_alpha, mu_log10N_Ia = mu[0], mu[1]
+    sigma_alpha, sigma_log10N_Ia = np.sqrt(cov[0, 0]), np.sqrt(cov[1, 1])
+
+    xlim = [-0.03, 0.03]
+    ylim = [-0.03, 0.03]
+
+    if np.abs(global_params[0, 0] - mu_alpha) > 0.03:
+        if mu_alpha - global_params[0, 0] < 0:
+            xlim[0] = mu_alpha - global_params[0, 0] - 10 * sigma_alpha
+        elif mu_alpha - global_params[0, 0] > 0:
+            xlim[1] = mu_alpha - global_params[0, 0] + 10 * sigma_alpha
+
+    if np.abs(global_params[0, 1] - mu_log10N_Ia) > 0.03:
+        if mu_log10N_Ia - global_params[0, 1] < 0:
+            ylim[0] = mu_log10N_Ia - global_params[0, 1] - 10 * sigma_log10N_Ia
+        elif mu_log10N_Ia - global_params[0, 1] > 0:
+            ylim[1] = mu_log10N_Ia - global_params[0, 1] + 10 * sigma_log10N_Ia
+
+    if philcox is not None:
+
+        # add Philcox ellipses
+        idx = np.where(philcox["n_stars"] == no_stars)[0][0]
+
+        # Calculate the sigmas for specific index
+        sigma_h_1 = philcox["up"][idx, 0] - philcox["med"][idx, 0]
+        sigma_l_1 = philcox["med"][idx, 0] - philcox["lo"][idx, 0]
+        sigma_philcox_1 = (sigma_h_1 + sigma_l_1) / 2
+
+        sigma_h_2 = philcox["up"][idx, 1] - philcox["med"][idx, 1]
+        sigma_l_2 = philcox["med"][idx, 1] - philcox["lo"][idx, 1]
+        sigma_philcox_2 = (sigma_h_2 + sigma_l_2) / 2
+
+        if np.abs(global_params[0, 0] - philcox["med"][idx, 0]) > 0.03:
+            if philcox["med"][idx, 0] - global_params[0, 0] < 0:
+                xlim[0] = (
+                    philcox["med"][idx, 0] - global_params[0, 0] - 2 * sigma_philcox_1
+                )
+            elif philcox["med"][idx, 0] - global_params[0, 0] > 0:
+                xlim[1] = (
+                    philcox["med"][idx, 0] - global_params[0, 0] + 2 * sigma_philcox_1
+                )
+
+        if np.abs(global_params[0, 1] - philcox["med"][idx, 1]) > 0.03:
+            if philcox["med"][idx, 1] - global_params[0, 1] < 0:
+                ylim[0] = (
+                    philcox["med"][idx, 1] - global_params[0, 1] - 2 * sigma_philcox_2
+                )
+            elif philcox["med"][idx, 1] - global_params[0, 1] > 0:
+                ylim[1] = (
+                    philcox["med"][idx, 1] - global_params[0, 1] + 2 * sigma_philcox_2
+                )
+
+    grid_x = [global_params[0, 0] + xlim[0], global_params[0, 0] + xlim[1]]
+    grid_y = [global_params[0, 1] + ylim[0], global_params[0, 1] + ylim[1]]
+
+    x, y = np.mgrid[grid_x[0] : grid_x[1] : 0.001, grid_y[0] : grid_y[1] : 0.001]
+    pos = np.dstack((x, y))
+
+    # create a multivariate normal
+    posterior = multivariate_normal(mean=mu, cov=cov)
+
+    # create a figure
+    plt.figure(figsize=(15, 15))
+
+    # Add Philcox values to plot
+    if philcox is not None:
+
+        # Create label with scalar values
+        label_hmc = (
+            r"HMC"
+            + f"\n"
+            + r"$\alpha_{\rm IMF} = $"
+            + f'${philcox["med"][idx, 0]:.3f} \\pm {sigma_philcox_1:.3f}$'
+            + f"\n"
+            + r"$\log_{10} N_{\rm Ia} = $"
+            + f'${philcox["med"][idx, 1]:.3f} \\pm {sigma_philcox_2:.3f}$'
+        )
+
+        legend_philcox = plt.scatter(
+            philcox["med"][idx, 0],
+            philcox["med"][idx, 1],
+            color="red",
+            label=label_hmc,
+            s=100,
+        )
+
+        # create a multivariate normal
+        posterior_philcox = multivariate_normal(
+            mean=[philcox["med"][:, 0][-1], philcox["med"][:, 1][-1]],
+            cov=[[sigma_philcox_1**2, 0], [0, sigma_philcox_2**2]],
+        )
+
+        # Sigma levels
+        levels = []
+        sigma = np.array([3, 2, 1, 0], dtype=float)
+        for n in sigma:
+            levels.append(
+                posterior_philcox.pdf(
+                    [
+                        philcox["med"][:, 0][-1] + n * sigma_philcox_1,
+                        philcox["med"][:, 1][-1] + n * sigma_philcox_2**2,
+                    ]
+                )
+            )
+
+        cmap = plt.get_cmap("Reds")
+        colors = [cmap(0.3), cmap(0.5), cmap(0.8)]
+        cf = plt.contourf(
+            x, y, posterior_philcox.pdf(pos), levels=levels, colors=colors, alpha=0.7
+        )
+        CS = plt.contour(
+            x,
+            y,
+            posterior_philcox.pdf(pos),
+            levels=levels,
+            colors="gray",
+            linewidths=3,
+            linestyles="dotted",
+        )
+        text = plt.clabel(CS, inline=True, fontsize=15)
+        for t in text:
+            i = np.abs(np.array(levels) - float(t._text)).argmin()
+            s = int(sigma[i])
+            t.set(text=f"{s} $\\sigma$", color="gray")
+        legend_philcox = plt.legend(
+            handles=[legend_philcox],
+            fontsize=15,
+            shadow=True,
+            fancybox=True,
+            loc=2,
+            bbox_to_anchor=(0, 0.81),
+        )
+        plt.gca().add_artist(legend_philcox)
+
+    # labels
+    label_gt = (
+        r"Ground Truth"
+        + f"\n"
+        + r"$\alpha_{\rm IMF} = $"
+        + f"${global_params[0,0]:.2f}$"
+        + f"\n"
+        + r"$\log_{10} N_{\rm Ia} = $"
+        + f"${global_params[0,1]:.2f}$"
+    )
+    label_fit = (
+        r"SBI"
+        + f"\n"
+        + r"$\alpha_{\rm IMF} = $"
+        + f"${mu_alpha:.3f} \\pm {sigma_alpha:.3f}$"
+        + f"\n"
+        + r"$\log_{10} N_{\rm Ia} = $"
+        + f"${mu_log10N_Ia:.3f} \\pm {sigma_log10N_Ia:.3f}$"
+    )
+
+    # Sigma levels
+    levels = []
+    sigma = np.array([3, 2, 1, 0], dtype=float)
+    for n in sigma:
+        levels.append(
+            posterior.pdf(
+                [mu_alpha + n * sigma_alpha, mu_log10N_Ia + n * sigma_log10N_Ia]
+            )
+        )
+    cmap = plt.get_cmap("Blues")
+    colors = [cmap(0.3), cmap(0.5), cmap(0.8)]
+    cf = plt.contourf(x, y, posterior.pdf(pos), levels=levels, colors=colors, alpha=0.7)
+    CS = plt.contour(
+        x, y, posterior.pdf(pos), levels=levels, colors="gray", linestyles="dashed"
+    )
+    text = plt.clabel(CS, inline=True, fontsize=15)
+    for t in text:
+        i = np.abs(np.array(levels) - float(t._text)).argmin()
+        s = int(sigma[i])
+        t.set(text=f"{s} $\\sigma$", color="gray")
+
+    legend_true = plt.scatter(
+        global_params[0, 0],
+        global_params[0, 1],
+        color="k",
+        label=label_gt,
+        s=400,
+        marker="x",
+        linewidths=5,
+    )
+    legend_fit = plt.scatter(
+        mu_alpha, mu_log10N_Ia, color="blue", label=label_fit, s=100
+    )
+    legend_philcox = plt.scatter(
+        philcox["med"][:, 0][-1],
+        philcox["med"][:, 1][-1],
+        color="red",
+        label="HMC",
+        s=100,
+    )
+
+    legend_fit = plt.legend(
+        handles=[legend_fit],
+        fontsize=15,
+        shadow=True,
+        fancybox=True,
+        loc=2,
+        bbox_to_anchor=(0, 0.9),
+    )
+    legend_true = plt.legend(
+        handles=[legend_true],
+        fontsize=15,
+        shadow=True,
+        fancybox=True,
+        loc=2,
+        bbox_to_anchor=(0, 0.99),
+    )
+
+    plt.xlabel(r"$\alpha_{\rm IMF}$", fontsize=40)
+    plt.ylabel(r"$\log_{10} N_{\rm Ia}$", fontsize=40)
+    plt.tick_params(labelsize=30)
+
+    plt.gca().add_artist(legend_fit)
+    plt.gca().add_artist(legend_true)
+
+    # plt.title(title, fontsize=60)
+
+    plt.tight_layout()
+    plt.savefig(paths.figures / f"{title}.png")
     plt.clf()
 
 
@@ -465,18 +627,26 @@ def n_stars_plot_comp(
 
 
 def n_stars_plot_comp2(
-    x1, x2, x_true, philcox, save_name, no_stars=np.array([1, 10, 100, 500, 1000])
+    x1,
+    x2,
+    x_true,
+    philcox,
+    save_name,
+    no_stars=np.array([1, 10, 100, 500, 1000]),
+    prior=np.array([[-2.3, -2.89], [0.3, 0.3]]),
 ):
     fit = []
     err = []
 
     # --- Fit a 2D Gaussian to the data ---
     for n in no_stars:
-        mu_alpha, sigma_alpha = mean_std(x1[:n], x_true[0, 0], x_true[1, 0])
-        mu_logNIa, sigma_logNIa = mean_std(x2[:n], x_true[0, 1], x_true[1, 1])
+        data = np.stack([x1[:n], x2[:n]], 2)
+        mu, cov = mean_std(data, prior[0], prior[1])
+        mu_alpha, mu_log10N_Ia = mu[0], mu[1]
+        sigma_alpha, sigma_log10N_Ia = np.sqrt(cov[0, 0]), np.sqrt(cov[1, 1])
 
-        fit.append([mu_alpha, mu_logNIa])
-        err.append([sigma_alpha, sigma_logNIa])
+        fit.append([mu_alpha, mu_log10N_Ia])
+        err.append([sigma_alpha, sigma_log10N_Ia])
 
     fit = np.array(fit)
     err = np.array(err)
@@ -521,7 +691,7 @@ def n_stars_plot_comp2(
         ax.set_ylabel(name, fontsize=40)
         ax.set_ylim([x_true - 0.2 * abs(x_true), x_true + 0.2 * abs(x_true)])
         ax.set_xscale("log")
-        ax.set_xlim([1, 1000])
+        ax.set_xlim([1, no_stars[-1]])
         ax.tick_params(labelsize=30, size=10, width=3)
         ax.tick_params(which="minor", size=5, width=2)
 
@@ -532,403 +702,4 @@ def n_stars_plot_comp2(
 
     plt.tight_layout()
     plt.savefig(paths.figures / f"{save_name}.pdf")
-    plt.clf()
-
-
-##########################################################################################################
-# --- Absolute percentage error plot ---
-
-
-def ape_plot(ape, labels_in, save_path):
-    fig, (ax_box, ax_hist) = plt.subplots(
-        2, sharex=True, gridspec_kw={"height_ratios": (0.20, 0.80)}
-    )
-    colors = ["tomato", "skyblue", "olive", "gold", "teal", "orchid"]
-
-    for i in range(ape.shape[1]):
-        ax_hist.hist(
-            ape[:, i],
-            bins=25,
-            density=True,
-            cumulative=True,
-            histtype="step",
-            lw=2,
-            range=(0, 100),
-            label=labels_in[i],
-            color=colors[i],
-        )  # , alpha=0.5)
-        median = np.percentile(ape[:, i], 50)
-        # ax_hist.axvline(median, color=colors[i], linestyle='--')
-
-    ax_hist.set_xlabel("Error (%)", fontsize=15)
-    ax_hist.set_ylabel("CDF", fontsize=15)
-    ax_hist.spines["top"].set_visible(False)
-    ax_hist.spines["right"].set_visible(False)
-    ax_hist.legend(loc="lower right", fontsize=12)
-
-    bplot = ax_box.boxplot(
-        ape,
-        vert=False,
-        autorange=False,
-        widths=0.5,
-        patch_artist=True,
-        showfliers=False,
-        boxprops=dict(facecolor="tomato"),
-        medianprops=dict(color="black"),
-    )
-    for patch, color in zip(bplot["boxes"], colors):
-        patch.set_facecolor(color)
-    ax_box.set(yticks=[])
-    ax_box.spines["left"].set_visible(False)
-    ax_box.spines["right"].set_visible(False)
-    ax_box.spines["top"].set_visible(False)
-
-    # fig.suptitle('APE of the Posterior', fontsize=20)
-    plt.xlim(0, 100)
-    fig.tight_layout()
-    plt.savefig(save_path)
-    plt.clf()
-
-
-##########################################################################################################
-# --- Gaussian Posterior plot ---
-
-
-def gaussian_posterior_plot(alpha_IMF, log10_N_Ia, global_params, title):
-
-    mu_alpha, sigma_alpha = mean_std(
-        alpha_IMF, global_params[0, 0], global_params[1, 0]
-    )
-    mu_log10N_Ia, sigma_log10N_Ia = mean_std(
-        log10_N_Ia, global_params[0, 1], global_params[1, 1]
-    )
-
-    # create a grid of points
-    # grid_x = [-2.35,-2.25]
-    # grid_y = [-3.0,-2.84]
-
-    xlim = [-0.05, 0.05]
-    ylim = [-0.05, 0.05]
-
-    if np.abs(global_params[0, 0] - mu_alpha) > 0.05:
-        if mu_alpha - global_params[0, 0] < 0:
-            xlim[0] = mu_alpha - global_params[0, 0] - 10 * sigma_alpha
-        elif mu_alpha - global_params[0, 0] > 0:
-            xlim[1] = mu_alpha - global_params[0, 0] + 10 * sigma_alpha
-
-    if np.abs(global_params[0, 1] - mu_log10N_Ia) > 0.05:
-        if mu_log10N_Ia - global_params[0, 1] < 0:
-            ylim[0] = mu_log10N_Ia - global_params[0, 1] - 10 * sigma_log10N_Ia
-        elif mu_log10N_Ia - global_params[0, 1] > 0:
-            ylim[1] = mu_log10N_Ia - global_params[0, 1] + 10 * sigma_log10N_Ia
-
-    grid_x = [global_params[0, 0] + xlim[0], global_params[0, 0] + xlim[1]]
-    grid_y = [global_params[0, 1] + ylim[0], global_params[0, 1] + ylim[1]]
-
-    x, y = np.mgrid[grid_x[0] : grid_x[1] : 0.001, grid_y[0] : grid_y[1] : 0.001]
-    pos = np.dstack((x, y))
-
-    # create a multivariate normal
-    posterior = multivariate_normal(
-        mean=[mu_alpha, mu_log10N_Ia],
-        cov=[[sigma_alpha**2, 0], [0, sigma_log10N_Ia**2]],
-    )
-    samples = posterior.rvs(size=100_000_000)
-
-    # create a figure
-    plt.figure(figsize=(15, 15))
-
-    plt.hist2d(
-        samples[:, 0],
-        samples[:, 1],
-        bins=250,
-        range=[grid_x, grid_y],
-        cmin=1,
-        norm="log",
-    )
-
-    # labels
-    label_gt = (
-        r"Ground Truth"
-        + f"\n"
-        + r"$\alpha_{\rm IMF} = $"
-        + f"${global_params[0,0]:.2f}$"
-        + f"\n"
-        + r"$\log_{10} N_{\rm Ia} = $"
-        + f"${global_params[0,1]:.2f}$"
-    )
-    label_fit = (
-        r"Fit"
-        + f"\n"
-        + r"$\alpha_{\rm IMF} = $"
-        + f"${mu_alpha:.3f} \\pm {sigma_alpha:.3f}$"
-        + f"\n"
-        + r"$\log_{10} N_{\rm Ia} = $"
-        + f"${mu_log10N_Ia:.3f} \\pm {sigma_log10N_Ia:.3f}$"
-    )
-
-    legend_true = plt.scatter(
-        global_params[0, 0],
-        global_params[0, 1],
-        marker="*",
-        color="red",
-        label=label_gt,
-        s=150,
-    )
-    plt.axhline(global_params[0, 1], color="r", linestyle="dashed", linewidth=2)
-    plt.axvline(global_params[0, 0], color="r", linestyle="dashed", linewidth=2)
-
-    legend_fit = plt.scatter(mu_alpha, mu_log10N_Ia, color="k", label=label_fit, s=100)
-
-    legend_fit = plt.legend(
-        handles=[legend_fit],
-        fontsize=30,
-        shadow=True,
-        fancybox=True,
-        loc=2,
-        bbox_to_anchor=(0, 0.8),
-    )
-    legend_true = plt.legend(
-        handles=[legend_true],
-        fontsize=30,
-        shadow=True,
-        fancybox=True,
-        loc=2,
-        bbox_to_anchor=(0, 0.95),
-    )
-
-    # Sigma levels
-    levels = []
-    sigma = np.array([3, 2, 1], dtype=float)
-    for n in sigma:
-        levels.append(
-            posterior.pdf(
-                [mu_alpha + n * sigma_alpha, mu_log10N_Ia + n * sigma_log10N_Ia]
-            )
-        )
-    CS = plt.contour(
-        x, y, posterior.pdf(pos), levels=levels, colors="w", linestyles="dashed"
-    )
-    text = plt.clabel(CS, inline=True, fontsize=25)
-    for t in text:
-        i = np.abs(np.array(levels) - float(t._text)).argmin()
-        s = int(sigma[i])
-        t.set(text=f"{s} $\\sigma$")
-
-    plt.xlabel(r"$\alpha_{\rm IMF}$", fontsize=40)
-    plt.ylabel(r"$\log_{10} N_{\rm Ia}$", fontsize=40)
-    plt.tick_params(labelsize=30)
-
-    plt.gca().add_artist(legend_fit)
-    plt.gca().add_artist(legend_true)
-
-    plt.title(title, fontsize=40)
-
-    plt.tight_layout()
-    plt.savefig(paths.figures / f"{title}.png")
-    plt.clf()
-
-
-##########################################################################################################
-# --- Gaussian Posterior plot ---
-
-
-def gaussian_posterior_plot_n_stars(
-    alpha_IMF, log10_N_Ia, global_params, title, philcox, no_stars=100
-):
-
-    mu_alpha, sigma_alpha = mean_std(
-        alpha_IMF[:no_stars], global_params[0, 0], global_params[1, 0]
-    )
-    mu_log10N_Ia, sigma_log10N_Ia = mean_std(
-        log10_N_Ia[:no_stars], global_params[0, 1], global_params[1, 1]
-    )
-
-    # create a grid of points
-    # grid_x = [-2.35,-2.25]
-    # grid_y = [-3.0,-2.84]
-
-    xlim = [-0.1, 0.1]
-    ylim = [-0.1, 0.1]
-
-    if np.abs(global_params[0, 0] - mu_alpha) > 0.1:
-        if mu_alpha - global_params[0, 0] < 0:
-            xlim[0] = mu_alpha - global_params[0, 0] - 10 * sigma_alpha
-        elif mu_alpha - global_params[0, 0] > 0:
-            xlim[1] = mu_alpha - global_params[0, 0] + 10 * sigma_alpha
-
-    if np.abs(global_params[0, 1] - mu_log10N_Ia) > 0.1:
-        if mu_log10N_Ia - global_params[0, 1] < 0:
-            ylim[0] = mu_log10N_Ia - global_params[0, 1] - 10 * sigma_log10N_Ia
-        elif mu_log10N_Ia - global_params[0, 1] > 0:
-            ylim[1] = mu_log10N_Ia - global_params[0, 1] + 10 * sigma_log10N_Ia
-
-    grid_x = [global_params[0, 0] + xlim[0], global_params[0, 0] + xlim[1]]
-    grid_y = [global_params[0, 1] + ylim[0], global_params[0, 1] + ylim[1]]
-
-    x, y = np.mgrid[grid_x[0] : grid_x[1] : 0.001, grid_y[0] : grid_y[1] : 0.001]
-    pos = np.dstack((x, y))
-
-    # add SBI data
-    # create a multivariate normal
-    posterior = multivariate_normal(
-        mean=[mu_alpha, mu_log10N_Ia],
-        cov=[[sigma_alpha**2, 0], [0, sigma_log10N_Ia**2]],
-    )
-    samples = posterior.rvs(size=100_000_000)
-
-    # create a figure
-    plt.figure(figsize=(15, 15))
-
-    plt.hist2d(
-        samples[:, 0],
-        samples[:, 1],
-        bins=250,
-        range=[grid_x, grid_y],
-        cmin=1,
-        norm="log",
-    )
-
-    # labels
-    label_gt = (
-        r"Ground Truth"
-        + f"\n"
-        + r"$\alpha_{\rm IMF} = $"
-        + f"${global_params[0,0]:.2f}$"
-        + f"\n"
-        + r"$\log_{10} N_{\rm Ia} = $"
-        + f"${global_params[0,1]:.2f}$"
-    )
-    label_fit = (
-        r"Fit"
-        + f"\n"
-        + r"$\alpha_{\rm IMF} = $"
-        + f"${mu_alpha:.3f} \\pm {sigma_alpha:.3f}$"
-        + f"\n"
-        + r"$\log_{10} N_{\rm Ia} = $"
-        + f"${mu_log10N_Ia:.3f} \\pm {sigma_log10N_Ia:.3f}$"
-    )
-
-    legend_true = plt.scatter(
-        global_params[0, 0],
-        global_params[0, 1],
-        marker="o",
-        color="red",
-        label=label_gt,
-        s=150,
-    )
-    plt.axhline(global_params[0, 1], color="r", linestyle="dashed", linewidth=2)
-    plt.axvline(global_params[0, 0], color="r", linestyle="dashed", linewidth=2)
-
-    legend_fit = plt.scatter(
-        mu_alpha, mu_log10N_Ia, color="k", marker="*", label=label_fit, s=100
-    )
-
-    legend_fit = plt.legend(
-        handles=[legend_fit],
-        fontsize=30,
-        shadow=True,
-        fancybox=True,
-        loc=2,
-        bbox_to_anchor=(0, 0.8),
-    )
-    legend_true = plt.legend(
-        handles=[legend_true],
-        fontsize=30,
-        shadow=True,
-        fancybox=True,
-        loc=2,
-        bbox_to_anchor=(0, 0.945),
-    )
-
-    # Sigma levels
-    levels = []
-    sigma = np.array([3, 2, 1], dtype=float)
-    for n in sigma:
-        levels.append(
-            posterior.pdf(
-                [mu_alpha + n * sigma_alpha, mu_log10N_Ia + n * sigma_log10N_Ia]
-            )
-        )
-    CS = plt.contour(
-        x, y, posterior.pdf(pos), levels=levels, colors="w", linestyles="dashed"
-    )
-    text = plt.clabel(CS, inline=True, fontsize=25)
-    for t in text:
-        i = np.abs(np.array(levels) - float(t._text)).argmin()
-        s = int(sigma[i])
-        t.set(text=f"{s} $\\sigma$")
-
-    if philcox is not None:
-        # add Philcox ellipses
-
-        legend_philcox = plt.scatter(
-            philcox["med"][:, 0][-1],
-            philcox["med"][:, 1][-1],
-            marker="s",
-            color="gray",
-            label="HMC",
-            s=50,
-        )
-
-        sigma_h = philcox["up"][:, 0] - philcox["med"][:, 0]
-        sigma_l = philcox["med"][:, 0] - philcox["lo"][:, 0]
-        sigma_philcox_1 = (sigma_h + sigma_l) / 2
-
-        sigma_h = philcox["up"][:, 1] - philcox["med"][:, 1]
-        sigma_l = philcox["med"][:, 1] - philcox["lo"][:, 1]
-        sigma_philcox_2 = (sigma_h + sigma_l) / 2
-
-        print("philcox data:")
-        print(philcox["med"][:, 0][-1], philcox["med"][:, 1][-1])
-        # create a multivariate normal
-        posterior = multivariate_normal(
-            mean=[philcox["med"][:, 0][-1], philcox["med"][:, 1][-1]],
-            cov=[[sigma_philcox_1[-1] ** 2, 0], [0, sigma_philcox_2[-1] ** 2]],
-        )
-        samples = posterior.rvs(size=100_000_000)
-
-        # plt.hist2d(samples[:,0], samples[:,1], bins=250, range=[grid_x, grid_y], cmap=, cmin=1, norm="log", alpha=0.1)
-
-        # Sigma levels
-        levels = []
-        sigma = np.array([3, 2, 1], dtype=float)
-        for n in sigma:
-            levels.append(
-                posterior.pdf(
-                    [
-                        philcox["med"][:, 0][-1] + n * sigma_philcox_1[-1],
-                        philcox["med"][:, 1][-1] + n * sigma_philcox_2[-1] ** 2,
-                    ]
-                )
-            )
-        CS = plt.contour(
-            x, y, posterior.pdf(pos), levels=levels, colors="gray", linewidths=3
-        )  # , linestyles='dotted')
-        # text = plt.clabel(CS, inline=True, fontsize=25)
-        # for t in text:
-        #    i = np.abs(np.array(levels) - float(t._text)).argmin()
-        #    s = int(sigma[i])
-        #    t.set(text=f'{s} $\\sigma$')
-        legend_philcox = plt.legend(
-            handles=[legend_philcox],
-            fontsize=30,
-            shadow=True,
-            fancybox=True,
-            loc=2,
-            bbox_to_anchor=(0, 1.01),
-        )
-        plt.gca().add_artist(legend_philcox)
-
-    plt.xlabel(r"$\alpha_{\rm IMF}$", fontsize=40)
-    plt.ylabel(r"$\log_{10} N_{\rm Ia}$", fontsize=40)
-    plt.tick_params(labelsize=30)
-
-    plt.gca().add_artist(legend_fit)
-    plt.gca().add_artist(legend_true)
-
-    plt.title(title, fontsize=40)
-
-    plt.tight_layout()
-    plt.savefig(paths.figures / f"{title}.png")
     plt.clf()
