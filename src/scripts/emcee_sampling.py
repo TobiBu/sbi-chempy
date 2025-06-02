@@ -47,7 +47,7 @@ model.load_state_dict(torch.load(paths.data / "pytorch_state_dict.pt"))
 model.eval()
 
 # --- Define the simulator ---
-N_stars = 200
+N_stars = 100
 N_samples = 1000
 
 stars = local_GP.sample((N_stars,))
@@ -124,7 +124,7 @@ initial_params = np.array([-2.3, -2.89, -0.3, 0.55, 0.5, 6.0], dtype=np.float32)
 
 ndim = 6  # number of parameters
 nwalkers = 32
-nsteps = 4000
+nsteps = 6000
 nburn = 500
 
 mh_samples = []
