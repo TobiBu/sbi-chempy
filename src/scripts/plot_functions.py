@@ -583,13 +583,6 @@ def gaussian_posterior_plot_n_stars(
     legend_fit = plt.scatter(
         mu_alpha, mu_log10N_Ia, color="blue", label=label_fit, s=100
     )
-    legend_philcox = plt.scatter(
-        philcox["med"][:, 0][-1],
-        philcox["med"][:, 1][-1],
-        color="red",
-        label="HMC",
-        s=100,
-    )
 
     legend_fit = plt.legend(
         handles=[legend_fit],
