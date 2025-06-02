@@ -124,7 +124,7 @@ initial_params = np.array([-2.3, -2.89, -0.3, 0.55, 0.5, 6.0], dtype=np.float32)
 
 ndim = 6  # number of parameters
 nwalkers = 32
-nsteps = 2000
+nsteps = 4000
 nburn = 500
 
 mh_samples = []
@@ -157,7 +157,7 @@ for i in tqdm(range(len(abundances))):
     tau = sampler.get_autocorr_time()
     print(f"Autocorrelation time: {tau}")
 
-    thin = int(np.max(tau))
+    thin = int(0.5 * np.max(tau))
     print(f"Thinning factor: {thin}")
     # Thin the chain
 
@@ -210,9 +210,6 @@ with open("mcmc_results.pkl", "wb") as f:
 
 # Step 1: Stack samples from all stars
 all_samples = np.vstack([d["samples"] for d in mh_samples])
-
-# Optional: Thin if needed
-# all_samples = all_samples[::10]
 
 # --- Plot the posterior for MH vs. SBI ---
 
