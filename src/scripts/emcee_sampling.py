@@ -124,7 +124,7 @@ initial_params = np.array([-2.3, -2.89, -0.3, 0.55, 0.5, 6.0], dtype=np.float32)
 
 ndim = 6  # number of parameters
 nwalkers = 32
-nsteps = 6000
+nsteps = 10000
 nburn = 500
 
 mh_samples = []
