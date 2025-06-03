@@ -298,7 +298,7 @@ In particular, if we marginalize over the star specific parameters and solely fo
 &=& \mathbb{P}(\vec\Lambda)^{1-n_\mathrm{star}}\ \prod_{j=1}^{n_\mathrm{star}}\mathbb{P}(\vec\Lambda|D_j) 
 \end{eqnarray}
 
-This factorization of the joint posterior into single star posteriors $\mathbb{P}(\vec\Lambda|D_j)$ has the advantage that we do not need to specify the exact number of observational data points beforehand. We can simply train our neural density estimator on single star observations and then at evaluation time, we simply combine as many posterior estimates as we have observational data.
+This factorization of the \resub{marginal} joint posterior \resub{of the global parameters} into single star posteriors $\mathbb{P}(\vec\Lambda|D_j)$ has the advantage that we do not need to specify the exact number of observational data points beforehand. We can simply train our neural density estimator on single star observations and then at evaluation time, we simply combine as many posterior estimates as we have observational data.
 
 
 \paragraph{Simulation-based inference:}
@@ -323,17 +323,15 @@ Following eq.~\ref{eq:posterior} we can calculate the joint posterior for a comb
 
 This does however present one issue, that since we only have access to samples from the posterior and not the posterior itself it is difficult to evaluate eq.~\ref{eq:posterior}. \resub{We circumvent this by approximating each single-star posterior by a Gaussian and fitting for the parameters of mean and covariance. This choice enables an analytical combination of multiple posteriors (see Eq.~\ref{eq:posterior}), providing computational tractability and allowing efficient inference over large datasets. While this approximation may limit the flexibility of the posterior, it significantly reduces computational complexity. Alternative strategies, such as using a Mixture Density Network (MDN) or normalizing flows with parametric forms, would provide richer posterior representations. However, these would complicate the composition of posteriors across stars. We acknowledge this as a simplification and plan to explore more expressive architectures in future work.} 
 
-With this it is straight forward to evaluate eq.~\ref{eq:posterior} analytically. In fact, under our assumption the combined posterior is a product between the prior and the product of multiple Gaussians for the individual star posteriors. The latter product is also a Gaussian with mean $\mathbf{\mu'}$ and variance $\mathbf{\sigma'^2}$:
+With this it is straight forward to evaluate eq.~\ref{eq:posterior} analytically. In fact, under our assumption the combined \resub{factorized posterior from eq.~\ref{eq:posterior} is again a Gaussian whose mean and covariance can be calculated from the means and covariances of the individual prior/posterior Gaussians as follows:}
+\resub{
 \begin{align}
-    \mathbf{\mu'} &= \frac{\sum_{i=1}^{N_{stars}} \frac{\mu_i}{\sigma_i^2}}{\sum_{i=1}^{N_{stars}} \frac1{\sigma_i^2}} \\
-\mathbf{\sigma'}^2 &= \frac1 {\sum_{i=1}^{N_{stars}} \frac1{\sigma_i^2}}
+    \mathbf{\Sigma}_{\rm Posterior}^{-1} &= (N-1) \mathbf{\Sigma}_{\rm Prior}^{-1} + \sum_i^N \mathbf{\Sigma}_i^{-1} \\
+\mathbf{\mu}_{\rm Posterior} &= \mathbf{\Sigma}_{\rm Posterior} \Big( (N-1) \mathbf{\Sigma}_{\rm Prior}^{-1} \mathbf{\mu}_{\rm Prior} + \sum_i^N \mathbf{\Sigma}_i^{-1} \mathbf{\mu}_i \Big)
 \end{align}
+}
 
-Further, in our case the prior for the galactic parameters $\Lambda$ is Gaussian as well. Therefore the resulting factorized posterior from eq.~\ref{eq:posterior} is again a Gaussian and can be expressed with mean $\mathbf{\mu}$ and variance $\mathbf{\sigma}$ as:
-\begin{align}
-\mathbf{\mu} &= \frac{\frac{\mu'}{\sigma'^2}-\frac{(1-N)\mu_ {prior}}{\sigma_ {prior}^2}}{\frac1{\sigma'^2}-\frac{(1-N)}{\sigma_ {prior}^2}} \\
-\mathbf{\sigma}^2 &= \frac1 {\frac1{\sigma'^2}-\frac{(1-N)}{\sigma_ {prior}^2}}
-\end{align}
+\resub{where we have assumed that the prior for the global parameters has no  covariance such that $\Sigma_\rm{prior}$ is diagonal.}
 
 Given the tiny and simple neural network that represents our NPE, we note that the above assumption of Gaussianity in each of the single star posteriors not expected to notably increase our pipeline's error. We have further empirically verified that single star posteriors are indeed close to Gaussian.
 However, in future work we plan to alleviate this simplification and directly approximate the joint posterior of a multi-star inference.
@@ -365,11 +363,11 @@ Each set of parameters is passed to our \texttt{CHEMPY} emulator, producing eigh
 
 \begin{figure*}
     \centering
-    \includegraphics[width=\textwidth]{figures/corner_plot_singlestar.pdf}
+    \includegraphics[width=\textwidth]{figures/corner_plot_comparison_singlestar_17.pdf}
     \vspace{-.5cm}
-    \caption{Corner plot of the posteriors for all six parameters for a single star from the validation set. The gray contours show a kde-estimate of the posterior from our SBI inference and the red dot and lines show the ground truth parameter values. Gray histograms on the diagonal show a kde estimate of the marginals.}
+    \caption{Corner plot of the posteriors for all six parameters for a single star from the validation set. The blue contours show a kde-estimate of the posterior from our SBI inference and the red dot and lines show the ground truth parameter values. The orange contours show results from a MCMC run on the same data. Blue/orange histograms on the diagonal show a kde estimate of the marginals.}
     \label{fig:corner_plot}
-    \script{plot_sbc.py}
+    \script{emcee_sampling.py}
 \end{figure*}
 
 \begin{figure*}
@@ -386,7 +384,7 @@ Each set of parameters is passed to our \texttt{CHEMPY} emulator, producing eigh
     \centering
     \includegraphics[width=\columnwidth]{figures/CHEMPY_TNG_yields.png}
     \vspace{-.25cm}
-    \caption{Joint posterior for global galactic parameters $\alpha_{\rm IMF}$ and $\log_{10}(\rm N_{Ia})$ of $100$ stars. The ground truth value is shown by the red star, the posterior mean of the SBI inference is shown with the black dot and white ellipses show the $1-3\sigma$ contours of our inference. The gray ellipses show the results for HMC inference performed by \citet{Philcox_2019}. See Sec.~\ref{subsec:chempy_tng} for a full description.}
+    \caption{Joint posterior for global galactic parameters $\alpha_{\rm IMF}$ and $\log_{10}(\rm N_{Ia})$ of $100$ stars. The ground truth value is shown by the red star, the posterior mean of the SBI inference is shown with the blue dot and blue ellipses show the $1-3\sigma$ contours of our inference.  See Sec.~\ref{subsec:chempy_tng} for a full description.}
     \label{fig:CHEMPY_TNG_sbi} 
     \script{chempy_tng_inference.py}
 \end{figure}
@@ -677,15 +675,15 @@ We checked the independence of this results from the accuracy of the inference w
     \script{plot_sbc.py}
 \end{figure*}
 
-\section{\resub{Comparison between HMC and SBI}}
+\section{\resub{Comparison between MCMC and SBI}}
 \label{sec:hmc-sbi}
-\resub{put a new figure and some text...}
+\resub{Figure~\ref{fig:hmc} shows a comparison of the marginal joint posterior of the global parameters for 200 stars between MCMC (orange) and our SBI inference (blue). As already shown for a single star in Fig.~\ref{fig:corner_plot} our SBI results converge nicely to the MCMC results also when combining individual inferences over 200 stars.}
 
 \begin{figure}
     \centering
-    \includegraphics[width=\columnwidth]{figures/hmc_corner_plot.pdf}
+    \includegraphics[width=\columnwidth]{figures/mcmc_results.pdf}
     \vspace{-.5cm}
-    \caption{Caption}
+    \caption{Marginal joint posterior of the global parameters for both SBI (blue) and MCMC (orange) for 200 stars. Our SBI inference converges nicely to the result of the MCMC inference.}
     \label{fig:hmc}
     \script{emcee_sampling.py}
 \end{figure}

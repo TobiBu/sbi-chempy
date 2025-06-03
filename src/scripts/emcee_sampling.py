@@ -234,20 +234,20 @@ plotter = PlotSinglePosterior(
 
 sbi_samples = []
 
-for k in range(len(abundances)):
-    fig = plotter(
-        posterior=posterior,
-        x=abundances[k].detach().numpy(),
-        theta=stars[k].detach().numpy(),
-        plot_kws=dict(fill=True),
-        mh_samples=mh_samples[k]["samples"],
-        plot_kws_per_model={
-            "SBI": dict(levels=[0.05, 0.32, 1], color=color_sbi, fill=True, alpha=0.6),
-            "MCMC": dict(levels=[0.05, 0.32, 1], color=color_mh, fill=True, alpha=0.4),
-        },
-        signature=f"MCMC_{k}_",
-    )
-    fig.savefig(paths.figures / f"corner_plot_comparison_singlestar_{k}.pdf")
+k = 17  # Choose a specific star index for the plot
+fig = plotter(
+    posterior=posterior,
+    x=abundances[k].detach().numpy(),
+    theta=stars[k].detach().numpy(),
+    plot_kws=dict(fill=True),
+    mh_samples=mh_samples[k]["samples"],
+    plot_kws_per_model={
+        "SBI": dict(levels=[0.05, 0.32, 1], color=color_sbi, fill=True, alpha=0.6),
+        "MCMC": dict(levels=[0.05, 0.32, 1], color=color_mh, fill=True, alpha=0.4),
+    },
+    signature=f"MCMC_{k}_",
+)
+fig.savefig(paths.figures / f"corner_plot_comparison_singlestar_{k}.pdf")
 
 for k in range(len(abundances)):
     tmp_samples = np.load(paths.data / f"MCMC_{k}_single_samples.npy")

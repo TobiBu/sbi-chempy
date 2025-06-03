@@ -543,10 +543,10 @@ def gaussian_posterior_plot_n_stars(
     legend_true = plt.scatter(
         global_params[0, 0],
         global_params[0, 1],
-        marker="o",
+        marker="*",
         color="red",
         label=label_gt,
-        s=150,
+        s=200,
     )
     plt.axhline(global_params[0, 1], color="r", linestyle="dashed", linewidth=2)
     plt.axvline(global_params[0, 0], color="r", linestyle="dashed", linewidth=2)
@@ -582,22 +582,13 @@ def gaussian_posterior_plot_n_stars(
         s = int(sigma[i])
         t.set(text=f"{s} $\\sigma$", color="gray")
 
-    legend_true = plt.scatter(
-        global_params[0, 0],
-        global_params[0, 1],
-        color="k",
-        label=label_gt,
-        s=400,
-        marker="x",
-        linewidths=5,
-    )
     legend_fit = plt.scatter(
         mu_alpha, mu_log10N_Ia, color="blue", label=label_fit, s=100
     )
 
     legend_fit = plt.legend(
         handles=[legend_fit],
-        fontsize=15,
+        fontsize=35,
         shadow=True,
         fancybox=True,
         loc=2,
@@ -605,7 +596,7 @@ def gaussian_posterior_plot_n_stars(
     )
     legend_true = plt.legend(
         handles=[legend_true],
-        fontsize=15,
+        fontsize=35,
         shadow=True,
         fancybox=True,
         loc=2,
@@ -619,7 +610,7 @@ def gaussian_posterior_plot_n_stars(
     plt.gca().add_artist(legend_fit)
     plt.gca().add_artist(legend_true)
 
-    # plt.title(title, fontsize=60)
+    plt.title(title, fontsize=40)
 
     plt.tight_layout()
     plt.savefig(paths.figures / f"{title}.png")
