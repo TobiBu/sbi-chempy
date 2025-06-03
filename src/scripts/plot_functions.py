@@ -284,7 +284,7 @@ def gaussian_posterior_plot(
     grid_x = [global_params[0, 0] + xlim[0], global_params[0, 0] + xlim[1]]
     grid_y = [global_params[0, 1] + ylim[0], global_params[0, 1] + ylim[1]]
 
-    x, y = np.mgrid[grid_x[0] : grid_x[1] : 0.001, grid_y[0] : grid_y[1] : 0.001]
+    x, y = np.mgrid[grid_x[0] : grid_x[1] : 0.0001, grid_y[0] : grid_y[1] : 0.0001]
     pos = np.dstack((x, y))
 
     # create a multivariate normal
@@ -449,7 +449,7 @@ def gaussian_posterior_plot_n_stars(
     grid_x = [global_params[0, 0] + xlim[0], global_params[0, 0] + xlim[1]]
     grid_y = [global_params[0, 1] + ylim[0], global_params[0, 1] + ylim[1]]
 
-    x, y = np.mgrid[grid_x[0] : grid_x[1] : 0.001, grid_y[0] : grid_y[1] : 0.001]
+    x, y = np.mgrid[grid_x[0] : grid_x[1] : 0.0001, grid_y[0] : grid_y[1] : 0.0001]
     pos = np.dstack((x, y))
 
     # create a multivariate normal
@@ -547,9 +547,14 @@ def gaussian_posterior_plot_n_stars(
         color="red",
         label=label_gt,
         s=200,
+        zorder=5,
     )
-    plt.axhline(global_params[0, 1], color="r", linestyle="dashed", linewidth=2)
-    plt.axvline(global_params[0, 0], color="r", linestyle="dashed", linewidth=2)
+    plt.axhline(
+        global_params[0, 1], color="r", linestyle="dashed", linewidth=2, zorder=5
+    )
+    plt.axvline(
+        global_params[0, 0], color="r", linestyle="dashed", linewidth=2, zorder=5
+    )
 
     label_fit = (
         r"SBI"
@@ -588,15 +593,15 @@ def gaussian_posterior_plot_n_stars(
 
     legend_fit = plt.legend(
         handles=[legend_fit],
-        fontsize=35,
+        fontsize=30,
         shadow=True,
         fancybox=True,
         loc=2,
-        bbox_to_anchor=(0, 0.9),
+        bbox_to_anchor=(0, 0.85),
     )
     legend_true = plt.legend(
         handles=[legend_true],
-        fontsize=35,
+        fontsize=30,
         shadow=True,
         fancybox=True,
         loc=2,

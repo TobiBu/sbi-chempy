@@ -283,7 +283,7 @@ weights = np.ones(len(all_samples)) / len(all_samples)
 corner.corner(
     all_samples,  # shape: [N_samples, D]
     weights=weights,
-    labels=param_names,
+    labels=labels_in[:2],  # only plot the first two parameters
     fig=fig,  # reuse the same figure
     color="C1",
     bins=30,
