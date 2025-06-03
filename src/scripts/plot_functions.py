@@ -475,7 +475,8 @@ def gaussian_posterior_plot_n_stars(
         legend_philcox = plt.scatter(
             philcox["med"][idx, 0],
             philcox["med"][idx, 1],
-            color="red",
+            color="gray",
+            marker="s",
             label=label_hmc,
             s=100,
         )
@@ -499,11 +500,11 @@ def gaussian_posterior_plot_n_stars(
                 )
             )
 
-        cmap = plt.get_cmap("Reds")
-        colors = [cmap(0.3), cmap(0.5), cmap(0.8)]
-        cf = plt.contourf(
-            x, y, posterior_philcox.pdf(pos), levels=levels, colors=colors, alpha=0.7
-        )
+        # cmap = plt.get_cmap("Reds")
+        # colors = [cmap(0.3), cmap(0.5), cmap(0.8)]
+        # cf = plt.contourf(
+        #    x, y, posterior_philcox.pdf(pos), levels=levels, colors=colors, alpha=0.7
+        # )
         CS = plt.contour(
             x,
             y,
@@ -538,6 +539,18 @@ def gaussian_posterior_plot_n_stars(
         + r"$\log_{10} N_{\rm Ia} = $"
         + f"${global_params[0,1]:.2f}$"
     )
+
+    legend_true = plt.scatter(
+        global_params[0, 0],
+        global_params[0, 1],
+        marker="o",
+        color="red",
+        label=label_gt,
+        s=150,
+    )
+    plt.axhline(global_params[0, 1], color="r", linestyle="dashed", linewidth=2)
+    plt.axvline(global_params[0, 0], color="r", linestyle="dashed", linewidth=2)
+
     label_fit = (
         r"SBI"
         + f"\n"

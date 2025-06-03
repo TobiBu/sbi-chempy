@@ -89,7 +89,7 @@ gaussian_posterior_plot_n_stars(
     log10_N_Ia_tng_obs,
     global_params,
     title="TNG_simulation",
-    philcox=philcox,
+    philcox=None,
     no_stars=100,
 )
 

@@ -99,7 +99,7 @@ gaussian_posterior_plot_n_stars(
     log10_N_Ia_alt_obs,
     global_params,
     title="CHEMPY_alternative_yields",
-    philcox=philcox,
+    philcox=None,
     no_stars=100,
 )
 
